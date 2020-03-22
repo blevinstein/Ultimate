@@ -72,12 +72,14 @@ function rewriteColors(imageData, colorMapping) {
       for (let entry of colorMapping) {
         const [oldColor, newColor] = entry;
         if (eq(oldColor, color)) {
-          writePixel(imageData, x, y, newColor);
+          if (newColor) {
+            writePixel(imageData, x, y, newColor);
+          }
           mapped = true;
           break;
         }
       }
-      //if (!mapped) { console.log('Unmapped color: ' + color); }
+      if (!mapped) { console.log('Unmapped color: ' + color); }
     }
   }
 }
@@ -85,14 +87,22 @@ function rewriteColors(imageData, colorMapping) {
 const SHIRT = [224, 80, 0, 255];
 const PANTS = [72, 88, 0, 255];
 const HAIR = [0, 0, 0, 255];
+const SKIN = [255, 200, 184, 255];
+const SOCKS = [255, 255, 255, 255];
+const BG = [0, 0, 0, 0];
+const EYES = [7, 11, 90, 255];
 
 const COLOR_MAPPING = [
-  [SHIRT, [255, 0, 0, 255]],
-  [PANTS, [0, 0, 0, 255]],
-  [HAIR, [0, 0, 255, 255]]
+  [BG],
+  [EYES],
+  [SKIN],
+  [SHIRT],
+  [PANTS],
+  [SOCKS],
+  [HAIR],
 ];
 
-// returns Promise<Array<Image>>
+// returns Promise<Iterable<Image>>
 function splitSprite(spriteImage, gridX, gridY) {
   // Copy into separate images
   const spritePromises = [];
@@ -106,6 +116,28 @@ function splitSprite(spriteImage, gridX, gridY) {
   return Promise.all(spritePromises);
 }
 
+// returns ImageData
+function mirrorImage(image) {
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const context = canvas.getContext('2d');
+  context.save()
+  context.scale(-1, 1);
+  context.drawImage(image, -image.width, 0, image.width, image.height);
+  context.restore()
+  return context.getImageData(0, 0, image.width, image.height);
+}
+
+// returns Promise<Iterable<Image>>
+function mirrorSprites(spriteImages) {
+  const spritePromises = [];
+  for (let spriteImage of spriteImages) {
+    spritePromises.push(fromImageData(mirrorImage(spriteImage)));
+  }
+  return Promise.all(spritePromises);
+}
+
 let resources = {};
 let initialized = false;
 
@@ -114,15 +146,30 @@ function initialize() {
   const canvas = document.getElementById('canvas');
   canvas.width = canvas.parentElement.clientWidth;
   canvas.height = canvas.parentElement.clientHeight;
+  const context = canvas.getContext('2d');
+  context.scale(2, 2);
+  context.imageSmoothingEnabled = false;
   Promise.all([loadImage('images/field.png'), loadImage('images/player_sprite_grid.png')])
       .then((results) => {
         [field, playerSpriteSet] = results;
         resources.field = field;
         splitSprite(playerSpriteSet, 16, 32).then((splitSprites) => {
-          resources.playerSprites = splitSprites;
-          initialized = true;
-          console.log('Initialized.');
-          setTimeout(draw, FRAME_TIME);
+          mirrorSprites(splitSprites.slice(0, 9)).then((mirroredSprites) => {
+            resources.playerSprites = [ ...splitSprites ].concat([ ...mirroredSprites ]);
+            resources.directionSprites = {
+              'E': resources.playerSprites.slice(0, 3),
+              'SE': resources.playerSprites.slice(3, 6),
+              'NE': resources.playerSprites.slice(6, 9),
+              'N': resources.playerSprites.slice(9, 12),
+              'S': resources.playerSprites.slice(12, 15),
+              'W': resources.playerSprites.slice(15, 18),
+              'SW': resources.playerSprites.slice(18, 21),
+              'NW': resources.playerSprites.slice(21, 24),
+            };
+            initialized = true;
+            setTimeout(draw, FRAME_TIME);
+            console.log('Initialized.');
+          });
         });
       }, (error) => {
         console.log('Failed to initialize.');
@@ -138,7 +185,7 @@ function draw() {
   const context = canvas.getContext('2d');
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.drawImage(resources.field, 0, 0, canvas.width, canvas.height);
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < resources.playerSprites.length / 3; i++) {
     context.drawImage(resources.playerSprites[i * 3 + step[frame % 4]], 20 * (i + 1), 20);
   }
   setTimeout(draw, FRAME_TIME);
