@@ -77,7 +77,7 @@ function rewriteColors(imageData, colorMapping) {
           break;
         }
       }
-      if (!mapped) { console.log('Unmapped color: ' + color); }
+      //if (!mapped) { console.log('Unmapped color: ' + color); }
     }
   }
 }
