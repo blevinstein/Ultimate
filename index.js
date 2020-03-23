@@ -1,31 +1,15 @@
 const FRAME_TIME = 200;
 
 import { toImageData, fromImageData, loadImage, sliceImage, getPixel, writePixel, mirrorImage, splitSprite, mirrorImages, colorEquals } from './image_utils.js';
+
+import { Game } from './game.js';
 import { Team } from './team.js';
 
-const SHIRT = [224, 80, 0, 255];
-const PANTS = [72, 88, 0, 255];
-const HAIR = [0, 0, 0, 255];
-const SKIN = [255, 200, 184, 255];
-const SOCKS = [255, 255, 255, 255];
-const BG = [0, 0, 0, 0];
-const EYES = [7, 11, 90, 255];
-
-const COLOR_MAPPING = [
-  [BG],
-  [EYES],
-  [SKIN],
-  [SHIRT],
-  [PANTS],
-  [SOCKS],
-  [HAIR],
-];
-
-const fieldSize = [496, 184];
+const fieldSize = [496, 204];
 
 let resources = {};
 let initialized = false;
-let teams = [];
+let game;
 let fieldScale;
 let fieldOffset;
 
@@ -33,10 +17,19 @@ window.initialize = function () {
   console.log('Initializing...');
   setupCanvas();
   window.onresize = setupCanvas;
-  Promise.all([loadImage('images/field.png'), loadImage('images/player_sprite_grid.png')])
-      .then((results) => {
-        let [field, playerSpriteSet] = results;
-        resources.field = field;
+  window.onkeypress = (event) => {
+    if (event.key.toUpperCase() === 'R') {
+      game = new Game(resources);
+    }
+  };
+  Promise.all([
+        loadImage('images/field.png'),
+        loadImage('images/player_sprite_grid.png'),
+        loadImage('images/disc.png')
+      ]).then((results) => {
+        let [fieldSprite, playerSpriteSet, discSprite] = results;
+        resources.fieldSprite = fieldSprite;
+        resources.discSprite = discSprite;
         splitSprite(playerSpriteSet, 16, 32).then((splitSprites) => {
           mirrorImages(splitSprites).then((mirroredSprites) => {
             resources.playerSprites = [ ...splitSprites ].concat([ ...mirroredSprites ])
@@ -76,8 +69,7 @@ function start() {
   const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
   context.save()
-  teams = [new Team(resources, COLOR_MAPPING)];
-  teams[0].addPlayers(true);
+  game = new Game(resources);
   setTimeout(draw, FRAME_TIME);
 }
 
@@ -104,10 +96,6 @@ function setupCanvas() {
 function draw() {
   const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(resources.field, 0, 0);
-  for (let team of teams) {
-    team.draw(context);
-  }
+  game.draw(context);
   setTimeout(draw, FRAME_TIME);
 }

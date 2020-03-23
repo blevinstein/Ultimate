@@ -6,16 +6,16 @@ export class Team {
   constructor(resources, colorMapping) {
     this.colorMapping = colorMapping;
     this.players = [];
+    this.score = 0;
 
-    this.runningSprites = {};
-    this.standingSprites = {};
+    this.resources = {runningSprites: {}, standingSprites: {}};
     Object.keys(resources.runningSprites).forEach((direction) => {
       recolorImages(resources.runningSprites[direction], this.colorMapping).then((coloredImages) => {
-        this.runningSprites[direction] = coloredImages;
+        this.resources.runningSprites[direction] = coloredImages;
       });
       const standingSprites = [resources.standingSprites[direction]];
       recolorImages(standingSprites, this.colorMapping).then((coloredImages) => {
-        this.standingSprites[direction] = coloredImages[0];
+        this.resources.standingSprites[direction] = coloredImages[0];
       });
     });
   }
@@ -26,14 +26,21 @@ export class Team {
     }
   }
 
-  addPlayer(initialPosition) {
-    this.players.push(new Player(this.runningSprites, this.standingSprites, initialPosition));
+  addPlayer(initialPosition, initialDirection = undefined) {
+    this.players.push(new Player(this.resources, initialPosition, initialDirection));
+    return this;
   }
 
   addPlayers(leftSide) {
     const xPosition = leftSide ? 20 : 90;
     for (let i = 0; i < 7; i++) {
-      this.addPlayer([xPosition, 40 * (i+1) / (7+1)]);
+      this.addPlayer([xPosition, 40 * (i+0.5) / 7], leftSide ? 'E' : 'W');
     }
+    return this;
+  }
+
+  clearPlayers() {
+    this.players = [];
+    return this;
   }
 }
