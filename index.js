@@ -31,21 +31,8 @@ let fieldOffset;
 
 window.initialize = function () {
   console.log('Initializing...');
-  const canvas = document.getElementById('canvas');
-  const wRatio = canvas.parentElement.clientWidth / fieldSize[0];
-  const hRatio = canvas.parentElement.clientHeight / fieldSize[1];
-  fieldScale = Math.min(wRatio, hRatio);
-  fieldOffset = wRatio < hRatio
-      ? [0, (canvas.parentElement.clientHeight - fieldSize[1] * fieldScale) / 2]
-      : [(canvas.parentElement.clientWidth - fieldSize[0] * fieldScale) / 2, 0];
-  console.log('Field scale ' + fieldScale + ' offset ' + fieldOffset);
-  canvas.width = canvas.parentElement.clientWidth;
-  canvas.height = canvas.parentElement.clientHeight;
-  console.log('Canvas size: ' + canvas.width + ', ' + canvas.height);
-  const context = canvas.getContext('2d');
-  context.imageSmoothingEnabled = false;
-  context.translate(fieldOffset[0], fieldOffset[1]);
-  context.scale(fieldScale, fieldScale);
+  setupCanvas();
+  window.onresize = setupCanvas;
   Promise.all([loadImage('images/field.png'), loadImage('images/player_sprite_grid.png')])
       .then((results) => {
         let [field, playerSpriteSet] = results;
@@ -88,9 +75,30 @@ window.initialize = function () {
 function start() {
   const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
+  context.save()
   teams = [new Team(resources, COLOR_MAPPING)];
   teams[0].addPlayers(true);
   setTimeout(draw, FRAME_TIME);
+}
+
+function setupCanvas() {
+  const canvas = document.getElementById('canvas');
+  const wRatio = canvas.parentElement.clientWidth / fieldSize[0];
+  const hRatio = canvas.parentElement.clientHeight / fieldSize[1];
+  fieldScale = Math.min(wRatio, hRatio);
+  fieldOffset = wRatio < hRatio
+      ? [0, (canvas.parentElement.clientHeight - fieldSize[1] * fieldScale) / 2]
+      : [(canvas.parentElement.clientWidth - fieldSize[0] * fieldScale) / 2, 0];
+  console.log('Field scale ' + fieldScale + ' offset ' + fieldOffset);
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+  console.log('Canvas size: ' + canvas.width + ', ' + canvas.height);
+  const context = canvas.getContext('2d');
+  context.restore()
+  context.save()
+  context.imageSmoothingEnabled = false;
+  context.translate(fieldOffset[0], fieldOffset[1]);
+  context.scale(fieldScale, fieldScale);
 }
 
 function draw() {
