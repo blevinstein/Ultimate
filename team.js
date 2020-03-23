@@ -29,4 +29,11 @@ export class Team {
   addPlayer(initialPosition) {
     this.players.push(new Player(this.runningSprites, this.standingSprites, initialPosition));
   }
+
+  addPlayers(leftSide) {
+    const xPosition = leftSide ? 20 : 90;
+    for (let i = 0; i < 7; i++) {
+      this.addPlayer([xPosition, 40 * (i+1) / (7+1)]);
+    }
+  }
 }

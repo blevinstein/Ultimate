@@ -1,10 +1,10 @@
 
 .container {
+  border: 1px solid black;
   height: 80vh;
-  widht: 100vw;
+  width: 100vw;
 }
 
 canvas {
-  height: 100%;
   width: 100%;
 }

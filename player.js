@@ -1,5 +1,17 @@
 
+const fieldSize = [496, 184];
 const STEP = [0, 1, 2, 1];
+
+function linearInterpolate(from, to, amount) {
+  return from + (to - from) * amount;
+}
+
+function project(position) {
+  let xShrinkFactor = linearInterpolate(415.0/445, 1, position[1] / 40);
+  let xPosition = (xShrinkFactor * (position[0] - 55) + 55) * 445.0/110 + 25;
+  let yPosition = 9 + position[1] * 173.0/40;
+  return [xPosition, yPosition];
+}
 
 export class Player {
   constructor(runningSprites, standingSprites, initialPosition, initialDirection = 'E') {
@@ -12,10 +24,10 @@ export class Player {
   }
 
   draw(context) {
-    // TODO: transform position
+    const screenPosition = project(this.position);
     const sprite = this.moving
       ? this.runningSprites[this.direction][STEP[this.frame++ % 4]]
       : this.standingSprites[this.direction];
-    context.drawImage(sprite, this.position[0] - sprite.width, this.position[1] - sprite.height);
+    context.drawImage(sprite, screenPosition[0] - sprite.width / 2, screenPosition[1] - sprite.height);
   }
 }

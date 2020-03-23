@@ -21,18 +21,31 @@ const COLOR_MAPPING = [
   [HAIR],
 ];
 
+const fieldSize = [496, 184];
+
 let resources = {};
 let initialized = false;
 let teams = [];
+let fieldScale;
+let fieldOffset;
 
 window.initialize = function () {
   console.log('Initializing...');
   const canvas = document.getElementById('canvas');
+  const wRatio = canvas.parentElement.clientWidth / fieldSize[0];
+  const hRatio = canvas.parentElement.clientHeight / fieldSize[1];
+  fieldScale = Math.min(wRatio, hRatio);
+  fieldOffset = wRatio < hRatio
+      ? [0, (canvas.parentElement.clientHeight - fieldSize[1] * fieldScale) / 2]
+      : [(canvas.parentElement.clientWidth - fieldSize[0] * fieldScale) / 2, 0];
+  console.log('Field scale ' + fieldScale + ' offset ' + fieldOffset);
   canvas.width = canvas.parentElement.clientWidth;
   canvas.height = canvas.parentElement.clientHeight;
+  console.log('Canvas size: ' + canvas.width + ', ' + canvas.height);
   const context = canvas.getContext('2d');
-  context.scale(2, 2);
   context.imageSmoothingEnabled = false;
+  context.translate(fieldOffset[0], fieldOffset[1]);
+  context.scale(fieldScale, fieldScale);
   Promise.all([loadImage('images/field.png'), loadImage('images/player_sprite_grid.png')])
       .then((results) => {
         let [field, playerSpriteSet] = results;
@@ -76,7 +89,7 @@ function start() {
   const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
   teams = [new Team(resources, COLOR_MAPPING)];
-  teams[0].addPlayer([50, 50]);
+  teams[0].addPlayers(true);
   setTimeout(draw, FRAME_TIME);
 }
 
@@ -84,7 +97,7 @@ function draw() {
   const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
   context.clearRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(resources.field, 0, 0, canvas.width, canvas.height);
+  context.drawImage(resources.field, 0, 0);
   for (let team of teams) {
     team.draw(context);
   }
