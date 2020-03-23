@@ -1,4 +1,4 @@
-const FRAME_TIME = 200;
+const FRAME_TIME = 40;
 
 import { toImageData, fromImageData, loadImage, sliceImage, getPixel, writePixel, mirrorImage, splitSprite, mirrorImages, colorEquals } from './image_utils.js';
 
@@ -97,5 +97,6 @@ function draw() {
   const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
   game.draw(context);
+  game.update();
   setTimeout(draw, FRAME_TIME);
 }

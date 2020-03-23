@@ -3,17 +3,21 @@ import { recolorImages } from './image_utils.js';
 import { Player } from './player.js';
 
 export class Team {
-  constructor(resources, colorMapping) {
+  constructor(game, colorMapping, goalDirection) {
+    this.game = game;
     this.colorMapping = colorMapping;
     this.players = [];
     this.score = 0;
+    this.goalDirection = goalDirection;
+    this.onOffense = false;
 
+    // Change color of sprites based on colorMapping
     this.resources = {runningSprites: {}, standingSprites: {}};
-    Object.keys(resources.runningSprites).forEach((direction) => {
-      recolorImages(resources.runningSprites[direction], this.colorMapping).then((coloredImages) => {
+    Object.keys(game.resources.runningSprites).forEach((direction) => {
+      recolorImages(game.resources.runningSprites[direction], this.colorMapping).then((coloredImages) => {
         this.resources.runningSprites[direction] = coloredImages;
       });
-      const standingSprites = [resources.standingSprites[direction]];
+      const standingSprites = [game.resources.standingSprites[direction]];
       recolorImages(standingSprites, this.colorMapping).then((coloredImages) => {
         this.resources.standingSprites[direction] = coloredImages[0];
       });
@@ -26,8 +30,12 @@ export class Team {
     }
   }
 
+  getPlayers() {
+    return this.players.slice(); // Defensive copy
+  }
+
   addPlayer(initialPosition, initialDirection = undefined) {
-    this.players.push(new Player(this.resources, initialPosition, initialDirection));
+    this.players.push(new Player(this, initialPosition, initialDirection));
     return this;
   }
 
@@ -39,8 +47,17 @@ export class Team {
     return this;
   }
 
+  setOnOffense(onOffense) {
+    this.onOffense = onOffense;
+    return this;
+  }
+
   clearPlayers() {
     this.players = [];
     return this;
+  }
+
+  hasDisc() {
+    return this.players.some(p => p.hasDisc);
   }
 }

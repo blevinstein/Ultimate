@@ -12,23 +12,51 @@ function project(position) {
 }
 
 export class Player {
-  constructor(resources, initialPosition, initialDirection = 'E') {
-    this.runningSprites = resources.runningSprites;
-    this.standingSprites = resources.standingSprites;
+  constructor(team, initialPosition, initialDirection = 'E') {
+    this.team = team;
+    this.runningSprites = team.resources.runningSprites;
+    this.standingSprites = team.resources.standingSprites;
     this.position = initialPosition;
     this.direction = initialDirection;
     this.moving = false;
     this.frame = 0;
+    this.hasDisc = false;
   }
 
   draw(context) {
     const screenPosition = project(this.position);
     const sprite = this.moving
-      ? this.runningSprites[this.direction][STEP[this.frame++ % 4]]
+      ? this.runningSprites[this.direction][STEP[(this.frame++ / 5) % 4]]
       : this.standingSprites[this.direction];
     context.drawImage(
         sprite,
         screenPosition[0] - sprite.width / 2,
         screenPosition[1] - sprite.height);
+  }
+
+  move(amount) {
+    for (let i = 0; i < 2; i++) {
+      this.position[i] += amount[i];
+    }
+    this.moving = true;
+  }
+
+  rest() {
+    this.moving = false;
+  }
+
+  throw(velocity) {
+    if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }
+    this.team.game.disc.setPosition(this.position.concat(2)).setVelocity(velocity);
+    this.team.game.discThrownBy(this);
+  }
+
+  drop() {
+    if (!this.hasDisc) { console.log('Attempted to drop without the disc!'); return; }
+    this.team.game.disc.setPosition(this.position).setVelocity([0, 0, 0]);
+  }
+
+  setHasDisc(hasDisc) {
+    this.hasDisc = hasDisc;
   }
 }
