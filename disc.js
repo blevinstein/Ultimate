@@ -1,14 +1,14 @@
 
 import { linearInterpolate } from './math_utils.js';
 
-const GROUND_FRICTION = 0.9;
+const GROUND_FRICTION = 0.8;
 const AIR_FRICTION = 0.99;
 
 // Project from cuboid 110x40xInf to trapezoid 410/455x172 offset 25x30
 function project(position) {
   let xShrinkFactor = linearInterpolate(415.0/445, 1, position[1] / 40);
   let xPosition = (xShrinkFactor * (position[0] - 55) + 55) * 445.0/110 + 25;
-  let yPosition = 30 + (position[1] + position[2]*0.5) * 172.0/40;
+  let yPosition = 30 + (position[1] - position[2] / 2) * 172.0/40;
   return [xPosition, yPosition];
 }
 
@@ -16,6 +16,7 @@ export class Disc {
   constructor(game, initialPlayer, initialPosition) {
     this.game = game;
     this.sprite = game.resources.discSprite;
+    this.shadowSprite = game.resources.discShadowSprite;
     if (initialPlayer) {
       setPlayer(initialPlayer);
     } else if (initialPosition) {
@@ -50,6 +51,11 @@ export class Disc {
   draw(context) {
     if (this.position) {
       const screenPosition = project(this.position);
+      const shadowPosition = project([this.position[0], this.position[1], 0]);
+      context.drawImage(
+          this.shadowSprite,
+          shadowPosition[0] - this.shadowSprite.width / 2,
+          shadowPosition[1] - this.shadowSprite.height / 2);
       context.drawImage(
           this.sprite,
           screenPosition[0] - this.sprite.width / 2,

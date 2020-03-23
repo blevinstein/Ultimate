@@ -25,11 +25,13 @@ window.initialize = function () {
   Promise.all([
         loadImage('images/field.png'),
         loadImage('images/player_sprite_grid.png'),
-        loadImage('images/disc.png')
+        loadImage('images/disc.png'),
+        loadImage('images/disc_shadow.png'),
       ]).then((results) => {
-        let [fieldSprite, playerSpriteSet, discSprite] = results;
+        let [fieldSprite, playerSpriteSet, discSprite, discShadowSprite] = results;
         resources.fieldSprite = fieldSprite;
         resources.discSprite = discSprite;
+        resources.discShadowSprite = discShadowSprite;
         splitSprite(playerSpriteSet, 16, 32).then((splitSprites) => {
           mirrorImages(splitSprites).then((mirroredSprites) => {
             resources.playerSprites = [ ...splitSprites ].concat([ ...mirroredSprites ])
