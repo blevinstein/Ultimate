@@ -86,10 +86,10 @@ export function splitSprite(spriteImage, gridX, gridY) {
 }
 
 // returns Promise<Iterable<Image>>
-export function mirrorImages(spriteImages) {
+export function mirrorImages(images) {
   const spritePromises = [];
-  for (let spriteImage of spriteImages) {
-    spritePromises.push(fromImageData(mirrorImage(spriteImage)));
+  for (let image of images) {
+    spritePromises.push(fromImageData(mirrorImage(image)));
   }
   return Promise.all(spritePromises);
 }
@@ -118,4 +118,20 @@ export function rewriteColors(imageData, colorMapping) {
       if (!mapped) { console.log('Unmapped color: ' + color); }
     }
   }
+}
+
+// returns Promise<Iterable<Image>>
+export function recolorImages(images, colorMapping) {
+  const canvas = document.createElement('canvas');
+  const imagePromises = [];
+  for (let image of images) {
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const context = canvas.getContext('2d');
+    context.drawImage(image, 0, 0);
+    const imageData = context.getImageData(0, 0, image.width, image.height);
+    rewriteColors(imageData, colorMapping);
+    imagePromises.push(fromImageData(imageData));
+  }
+  return Promise.all(imagePromises);
 }

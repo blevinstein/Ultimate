@@ -1,6 +1,7 @@
-const FRAME_TIME = 300;
+const FRAME_TIME = 200;
 
-import { toImageData, fromImageData, loadImage, sliceImage, getPixel, writePixel, mirrorImage, splitSprite, mirrorImages, colorEquals, rewriteColors } from './image_utils.js';
+import { toImageData, fromImageData, loadImage, sliceImage, getPixel, writePixel, mirrorImage, splitSprite, mirrorImages, colorEquals } from './image_utils.js';
+import { Team } from './team.js';
 
 const SHIRT = [224, 80, 0, 255];
 const PANTS = [72, 88, 0, 255];
@@ -22,6 +23,7 @@ const COLOR_MAPPING = [
 
 let resources = {};
 let initialized = false;
+let teams = [];
 
 window.initialize = function () {
   console.log('Initializing...');
@@ -36,21 +38,32 @@ window.initialize = function () {
         let [field, playerSpriteSet] = results;
         resources.field = field;
         splitSprite(playerSpriteSet, 16, 32).then((splitSprites) => {
-          mirrorImages(splitSprites.slice(0, 9)).then((mirroredSprites) => {
-            resources.playerSprites = [ ...splitSprites ].concat([ ...mirroredSprites ]);
-            resources.directionSprites = {
+          mirrorImages(splitSprites).then((mirroredSprites) => {
+            resources.playerSprites = [ ...splitSprites ].concat([ ...mirroredSprites ])
+            console.log('After mirroring, loaded ' + resources.playerSprites.length + ' sprites.');
+            resources.runningSprites = {
               'E': resources.playerSprites.slice(0, 3),
               'SE': resources.playerSprites.slice(3, 6),
               'NE': resources.playerSprites.slice(6, 9),
               'N': resources.playerSprites.slice(9, 12),
               'S': resources.playerSprites.slice(12, 15),
-              'W': resources.playerSprites.slice(15, 18),
-              'SW': resources.playerSprites.slice(18, 21),
-              'NW': resources.playerSprites.slice(21, 24),
+              'W': resources.playerSprites.slice(21, 24),
+              'SW': resources.playerSprites.slice(24, 27),
+              'NW': resources.playerSprites.slice(27, 30),
+            };
+            resources.standingSprites = {
+              'S': resources.playerSprites[15],
+              'SE': resources.playerSprites[16],
+              'NE': resources.playerSprites[17],
+              'N': resources.playerSprites[18],
+              'E': resources.playerSprites[19],
+              'SW': resources.playerSprites[37],
+              'NW': resources.playerSprites[38],
+              'W': resources.playerSprites[40],
             };
             initialized = true;
-            setTimeout(draw, FRAME_TIME);
             console.log('Initialized.');
+            start();
           });
         });
       }, (error) => {
@@ -59,17 +72,21 @@ window.initialize = function () {
       });
 }
 
-let frame = 0;
-const step = [0, 1, 2, 1];
+function start() {
+  const canvas = document.getElementById('canvas');
+  const context = canvas.getContext('2d');
+  teams = [new Team(resources, COLOR_MAPPING)];
+  teams[0].addPlayer([50, 50]);
+  setTimeout(draw, FRAME_TIME);
+}
 
 function draw() {
   const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.drawImage(resources.field, 0, 0, canvas.width, canvas.height);
-  for (let i = 0; i < resources.playerSprites.length / 3; i++) {
-    context.drawImage(resources.playerSprites[i * 3 + step[frame % 4]], 20 * (i + 1), 20);
+  for (let team of teams) {
+    team.draw(context);
   }
   setTimeout(draw, FRAME_TIME);
-  frame++;
 }
