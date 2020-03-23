@@ -1,4 +1,4 @@
-const FRAME_TIME = 40;
+const FRAME_TIME = 30;
 
 import { toImageData, fromImageData, loadImage, sliceImage, getPixel, writePixel, mirrorImage, splitSprite, mirrorImages, colorEquals } from './image_utils.js';
 

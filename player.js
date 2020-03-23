@@ -2,6 +2,7 @@
 import { linearInterpolate } from './math_utils.js';
 
 const STEP = [0, 1, 2, 1];
+const SUBFRAMES = 10;
 
 // Project from rect 110x40 to trapezoid 410/445x172 offset 25x30
 function project(position) {
@@ -26,7 +27,7 @@ export class Player {
   draw(context) {
     const screenPosition = project(this.position);
     const sprite = this.moving
-      ? this.runningSprites[this.direction][STEP[(this.frame++ / 5) % 4]]
+      ? this.runningSprites[this.direction][STEP[Math.trunc(this.frame++ / SUB_FRAMES) % 4]]
       : this.standingSprites[this.direction];
     context.drawImage(
         sprite,

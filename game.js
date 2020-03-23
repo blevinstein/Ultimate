@@ -1,6 +1,7 @@
 
 import { Disc } from './disc.js';
 import { Team } from './team.js';
+import { ChargeStrategy } from './strategy/charge.js';
 import { IdleStrategy } from './strategy/idle.js';
 import { KickoffStrategy } from './strategy/kickoff.js';
 
