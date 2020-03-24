@@ -38,6 +38,8 @@ export class Player {
   }
 
   move(amount) {
+    // TODO: Add interactions between players (e.g. must cut around defender, pick call?)
+    // TODO: Use max accel instead of max speed
     const magnitude = Math.sqrt(Math.pow(amount[0], 2) + Math.pow(amount[1], 2));
     const multiplier = magnitude > PLAYER_SPEED ? PLAYER_SPEED / magnitude : 1;
     for (let i of [0, 1]) {
