@@ -10,5 +10,6 @@ export class IdleStrategy extends Strategy {
     for (let player of this.team.players) {
       player.rest();
     }
+    return true;
   }
 }

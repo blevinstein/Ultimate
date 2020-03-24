@@ -43,32 +43,33 @@ const STATES = {
   Reset: 'rest', // Waiting for players to return to the line after a score
 };
 
+// returns the create function for the chosen strategy
 function pickStrategy(game, team) {
   switch (game.state) {
     case STATES.Kickoff:
       if (team.onOffense === team.hasDisc()) { console.log('The wrong team has the disc!'); return; }
       if (!team.onOffense) {
-        return KickoffStrategy.create;
+        return KickoffStrategy.create(game, team);
       } else {
-        return IdleStrategy.create;
+        return IdleStrategy.create(game, team);
       }
       break;
     case STATES.Receiving:
-      return ChargeStrategy.create;
+      return ChargeStrategy.create(game, team);
       break;
     case STATES.Pickup:
       if (team.onOffense) {
-        return ClosestPickupStrategy.create;
+        return ClosestPickupStrategy.create(game, team);
       } else {
         // TODO: Start defense
-        return IdleStrategy.create;
+        return IdleStrategy.create(game, team);
       }
     case STATES.Normal:
-      return IdleStrategy.create;
+      return IdleStrategy.create(game, team);
       break;
   }
   console.log('Default idle in state ' + game.state);
-  return IdleStrategy.create;
+  return IdleStrategy.create(game, team);
 }
 
 export class Game {
@@ -92,9 +93,15 @@ export class Game {
 
   update() {
     for (let team of this.teams) {
-      const strategy = pickStrategy(this, team)(this, team);
-      if (strategy) {
-        strategy.update(this, team);
+      // Pick a strategy if we don't have one active
+      if (!team.strategy) {
+        team.strategy = pickStrategy(this, team);
+      }
+      if (team.strategy) {
+        if (team.strategy.update()) {
+          // Strategy returns truthy if it should be expired
+          team.strategy = null;
+        }
       } else {
         console.log('Failed to pick a strategy.');
       }
@@ -112,12 +119,14 @@ export class Game {
   }
 
   discThrownBy(player) {
+    console.log('discThrown');
     if (this.state === STATES.Kickoff) {
       this.state = STATES.Receiving;
     }
   }
 
   discGrounded() {
+    console.log('discGrounded');
     if (this.state === STATES.Receiving) {
       this.state = STATES.Pickup;
     } else if (this.state === STATES.Normal) {
@@ -127,6 +136,7 @@ export class Game {
   }
 
   discCaughtBy(player) {
+    console.log('discCaught');
     if (this.state === STATES.Receiving) {
       if (player.team.onOffense) {
         this.state = STATES.Normal;
@@ -139,6 +149,7 @@ export class Game {
   }
 
   discPickedUpBy(player) {
+    console.log('discPickedUp');
     if (this.state === STATES.Pickup) {
       this.state = STATES.Normal;
       this.setOffensiveTeam(player.team);

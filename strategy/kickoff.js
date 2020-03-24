@@ -16,10 +16,11 @@ export class KickoffStrategy extends Strategy {
   }
 
   update() {
-    if (!this.team.hasDisc()) { console.log('Cannot pull without the disc!'); return; }
+    if (!this.team.hasDisc()) { console.log('Cannot pull without the disc!'); return true; }
     const playerWithDisc = this.team.players.find(p => p.hasDisc);
-    if (!playerWithDisc) { console.log('No player has the disc!!!'); return; }
+    if (!playerWithDisc) { console.log('No player has the disc!!!'); return true; }
     const vector = getVector(this.team.goalDirection);
     playerWithDisc.throw(vector);
+    return true;
   }
 }

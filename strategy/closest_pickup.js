@@ -1,5 +1,6 @@
 
 import { dist2d, sub2d } from '../math_utils.js';
+import { ChargeStrategy } from './charge.js';
 import { Strategy } from './strategy.js';
 
 export class ClosestPickupStrategy extends Strategy {
@@ -8,7 +9,8 @@ export class ClosestPickupStrategy extends Strategy {
   }
 
   update() {
-    if (!this.game.disc.position) { console.log('Cannot pickup held disc!'); return; }
+    // Strategy expires when disc is picked up
+    if (!this.game.disc.position) { return true; }
 
     // Determine closest player
     let closestPlayer;
@@ -26,7 +28,7 @@ export class ClosestPickupStrategy extends Strategy {
       if (player == closestPlayer) {
         player.move(sub2d(this.game.disc.position, player.position));
       } else {
-        player.rest();
+        player.move(ChargeStrategy.getVector(this.team.goalDirection));
       }
     }
   }
