@@ -3,6 +3,8 @@ import { linearInterpolate } from './math_utils.js';
 
 const STEP = [0, 1, 2, 1];
 const SUBFRAMES = 10;
+const PLAYER_HEIGHT = 2;
+const PLAYER_SPEED = 0.5;
 
 // Project from rect 110x40 to trapezoid 410/445x172 offset 25x30
 function project(position) {
@@ -27,7 +29,7 @@ export class Player {
   draw(context) {
     const screenPosition = project(this.position);
     const sprite = this.moving
-      ? this.runningSprites[this.direction][STEP[Math.trunc(this.frame++ / SUB_FRAMES) % 4]]
+      ? this.runningSprites[this.direction][STEP[Math.trunc(this.frame++ / SUBFRAMES) % 4]]
       : this.standingSprites[this.direction];
     context.drawImage(
         sprite,
@@ -36,8 +38,10 @@ export class Player {
   }
 
   move(amount) {
-    for (let i = 0; i < 2; i++) {
-      this.position[i] += amount[i];
+    const magnitude = Math.sqrt(Math.pow(amount[0], 2) + Math.pow(amount[1], 2));
+    const multiplier = magnitude > PLAYER_SPEED ? PLAYER_SPEED / magnitude : 1;
+    for (let i of [0, 1]) {
+      this.position[i] += amount[i] * multiplier;
     }
     this.moving = true;
   }
@@ -48,7 +52,7 @@ export class Player {
 
   throw(velocity) {
     if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }
-    this.team.game.disc.setPosition(this.position.concat(2)).setVelocity(velocity);
+    this.team.game.disc.setPosition(this.position.concat(PLAYER_HEIGHT)).setVelocity(velocity);
     this.team.game.discThrownBy(this);
   }
 

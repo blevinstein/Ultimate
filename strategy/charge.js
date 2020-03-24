@@ -2,9 +2,9 @@
 function getVector(kickoffDirection) {
   switch(kickoffDirection) {
     case 'E':
-      return [1, 0];
+      return [10, 0];
     case 'W':
-      return [-1, 0];
+      return [-10, 0];
   }
 }
 

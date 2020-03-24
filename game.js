@@ -51,7 +51,7 @@ function pickStrategy(game, team) {
       }
       break;
     case STATES.Receiving:
-      return new IdleStrategy();
+      return new ChargeStrategy();
       break;
     case STATES.Normal:
       return new IdleStrategy();
@@ -92,6 +92,10 @@ export class Game {
     this.disc.update();
   }
 
+  offensiveTeam() { return this.teams.find(t => t.onOffense); }
+
+  defensiveTeam() { return this.teams.find(t => !t.onOffense); }
+
   setOffensiveTeam(team) {
     for (let t of this.teams) { t.onOffense = false; }
     team.onOffense = true;
@@ -104,13 +108,16 @@ export class Game {
   }
 
   discGrounded() {
-    if (this.state === STATES.Kickoff) {
+    if (this.state === STATES.Receiving) {
+      this.state = STATES.Pickup;
+    } else if (this.state === STATES.Normal) {
+      this.setOffensiveTeam(this.defensiveTeam());
       this.state = STATES.Pickup;
     }
   }
 
   discCaughtBy(player) {
-    if (this.state === STATES.Kickoff) {
+    if (this.state === STATES.Receiving) {
       if (player.team.onOffense) {
         this.state = STATES.Normal;
       } else {
@@ -122,5 +129,9 @@ export class Game {
   }
 
   discPickedUpBy(player) {
+    if (this.state === STATES.Pickup) {
+      this.state = STATES.Normal;
+      this.setOffensiveTeam(player.team);
+    }
   }
 }
