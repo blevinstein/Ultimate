@@ -5,6 +5,7 @@ const STEP = [0, 1, 2, 1];
 const SUBFRAMES = 10;
 const PLAYER_HEIGHT = 2;
 const PLAYER_SPEED = 0.5;
+const MIN_MOVEMENT = 1;
 
 // Project from rect 110x40 to trapezoid 410/445x172 offset 25x30
 function project(position) {
@@ -45,7 +46,7 @@ export class Player {
     for (let i of [0, 1]) {
       this.position[i] += amount[i] * multiplier;
     }
-    this.moving = true;
+    this.moving = Math.sqrt(Math.pow(amount[0], 2) + Math.pow(amount[1], 2)) > MIN_MOVEMENT;
   }
 
   rest() {

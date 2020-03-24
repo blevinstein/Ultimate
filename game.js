@@ -5,6 +5,7 @@ import { ChargeStrategy } from './strategy/charge.js';
 import { ClosestPickupStrategy } from './strategy/closest_pickup.js';
 import { IdleStrategy } from './strategy/idle.js';
 import { KickoffStrategy } from './strategy/kickoff.js';
+import { ManToManDefenseStrategy } from './strategy/man_defense.js';
 import { RetreatStrategy } from './strategy/retreat.js';
 
 const SHIRT = [224, 80, 0, 255];
@@ -61,11 +62,14 @@ function pickStrategy(game, team) {
       if (team.onOffense) {
         return ClosestPickupStrategy.create(game, team);
       } else {
-        // TODO: Start defense
-        return IdleStrategy.create(game, team);
+        return ManToManDefenseStrategy.create(game, team);
       }
     case STATES.Normal:
-      return IdleStrategy.create(game, team);
+      if (team.onOffense) {
+        return IdleStrategy.create(game, team);
+      } else {
+        return ManToManDefenseStrategy.create(game, team);
+      }
       break;
   }
   console.log('Default idle in state ' + game.state);
