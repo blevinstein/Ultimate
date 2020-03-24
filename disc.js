@@ -1,5 +1,5 @@
 
-import { linearInterpolate } from './math_utils.js';
+import { dist2d, dist3d, linearInterpolate } from './math_utils.js';
 
 const GROUND_FRICTION = 0.8;
 const AIR_FRICTION = 0.99;
@@ -14,14 +14,6 @@ function project(position) {
   let xPosition = (xShrinkFactor * (position[0] - 55) + 55) * 445.0/110 + 25;
   let yPosition = 30 + (position[1] - position[2] / 2) * 172.0/40;
   return [xPosition, yPosition];
-}
-
-function dist2d(a, b) {
-  return Math.sqrt(Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2));
-}
-
-function dist3d(a, b) {
-  return Math.sqrt(Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2) + Math.pow(a[2] - b[2], 2));
 }
 
 export class Disc {
@@ -76,6 +68,7 @@ export class Disc {
     // TODO: Draw near player? Highlight player?
   }
 
+  // Update disc, including catch/pickup and grounding events.
   update() {
     if (this.position) {
       const wasGrounded = this.grounded;
@@ -113,8 +106,8 @@ export class Disc {
           }
         }
         if (pickupCandidate) {
-          disc.setPlayer(pickupCandiddate);
-          game.discPickedUpBy(pickupCandidate);
+          this.setPlayer(pickupCandidate);
+          this.game.discPickedUpBy(pickupCandidate);
         }
       } else {
         let catchCandidate;
@@ -129,8 +122,8 @@ export class Disc {
           }
         }
         if (catchCandidate) {
-          disc.setPlayer(pickupCandiddate);
-          game.discCaughtBy(pickupCandidate);
+          this.setPlayer(pickupCandidate);
+          this.game.discCaughtBy(pickupCandidate);
         }
       }
     }

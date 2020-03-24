@@ -1,4 +1,6 @@
 
+import { Strategy } from './strategy.js';
+
 function getVector(kickoffDirection) {
   switch(kickoffDirection) {
     case 'E':
@@ -8,12 +10,16 @@ function getVector(kickoffDirection) {
   }
 }
 
-export class KickoffStrategy {
-  update(game, team) {
-    if (!team.hasDisc()) { console.log('Cannot pull without the disc!'); return; }
-    const playerWithDisc = team.players.find(p => p.hasDisc);
+export class KickoffStrategy extends Strategy {
+  static create(game, team) {
+    return new KickoffStrategy(game, team);
+  }
+
+  update() {
+    if (!this.team.hasDisc()) { console.log('Cannot pull without the disc!'); return; }
+    const playerWithDisc = this.team.players.find(p => p.hasDisc);
     if (!playerWithDisc) { console.log('No player has the disc!!!'); return; }
-    const vector = getVector(team.goalDirection);
+    const vector = getVector(this.team.goalDirection);
     playerWithDisc.throw(vector);
   }
 }

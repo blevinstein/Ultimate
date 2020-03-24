@@ -2,8 +2,10 @@
 import { Disc } from './disc.js';
 import { Team } from './team.js';
 import { ChargeStrategy } from './strategy/charge.js';
+import { ClosestPickupStrategy } from './strategy/closest_pickup.js';
 import { IdleStrategy } from './strategy/idle.js';
 import { KickoffStrategy } from './strategy/kickoff.js';
+import { RetreatStrategy } from './strategy/retreat.js';
 
 const SHIRT = [224, 80, 0, 255];
 const PANTS = [72, 88, 0, 255];
@@ -38,6 +40,7 @@ const STATES = {
   Receiving: 'receiving', // Waiting for offense to receive pull
   Pickup: 'pickup', // Waiting for offense to pickup grounded disc
   Normal: 'normal', // Normal play; posession changes on grounded disc
+  Reset: 'rest', // Waiting for players to return to the line after a score
 };
 
 function pickStrategy(game, team) {
@@ -45,20 +48,27 @@ function pickStrategy(game, team) {
     case STATES.Kickoff:
       if (team.onOffense === team.hasDisc()) { console.log('The wrong team has the disc!'); return; }
       if (!team.onOffense) {
-        return new KickoffStrategy();
+        return KickoffStrategy.create;
       } else {
-        return new IdleStrategy();
+        return IdleStrategy.create;
       }
       break;
     case STATES.Receiving:
-      return new ChargeStrategy();
+      return ChargeStrategy.create;
       break;
+    case STATES.Pickup:
+      if (team.onOffense) {
+        return ClosestPickupStrategy.create;
+      } else {
+        // TODO: Start defense
+        return IdleStrategy.create;
+      }
     case STATES.Normal:
-      return new IdleStrategy();
+      return IdleStrategy.create;
       break;
   }
   console.log('Default idle in state ' + game.state);
-  return new IdleStrategy();
+  return IdleStrategy.create;
 }
 
 export class Game {
@@ -82,7 +92,7 @@ export class Game {
 
   update() {
     for (let team of this.teams) {
-      const strategy = pickStrategy(this, team);
+      const strategy = pickStrategy(this, team)(this, team);
       if (strategy) {
         strategy.update(this, team);
       } else {
