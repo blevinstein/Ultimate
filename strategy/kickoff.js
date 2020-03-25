@@ -21,7 +21,9 @@ export class KickoffStrategy extends Strategy {
     if (!playerWithDisc) { console.log('No player has the disc!!!'); return true; }
     const target = this.team.goalDirection === 'W' ? [10, Math.random() * 40] : [100, Math.random() * 40];
     const vector2d = sub2d(target, playerWithDisc.position);
-    const vector = mul2d(vector2d, 2.5 / mag2d(vector2d)).concat(2.5);
+    const forward = Math.random() * 2 + 1;
+    const upward = Math.random() * 2 + 1;
+    const vector = mul2d(vector2d, forward / mag2d(vector2d)).concat(upward);
     playerWithDisc.throw(vector);
     return true;
   }
