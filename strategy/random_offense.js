@@ -6,7 +6,8 @@ import { Player } from '../player.js';
 import { RangeFinder } from '../range_finder.js';
 import { Strategy } from './strategy.js';
 
-const NUM_CANDIDATES = 10;
+const NUM_CANDIDATE_ROUTES = 10;
+const NUM_CANDIDATE_THROWS = 3;
 const GOAL_RADIUS = 2;
 const MAX_THROW_SPEED = 2;
 const MIN_PROGRESS = 5;
@@ -47,7 +48,7 @@ export class RandomOffenseStrategy extends Strategy {
         : [0, thrower.position[0] + 5];
     let bestDestination;
     let bestClosestDefenderDistance;
-    for (let i = 0; i < NUM_CANDIDATES; i++) {
+    for (let i = 0; i < NUM_CANDIDATE_ROUTES; i++) {
       // Choose a random location no more than 5 yards behind the thrower
       let newDestination =
           [minX + Math.random() * (maxX - minX), Math.random() * 40];
@@ -72,7 +73,7 @@ export class RandomOffenseStrategy extends Strategy {
         let bestDestination;
         let bestForwardProgress;
         let bestVector;
-        for (let i = 0; i < NUM_CANDIDATES; i++) {
+        for (let i = 0; i < NUM_CANDIDATE_THROWS; i++) {
           // Choose a random location no more than 5 yards behind the thrower
           let destination = [minX + Math.random() * (maxX - minX), Math.random() * 40];
           let closestDefenderDistance = getClosestPlayer(this.game.defensiveTeam().players, destination)[1];
