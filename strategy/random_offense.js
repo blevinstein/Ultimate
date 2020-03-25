@@ -1,9 +1,9 @@
 
-import { dist2d, sub2d } from '../math_utils.js';
+import { dist2d, sub2d, getVector } from '../math_utils.js';
 import { Strategy } from './strategy.js';
 
 const NUM_CANDIDATES = 10;
-const GOAL_RADIUS = 1;
+const GOAL_RADIUS = 2;
 
 // returns [player, distance]
 function getClosestPlayer(team, location) {
@@ -57,7 +57,7 @@ export class RandomOffenseStrategy extends Strategy {
 
     for (let player of this.team.players) {
       if (player.hasDisc) {
-        player.rest();
+        player.rest(getVector(this.team.goalDirection));
       } else {
         let destination = this.destinationMap.get(player) || this.chooseDestination();
         if (dist2d(destination, player.position) < GOAL_RADIUS) {

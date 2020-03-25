@@ -5,6 +5,7 @@ const STEP = [0, 1, 2, 1];
 const SUBFRAMES = 10;
 const MAX_PLAYER_ACCEL = 0.05;
 const MAX_PLAYER_SPEED = 0.5;
+const DECEL_STEPS = MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
 const MIN_MOVEMENT = 0.04;
 const HANDLE_HEIGHT = 3;
 const ARM_LENGTH = 1;
@@ -47,12 +48,14 @@ export class Player {
     this.position = add2d(this.position, this.velocity);
   }
 
-  move(direction) {
-    if (direction.some(isNaN)) { throw new Error('Invalid move direction: ' + direction); }
+  move(vector) {
+    if (vector.some(isNaN)) { throw new Error('Invalid move vector: ' + vector); }
     // TODO: Add interactions between players (e.g. must cut around defender, pick call?)
     // TODO: Use max accel instead of max speed
 
-    const desiredVelocity = mul2d(direction, MAX_PLAYER_SPEED / mag2d(direction));
+    const desiredVelocity = mag2d(vector) > DECEL_STEPS * MAX_PLAYER_SPEED
+        ? mul2d(vector, MAX_PLAYER_SPEED / mag2d(vector))
+        : mul2d(vector, 1 / DECEL_STEPS);
     const desiredAcceleration = sub2d(desiredVelocity, this.velocity);
 
     const currentSpeed = Math.max(0, magnitudeAlong(this.velocity, desiredAcceleration));
@@ -63,7 +66,7 @@ export class Player {
         : mul2d(desiredAcceleration, maxAcceleration / mag2d(desiredAcceleration)));
   }
 
-  rest() {
+  rest(faceVector) {
     const desiredAcceleration = mul2d(this.velocity, -1);
 
     const currentSpeed = Math.max(0, magnitudeAlong(this.velocity, desiredAcceleration));
@@ -72,6 +75,10 @@ export class Player {
     this.accelerate(mag2d(desiredAcceleration) <= maxAcceleration
         ? desiredAcceleration
         : mul2d(desiredAcceleration, maxAcceleration / mag2d(desiredAcceleration)));
+
+    if (faceVector && mag2d(this.velocity) <= MIN_MOVEMENT) {
+      this.direction = getDirection(faceVector);
+    }
   }
 
   accelerate(impulse) {
