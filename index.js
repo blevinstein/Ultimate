@@ -20,7 +20,9 @@ window.initialize = function () {
   window.onresize = setupCanvas;
   window.onkeypress = (event) => {
     if (event.key.toUpperCase() === 'R') {
+      window.clearTimeout(frameCallback);
       game = new Game(resources);
+      frameCallback = window.setTimeout(draw, FRAME_TIME);
     } else if (event.key.toUpperCase() === 'Q') {
       window.clearTimeout(frameCallback);
     }
