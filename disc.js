@@ -52,18 +52,20 @@ export class Disc {
     return this;
   }
 
-  draw(context) {
+  draw(frameBuffer) {
     if (this.position) {
       const screenPosition = project(this.position);
       const shadowPosition = project([this.position[0], this.position[1], 0]);
-      context.drawImage(
+      frameBuffer.drawImage(
           this.shadowSprite,
           shadowPosition[0] - this.shadowSprite.width / 2,
-          shadowPosition[1] - this.shadowSprite.height / 2);
-      context.drawImage(
+          shadowPosition[1] - this.shadowSprite.height / 2,
+          this.position[1]);
+      frameBuffer.drawImage(
           this.sprite,
           screenPosition[0] - this.sprite.width / 2,
-          screenPosition[1] - this.sprite.height / 2);
+          screenPosition[1] - this.sprite.height / 2,
+          this.position[1]);
     }
     // TODO: Draw near player? Highlight player?
   }

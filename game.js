@@ -1,5 +1,6 @@
 
 import { Disc } from './disc.js';
+import { FrameBuffer } from './frame_buffer.js';
 import { Team } from './team.js';
 import { ChargeStrategy } from './strategy/charge.js';
 import { ClosestPickupStrategy } from './strategy/closest_pickup.js';
@@ -87,12 +88,15 @@ export class Game {
   }
 
   draw(context) {
+    const frameBuffer = new FrameBuffer();
+    for (let team of this.teams) {
+      team.draw(frameBuffer);
+    }
+    this.disc.draw(frameBuffer);
+
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.drawImage(this.resources.fieldSprite, 0, 0);
-    for (let team of this.teams) {
-      team.draw(context);
-    }
-    this.disc.draw(context);
+    frameBuffer.drawScene(context);
   }
 
   update() {

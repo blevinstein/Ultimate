@@ -27,15 +27,16 @@ export class Player {
     this.hasDisc = false;
   }
 
-  draw(context) {
+  draw(frameBuffer) {
     const screenPosition = project(this.position);
     const sprite = this.moving
       ? this.runningSprites[this.direction][STEP[Math.trunc(this.frame++ / SUBFRAMES) % 4]]
       : this.standingSprites[this.direction];
-    context.drawImage(
+    frameBuffer.drawImage(
         sprite,
         screenPosition[0] - sprite.width / 2,
-        screenPosition[1] - sprite.height);
+        screenPosition[1] - sprite.height,
+        this.position[1]);
   }
 
   move(amount) {
