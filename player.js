@@ -3,8 +3,8 @@ import { linearInterpolate, magnitudeAlong, project3d, project2d, getDirection, 
 
 const STEP = [0, 1, 2, 1];
 const SUBFRAMES = 10;
-const MAX_PLAYER_ACCEL = 0.05;
-const MAX_PLAYER_SPEED = 0.5;
+const MAX_PLAYER_ACCEL = 0.03;
+const MAX_PLAYER_SPEED = 0.3;
 const DECEL_STEPS = MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
 const MIN_MOVEMENT = 0.04;
 const HANDLE_HEIGHT = 3;
