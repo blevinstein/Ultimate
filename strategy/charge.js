@@ -12,9 +12,9 @@ export class ChargeStrategy extends Strategy {
 
   update() {
     for (let player of this.team.players) {
-      if (this.team.goalDirection === 'E' && player.position[0] >= 90 && Game.isInBounds(player.position)) {
+      if (this.team.goalDirection === 'E' && player.position[0] >= 90 && Game.boundsCheck(player.position, BOUNDS)) {
         player.rest(mul2d(getVector(this.team.goalDirection), -1));
-      } else if (this.team.goalDirection === 'W' && player.position[0] <= 20 && Game.isInBounds(player.position)) {
+      } else if (this.team.goalDirection === 'W' && player.position[0] <= 20 && Game.boundsCheck(player.position, BOUNDS)) {
         player.rest(mul2d(getVector(this.team.goalDirection), -1));
       } else {
         let target = Game.snapToBounds(

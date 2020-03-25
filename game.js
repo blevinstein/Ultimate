@@ -99,7 +99,7 @@ export class Game {
         new Team(this, RED_COLORS, 'W').addPlayers(false),
         new Team(this, BLUE_COLORS, 'E').addPlayers(true).setOnOffense(true)];
     this.disc = new Disc(this).setPlayer(this.teams[0].players[Math.trunc(Math.random() * 7)]);
-    this.state = STATES.Kickoff;
+    this.setState(STATES.Kickoff);
   }
 
   draw(context) {
@@ -153,8 +153,15 @@ export class Game {
         }
       }
       if (ready) {
-        this.state = STATES.Kickoff;
+        this.setState(STATES.Kickoff);
       }
+    }
+  }
+
+  setState(state) {
+    this.state = state;
+    for (let team of this.teams) {
+      team.strategy = null;
     }
   }
 
@@ -189,7 +196,7 @@ export class Game {
     console.log('discThrown');
     this.lastThrower = player;
     if (this.state === STATES.Kickoff) {
-      this.state = STATES.Receiving;
+      this.setState(STATES.Receiving);
     }
   }
 
@@ -197,10 +204,10 @@ export class Game {
     console.log('discGrounded');
     this.lastThrower = null;
     if (this.state === STATES.Receiving) {
-      this.state = STATES.Pickup;
+      this.setState(STATES.Pickup);
     } else if (this.state === STATES.Normal) {
       this.setOffensiveTeam(this.defensiveTeam());
-      this.state = STATES.Pickup;
+      this.setState(STATES.Pickup);
     }
   }
 
@@ -209,11 +216,11 @@ export class Game {
     this.lastThrower = null;
     if (this.state === STATES.Receiving) {
       if (player.team.onOffense) {
-        this.state = STATES.Normal;
+        this.setState(STATES.Normal);
       } else {
         // Defensive player cannot intercept the pull
         player.drop();
-        this.state = STATES.Pickup;
+        this.setState(STATES.Pickup);
       }
     } else {
       console.log('Interception!');
@@ -228,9 +235,9 @@ export class Game {
         player.team.score++;
         console.log('Score is: ' + this.teams[0].score + ' vs ' + this.teams[1].score);
         if (player.team.score > WIN_SCORE) {
-          this.state = STATES.GameOver;
+          this.setState(STATES.GameOver);
         } else {
-          this.state = STATES.Reset;
+          this.setState(STATES.Reset);
           this.setOffensiveTeam(this.defensiveTeam());
           this.swapSides();
         }
@@ -241,7 +248,7 @@ export class Game {
   discPickedUpBy(player) {
     console.log('discPickedUp');
     if (this.state === STATES.Pickup) {
-      this.state = STATES.Normal;
+      this.setState(STATES.Normal);
       this.setOffensiveTeam(player.team);
     }
   }
