@@ -7,6 +7,7 @@ import { Strategy } from './strategy.js';
 
 const NUM_CANDIDATES = 10;
 const GOAL_RADIUS = 2;
+const MAX_THROW_SPEED = 3;
 
 // returns [player, distance]
 function getClosestPlayer(players, location) {
@@ -32,7 +33,7 @@ export class RandomOffenseStrategy extends Strategy {
   constructor(game, team) {
     super(game, team);
     this.destinationMap = new Map;
-    this.rangeFinder = new RangeFinder(4);
+    this.rangeFinder = new RangeFinder(MAX_THROW_SPEED);
   }
 
   chooseDestination() {

@@ -44,6 +44,7 @@ const STATES = {
   Pickup: 'pickup', // Waiting for offense to pickup grounded disc
   Normal: 'normal', // Normal play; posession changes on grounded disc
   Reset: 'reset', // Waiting for players to return to the line after a score
+  GameOver: 'gameover', // Game is over because one team has scored 11 points
 };
 
 // returns the create function for the chosen strategy
@@ -200,5 +201,18 @@ export class Game {
       this.state = STATES.Normal;
       this.setOffensiveTeam(player.team);
     }
+  }
+
+  static isInBounds(position) {
+    return 0 <= position[0] && position[0] <= 110 && 0 <= position[1] && position[1] <= 40;
+  }
+
+  static snapToBounds(position) {
+    let result = position.slice();
+    if (result[0] < 20) { result[0] = 20; }
+    if (result[0] > 90) { result[0] = 90; }
+    if (result[1] < 0) { result[1] = 0; }
+    if (result[1] > 40) { result[1] = 40; }
+    return result;
   }
 }

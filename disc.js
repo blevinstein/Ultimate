@@ -1,5 +1,6 @@
 
 import { add3d, dist2d, dist3d, mul3d, sub3d, linearInterpolate, project2d, project3d } from './math_utils.js';
+import { Game } from './game.js';
 
 const GROUND_FRICTION = 0.2;
 const AIR_FRICTION = 0.01;
@@ -67,6 +68,7 @@ export class Disc {
   }
 
   updatePhysics() {
+    if (!this.position) { throw new Error('Cannot updatePhysics for a held disc!'); }
     this.position = add3d(this.position, this.velocity);
     this.velocity = add3d(this.velocity, [0, 0, -GRAVITY]);
 
@@ -91,6 +93,12 @@ export class Disc {
 
       if (this.grounded) {
         if (!wasGrounded) { this.game.discGrounded(); }
+        // Reset to last in-bounds position
+        // TODO: snap to sideline
+        if (!Game.isInBounds(this.position)) {
+          this.position = Game.snapToBounds(this.position);
+          this.velocity = [0, 0, 0];
+        }
         let pickupCandidate;
         let pickupDist;
         for (let player of this.game.offensiveTeam().players) {
