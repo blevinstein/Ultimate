@@ -1,5 +1,6 @@
 
-import { dist2d, sub2d, getVector } from '../math_utils.js';
+import { dist2d, mag2d, mul2d, sub2d, getVector, magnitudeAlong } from '../math_utils.js';
+import { RangeFinder } from '../range_finder.js';
 import { Strategy } from './strategy.js';
 
 const NUM_CANDIDATES = 10;
@@ -29,10 +30,12 @@ export class RandomOffenseStrategy extends Strategy {
   constructor(game, team) {
     super(game, team);
     this.destinationMap = new Map;
+    this.rangeFinder = new RangeFinder(4);
   }
 
   chooseDestination() {
     const thrower = this.game.playerWithDisc();
+    if (!thrower) { return null; }
     const defensivePlayers = this.game.defensiveTeam().players;
     const [minX, maxX] = this.team.goalDirection === 'E'
         ? [thrower.position[0] - 5, 110]
@@ -43,7 +46,7 @@ export class RandomOffenseStrategy extends Strategy {
       // Choose a random location no more than 5 yards behind the thrower
       let newDestination =
           [minX + Math.random() * (maxX - minX), Math.random() * 40];
-      let closestDefenderDistance = getClosestPlayer(this.game.defensiveTeam(), newDestination);
+      let closestDefenderDistance = getClosestPlayer(this.game.defensiveTeam(), newDestination)[1];
       if (!bestDestination || closestDefenderDistance > bestClosestDefenderDistance) {
         bestDestination = newDestination;
         bestClosestDefenderDistance = closestDefenderDistance;
@@ -57,9 +60,31 @@ export class RandomOffenseStrategy extends Strategy {
 
     for (let player of this.team.players) {
       if (player.hasDisc) {
+        let bestDestination;
+        let bestClosestDefenderDistance;
+        let bestForwardProgress;
+        for (let receiver of this.team.players) {
+          if (player == receiver) { continue; }
+          let destination = this.destinationMap.get(receiver);
+          if (!destination) { continue; }
+          let closestDefenderDistance = getClosestPlayer(this.game.defensiveTeam(), destination)[1];
+          let forwardProgress = magnitudeAlong(sub2d(destination, player.position), getVector(this.team.goalDirection));
+          if (!bestDestination || closestDefenderDistance > bestClosestDefenderDistance && forwardProgress > bestForwardProgress) {
+            bestDestination = destination;
+            bestClosestDefenderDistance = closestDefenderDistance;
+            bestForwardProgress = forwardProgress;
+          }
+        }
         player.rest(getVector(this.team.goalDirection));
+        if (bestDestination && bestClosestDefenderDistance > 5 && bestForwardProgress > 5) {
+          let vector2d = sub2d(bestDestination, player.position);
+          let [forward, upward] = this.rangeFinder.getParams(mag2d(vector2d));
+          let vector3d = mul2d(vector2d, forward / mag2d(vector2d)).concat(upward);
+          player.throw(vector3d);
+        }
       } else {
         let destination = this.destinationMap.get(player) || this.chooseDestination();
+        if (!destination) { continue; }
         if (dist2d(destination, player.position) < GOAL_RADIUS) {
           destination = null;
           player.rest();

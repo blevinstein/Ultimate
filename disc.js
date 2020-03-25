@@ -4,6 +4,7 @@ import { add3d, dist2d, dist3d, mul3d, sub3d, linearInterpolate, project2d, proj
 const GROUND_FRICTION = 0.2;
 const AIR_FRICTION = 0.01;
 const PLAYER_HEIGHT = 4;
+const GRAVITY = 0.1;
 
 const MAX_CATCH_DIST = 1;
 const MAX_PICKUP_DIST = 1;
@@ -11,8 +12,10 @@ const MAX_PICKUP_DIST = 1;
 export class Disc {
   constructor(game, initialPlayer, initialPosition) {
     this.game = game;
-    this.sprite = game.resources.discSprite;
-    this.shadowSprite = game.resources.discShadowSprite;
+    if (game && game.resources) {
+      this.sprite = game.resources.discSprite;
+      this.shadowSprite = game.resources.discShadowSprite;
+    }
     this.velocity = [0, 0, 0];
     if (initialPlayer) {
       setPlayer(initialPlayer);
@@ -64,11 +67,8 @@ export class Disc {
   }
 
   updatePhysics() {
-    // Momentum
     this.position = add3d(this.position, this.velocity);
-
-    // Gravity
-    this.velocity = add3d(this.velocity, [0, 0, -0.1]);
+    this.velocity = add3d(this.velocity, [0, 0, -GRAVITY]);
 
     // Ground contact
     if (this.position[2] <= 0) {
@@ -109,6 +109,7 @@ export class Disc {
         let catchDist;
         for (let team of this.game.teams) {
           for (let player of team.players) {
+            if (this.game.lastThrower == player) { continue; }
             let d = dist3d(player.position.concat(PLAYER_HEIGHT), this.position);
             if (d < (catchDist || MAX_PICKUP_DIST)) {
               catchCandidate = player;
@@ -125,8 +126,10 @@ export class Disc {
   }
 
   // returns [groundedPosition, groundedTime]
-  static simulateUntilGrounded(game, initialPosition, initialVelocity) {
-    let disc = new Disc(game, null, initialPosition).setVelocity(initialVelocity);
+  static simulateUntilGrounded(initialPosition, initialVelocity) {
+    if (initialPosition.some(isNaN)) { throw new Error('Invalid initialPosition: ' + initialPosition); }
+    if (initialVelocity.some(isNaN)) { throw new Error('Invalid initialVelocity: ' + initialVelocity); }
+    let disc = new Disc(null, null, initialPosition).setVelocity(initialVelocity);
     let time = 0;
     while (!disc.grounded) {
       time++;

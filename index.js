@@ -2,6 +2,7 @@ const FRAME_TIME = 30;
 
 import { toImageData, fromImageData, loadImage, sliceImage, getPixel, writePixel, mirrorImage, splitSprite, mirrorImages, colorEquals } from './image_utils.js';
 
+import { Disc } from './disc.js';
 import { Game } from './game.js';
 import { Team } from './team.js';
 
@@ -76,6 +77,7 @@ function start() {
   const context = canvas.getContext('2d');
   context.save()
   game = new Game(resources);
+
   frameCallback = setTimeout(draw, FRAME_TIME);
 }
 

@@ -65,10 +65,18 @@ function pickStrategy(game, team) {
         return ManToManDefenseStrategy.create(game, team);
       }
     case STATES.Normal:
-      if (team.onOffense) {
-        return RandomOffenseStrategy.create(game, team);
+      if (game.disc.position) {
+        if (team.onOffense) {
+          return ClosestPickupStrategy.create(game, team);
+        } else {
+          return ManToManDefenseStrategy.create(game, team);
+        }
       } else {
-        return ManToManDefenseStrategy.create(game, team);
+        if (team.onOffense) {
+          return RandomOffenseStrategy.create(game, team);
+        } else {
+          return ManToManDefenseStrategy.create(game, team);
+        }
       }
       break;
   }
@@ -147,6 +155,7 @@ export class Game {
 
   discThrownBy(player) {
     console.log('discThrown');
+    this.lastThrower = player;
     if (this.state === STATES.Kickoff) {
       this.state = STATES.Receiving;
     }
@@ -154,6 +163,7 @@ export class Game {
 
   discGrounded() {
     console.log('discGrounded');
+    this.lastThrower = null;
     if (this.state === STATES.Receiving) {
       this.state = STATES.Pickup;
     } else if (this.state === STATES.Normal) {
@@ -164,6 +174,7 @@ export class Game {
 
   discCaughtBy(player) {
     console.log('discCaught');
+    this.lastThrower = null;
     if (this.state === STATES.Receiving) {
       if (player.team.onOffense) {
         this.state = STATES.Normal;
