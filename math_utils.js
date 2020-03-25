@@ -12,6 +12,10 @@ export function linearInterpolate(from, to, amount) {
   return from + (to - from) * amount;
 }
 
+export function add2d(a, b) {
+  return [a[0] + b[0], a[1] + b[1]];
+}
+
 export function sub2d(a, b) {
   return [a[0] - b[0], a[1] - b[1]];
 }
@@ -27,6 +31,10 @@ export function mul2d(vector, multiplier) {
   }
 }
 
+export function mag2d(vector) {
+  return Math.sqrt(Math.pow(vector[0], 2) + Math.pow(vector[1], 2));
+}
+
 export function getVector(direction) {
   switch (direction) {
     case 'E': return [1, 0]
@@ -38,7 +46,6 @@ export function getVector(direction) {
     case 'NW': return [-1, -1]
     case 'SW': return [-1, 1]
     default:
-      console.log('Invalid direction: ' + direction);
-      return [NaN, NaN]
+      throw new Error('Invalid direction: ' + direction);
   }
 }

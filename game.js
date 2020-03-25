@@ -82,7 +82,7 @@ export class Game {
     this.teams = [
         new Team(this, RED_COLORS, 'W').addPlayers(false),
         new Team(this, BLUE_COLORS, 'E').addPlayers(true).setOnOffense(true)];
-    this.disc = new Disc(this).setPlayer(this.teams[0].players[0]);
+    this.disc = new Disc(this).setPlayer(this.teams[0].players[Math.trunc(Math.random() * 7)]);
     this.state = STATES.Kickoff;
   }
 

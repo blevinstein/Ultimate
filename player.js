@@ -23,7 +23,7 @@ export class Player {
     this.position = initialPosition;
     this.direction = initialDirection;
     this.moving = false;
-    this.frame = 0;
+    this.frame = Math.trunc(Math.random() * 4 * SUBFRAMES);
     this.hasDisc = false;
   }
 
@@ -54,6 +54,8 @@ export class Player {
   }
 
   throw(velocity) {
+    // TODO: Max throw velocity
+    // TODO: Add noise for high velocity throws
     if (velocity.length < 3) { console.log('Expected a 3d vector, got ' + velocity); return; }
     if (velocity.some(isNaN)) { console.log('Velocity contains NaN: ' + velocity); return; }
     if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }

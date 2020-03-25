@@ -1,5 +1,5 @@
 
-import { getVector, mul2d } from '../math_utils.js';
+import { getVector, mag2d, mul2d, sub2d } from '../math_utils.js';
 import { Strategy } from './strategy.js';
 
 export class KickoffStrategy extends Strategy {
@@ -11,7 +11,9 @@ export class KickoffStrategy extends Strategy {
     if (!this.team.hasDisc()) { console.log('Cannot pull without the disc!'); return true; }
     const playerWithDisc = this.team.players.find(p => p.hasDisc);
     if (!playerWithDisc) { console.log('No player has the disc!!!'); return true; }
-    const vector = mul2d(getVector(this.team.goalDirection), 5).concat(5);
+    const target = this.team.goalDirection === 'W' ? [10, 20] : [100, 20];
+    const vector2d = sub2d(target, playerWithDisc.position);
+    const vector = mul2d(vector2d, 5 / mag2d(vector2d)).concat(5);
     playerWithDisc.throw(vector);
     return true;
   }
