@@ -20,6 +20,8 @@ window.initialize = function () {
   window.onkeypress = (event) => {
     if (event.key.toUpperCase() === 'R') {
       game = new Game(resources);
+    } else if (event.key.toUpperCase() === 'Q') {
+      window.clearTimeout(frameCallback);
     }
   };
   Promise.all([
@@ -67,12 +69,14 @@ window.initialize = function () {
       });
 }
 
+let frameCallback;
+
 function start() {
   const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
   context.save()
   game = new Game(resources);
-  setTimeout(draw, FRAME_TIME);
+  frameCallback = setTimeout(draw, FRAME_TIME);
 }
 
 function setupCanvas() {
@@ -100,5 +104,5 @@ function draw() {
   const context = canvas.getContext('2d');
   game.draw(context);
   game.update();
-  setTimeout(draw, FRAME_TIME);
+  frameCallback = setTimeout(draw, FRAME_TIME);
 }
