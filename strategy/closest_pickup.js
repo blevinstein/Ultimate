@@ -1,7 +1,8 @@
 
-import { dist2d, mul2d, sub2d, sub3d, getVector } from '../math_utils.js';
-import { Strategy } from './strategy.js';
+import { add2d, dist2d, mul2d, sub2d, sub3d, getVector } from '../math_utils.js';
 import { Disc } from '../disc.js';
+import { Game, FIELD_BOUNDS } from '../game.js';
+import { Strategy } from './strategy.js';
 
 const HAND_HEIGHT = 3;
 
@@ -42,7 +43,10 @@ export class ClosestPickupStrategy extends Strategy {
       if (player == closestPlayer) {
         player.move(sub2d(target, player.position));
       } else {
-        player.move(mul2d(getVector(this.team.goalDirection), 10));
+        let target = Game.snapToBounds(
+            add2d(player.position, mul2d(getVector(this.team.goalDirection), 10)),
+            FIELD_BOUNDS);
+        player.move(sub2d(target, player.position));
       }
     }
   }

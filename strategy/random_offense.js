@@ -1,6 +1,7 @@
 
 import { dist2d, mag2d, sub2d, getVector, magnitudeAlong } from '../math_utils.js';
 import { Disc } from '../disc.js';
+import { Game } from '../game.js';
 import { Player } from '../player.js';
 import { RangeFinder } from '../range_finder.js';
 import { Strategy } from './strategy.js';
@@ -64,6 +65,7 @@ export class RandomOffenseStrategy extends Strategy {
 
     for (let player of this.team.players) {
       if (player.hasDisc) {
+        // Thrower behavior
         const [minX, maxX] = this.team.goalDirection === 'E'
             ? [player.position[0] - 5, 110]
             : [0, player.position[0] + 5];
@@ -94,6 +96,7 @@ export class RandomOffenseStrategy extends Strategy {
           player.rest(getVector(this.team.goalDirection));
         }
       } else {
+        // Cutter behavior
         let destination = this.destinationMap.get(player) || this.chooseDestination();
         if (!destination) { continue; }
         if (dist2d(destination, player.position) < GOAL_RADIUS) {

@@ -1,5 +1,6 @@
 
 import { getVector, add2d, mul2d, sub2d } from '../math_utils.js';
+import { Game, FIELD_BOUNDS } from '../game.js';
 import { Matchup } from './matchup.js';
 import { Strategy } from './strategy.js';
 
@@ -26,9 +27,9 @@ export class ManToManDefenseStrategy extends Strategy {
     for (let player of this.team.players) {
       const match = this.matchup.get(player);
       if (!match) { console.log('Player has no matchup!'); continue; }
-      let target = match.hasDisc
-          ? add2d(match.position, this.markOffset)
-          : add2d(match.position, this.offset);
+      let target = Game.snapToBounds(
+          add2d(match.position, match.hasDisc ? this.markOffset : this.offset),
+          FIELD_BOUNDS);
       player.move(sub2d(target, player.position));
     }
   }
