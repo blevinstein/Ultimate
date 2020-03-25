@@ -1,5 +1,5 @@
 
-import { linearInterpolate, magnitudeAlong, project3d, project2d, getDirection, add2d, mul2d, mag2d, sub2d } from './math_utils.js';
+import { linearInterpolate, magnitudeAlong, project3d, project2d, getDirection, getVector, add2d, mul2d, mag2d, sub2d } from './math_utils.js';
 
 const STEP = [0, 1, 2, 1];
 const SUBFRAMES = 10;
@@ -35,7 +35,7 @@ export class Player {
         screenPosition[1] - sprite.height,
         this.position[1]);
     if (this.hasDisc) {
-      const discScreenPosition = project3d([this.position[0] + ARM_LENGTH, this.position[1], HANDLE_HEIGHT]);
+      const discScreenPosition = project3d(add2d(this.position, mul2d(getVector(this.direction), ARM_LENGTH)).concat(HANDLE_HEIGHT));
       frameBuffer.drawImage(
           this.discSprite,
           discScreenPosition[0] - this.discSprite.width / 2,
