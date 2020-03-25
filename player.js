@@ -1,5 +1,5 @@
 
-import { linearInterpolate, project3d, project2d } from './math_utils.js';
+import { linearInterpolate, project3d, project2d, getDirection } from './math_utils.js';
 
 const STEP = [0, 1, 2, 1];
 const SUBFRAMES = 10;
@@ -51,6 +51,7 @@ export class Player {
       this.position[i] += amount[i] * multiplier;
     }
     this.moving = Math.sqrt(Math.pow(amount[0], 2) + Math.pow(amount[1], 2)) > MIN_MOVEMENT;
+    this.direction = getDirection(amount);
   }
 
   rest() {

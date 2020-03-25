@@ -50,6 +50,27 @@ export function getVector(direction) {
   }
 }
 
+export function getDirection(vector) {
+  const angle = Math.atan2(vector[1], vector[0]);
+  if (angle < -7/8 * Math.PI || angle > 7/8 * Math.PI) {
+    return 'W';
+  } else if (angle < -5/8 * Math.PI) {
+    return 'NW';
+  } else if (angle < -3/8 * Math.PI) {
+    return 'N';
+  } else if (angle < -1/8 * Math.PI) {
+    return 'NE';
+  } else if (angle > 5/8 * Math.PI) {
+    return 'SW';
+  } else if (angle > 3/8 * Math.PI) {
+    return 'S';
+  } else if (angle > 1/8 * Math.PI) {
+    return 'SE'
+  } else {
+    return 'E';
+  }
+}
+
 // Project from rect 110x40 to trapezoid 410/890x344 offset 50x60
 export function project2d(position) {
   let xShrinkFactor = linearInterpolate(830/890, 1, position[1] / 40);
