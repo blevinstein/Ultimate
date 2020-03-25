@@ -1,8 +1,10 @@
 
-import { getVector, add2d, mul2d, sub2d } from '../math_utils.js';
+import { getVector, add2d, mul2d, sub2d, sub3d } from '../math_utils.js';
 import { Game, FIELD_BOUNDS } from '../game.js';
 import { Matchup } from './matchup.js';
 import { Strategy } from './strategy.js';
+
+const HAND_HEIGHT = 3;
 
 export class ManToManDefenseStrategy extends Strategy {
   constructor(game, team) {
@@ -20,13 +22,24 @@ export class ManToManDefenseStrategy extends Strategy {
   update() {
     if (this.team.onOffense) { return true; }
 
+    // If the disc is in the air, assign closest player to intercept
+    const interceptor = this.game.disc.position
+        && Game.getClosestPlayer(this.team.players, this.game.disc.position);
+
     for (let player of this.team.players) {
-      const match = this.matchup.get(player);
-      if (!match) { console.log('Player has no matchup!'); continue; }
-      let target = Game.snapToBounds(
-          add2d(match.position, match.hasDisc ? this.markOffset : this.offset),
-          FIELD_BOUNDS);
-      player.move(sub2d(target, player.position));
+      if (interceptor == player) {
+        const [target] = Disc.simulateUntilGrounded(
+            sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]),
+            this.game.disc.velocity);
+        player.move(sub2d(target, player.position));
+      } else {
+        const match = this.matchup.get(player);
+        if (!match) { console.log('Player has no matchup!'); continue; }
+        let target = Game.snapToBounds(
+            add2d(match.position, match.hasDisc ? this.markOffset : this.offset),
+            FIELD_BOUNDS);
+        player.move(sub2d(target, player.position));
+      }
     }
   }
 }

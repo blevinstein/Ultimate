@@ -13,14 +13,11 @@ export class ClosestPickupStrategy extends Strategy {
     // Strategy expires if the other team has possession
     if (this.game.disc.grounded && !this.team.onOffense) { return true; }
 
-    let target;
-    if (this.game.disc.grounded) {
-      target = this.game.disc.position;
-    } else {
-      [target] = Disc.simulateUntilGrounded(
-          sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]),
-          this.game.disc.velocity);
-    }
+    const target = this.game.disc.grounded
+        ?  this.game.disc.position
+        : Disc.simulateUntilGrounded(
+              sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]),
+              this.game.disc.velocity)[0];
 
     const [closestPlayer] = Game.getClosestPlayer(this.team.players, target);
 
