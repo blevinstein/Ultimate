@@ -58,8 +58,6 @@ function pickStrategy(game, team) {
       }
       break;
     case STATES.Receiving:
-      return ChargeStrategy.create(game, team);
-      break;
     case STATES.Pickup:
       if (team.onOffense) {
         return ClosestPickupStrategy.create(game, team);
@@ -101,10 +99,12 @@ export class Game {
   }
 
   update() {
+    // Each team executes its strategy
     for (let team of this.teams) {
       // Pick a strategy if we don't have one active
       if (!team.strategy) {
         team.strategy = pickStrategy(this, team);
+        console.log('New strategy: ' + team.strategy.constructor.name);
       }
       if (team.strategy) {
         if (team.strategy.update()) {
@@ -113,6 +113,12 @@ export class Game {
         }
       } else {
         console.log('Failed to pick a strategy.');
+      }
+    }
+    // Players and physics update
+    for (let team of this.teams) {
+      for (let player of team.players) {
+        player.update();
       }
     }
     this.disc.update();

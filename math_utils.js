@@ -3,13 +3,32 @@ export function dist2d(a, b) {
   return Math.sqrt(Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2));
 }
 
+export function linearInterpolate(from, to, amount) {
+  return from + (to - from) * amount;
+}
+
 export function dist3d(a, b) {
   return Math.sqrt(
       Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2) + Math.pow(a[2] - b[2], 2));
 }
 
-export function linearInterpolate(from, to, amount) {
-  return from + (to - from) * amount;
+export function add3d(a, b) {
+  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+}
+
+export function sub3d(a, b) {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+export function mul3d(vector, multiplier) {
+  if (isFinite(multiplier)) {
+    return [vector[0] * multiplier, vector[1] * multiplier, vector[2] * multiplier]
+  } else if (multiplier instanceof Array) {
+    return [vector[0] * multiplier[0], vector[1] * multiplier[1], vector[2] * multiplier[2]]
+  } else {
+    console.log('Cannot multiply by ' + multiplier);
+    return [NaN, NaN, NaN]
+  }
 }
 
 export function add2d(a, b) {
@@ -18,6 +37,21 @@ export function add2d(a, b) {
 
 export function sub2d(a, b) {
   return [a[0] - b[0], a[1] - b[1]];
+}
+
+export function dot2d(a, b) {
+  return a[0] * b[0] + a[1] * b[1];
+}
+
+// returns the magnitude of 'vector' along 'direction' using this formula:
+// vector (dot) direction / |direction|
+//   = |vector| * cos(angle between vector and direction)
+export function magnitudeAlong(vector, direction) {
+  let mag = mag2d(direction);
+  if (mag === 0) {
+    return 0;
+  }
+  return dot2d(vector, direction) / mag;
 }
 
 export function mul2d(vector, multiplier) {

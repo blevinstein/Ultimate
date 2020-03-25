@@ -1,10 +1,11 @@
 
-import { linearInterpolate, project3d, project2d, getDirection, add2d, mul2d, mag2d } from './math_utils.js';
+import { linearInterpolate, magnitudeAlong, project3d, project2d, getDirection, add2d, mul2d, mag2d, sub2d } from './math_utils.js';
 
 const STEP = [0, 1, 2, 1];
 const SUBFRAMES = 10;
-const PLAYER_SPEED = 0.5;
-const MIN_MOVEMENT = 0.1;
+const MAX_PLAYER_ACCEL = 0.05;
+const MAX_PLAYER_SPEED = 0.5;
+const MIN_MOVEMENT = 0.04;
 const HANDLE_HEIGHT = 3;
 const ARM_LENGTH = 1;
 
@@ -15,6 +16,7 @@ export class Player {
     this.runningSprites = team.resources.runningSprites;
     this.standingSprites = team.resources.standingSprites;
     this.position = initialPosition;
+    this.velocity = [0, 0];
     this.direction = initialDirection;
     this.moving = false;
     this.frame = Math.trunc(Math.random() * 4 * SUBFRAMES);
@@ -41,20 +43,46 @@ export class Player {
     }
   }
 
-  move(amount) {
-    if (amount.some(isNaN)) { throw new Error('Invalid move amount: ' + amount); }
+  update() {
+    this.position = add2d(this.position, this.velocity);
+  }
+
+  move(direction) {
+    if (direction.some(isNaN)) { throw new Error('Invalid move direction: ' + direction); }
     // TODO: Add interactions between players (e.g. must cut around defender, pick call?)
     // TODO: Use max accel instead of max speed
-    const magnitude = Math.sqrt(Math.pow(amount[0], 2) + Math.pow(amount[1], 2));
-    const multiplier = magnitude > PLAYER_SPEED ? PLAYER_SPEED / magnitude : 1;
-    const scaledAmount = mul2d(amount, multiplier);
-    this.position = add2d(this.position, scaledAmount);
-    this.moving = mag2d(scaledAmount) > MIN_MOVEMENT;
-    this.direction = getDirection(scaledAmount);
+
+    const desiredVelocity = mul2d(direction, MAX_PLAYER_SPEED / mag2d(direction));
+    const desiredAcceleration = sub2d(desiredVelocity, this.velocity);
+
+    const currentSpeed = Math.max(0, magnitudeAlong(this.velocity, desiredAcceleration));
+    const maxAcceleration = MAX_PLAYER_ACCEL * (1 - currentSpeed / MAX_PLAYER_SPEED);
+
+    this.accelerate(mag2d(desiredAcceleration) <= maxAcceleration
+        ? desiredAcceleration
+        : mul2d(desiredAcceleration, maxAcceleration / mag2d(desiredAcceleration)));
   }
 
   rest() {
-    this.moving = false;
+    const desiredAcceleration = mul2d(this.velocity, -1);
+
+    const currentSpeed = Math.max(0, magnitudeAlong(this.velocity, desiredAcceleration));
+    const maxAcceleration = MAX_PLAYER_ACCEL * (1 - currentSpeed / MAX_PLAYER_SPEED);
+
+    this.accelerate(mag2d(desiredAcceleration) <= maxAcceleration
+        ? desiredAcceleration
+        : mul2d(desiredAcceleration, maxAcceleration / mag2d(desiredAcceleration)));
+  }
+
+  accelerate(impulse) {
+    this.velocity = add2d(this.velocity, impulse);
+
+    if (mag2d(this.velocity) > MIN_MOVEMENT) {
+      this.moving = true;
+      this.direction = getDirection(this.velocity);
+    } else {
+      this.moving = false
+    }
   }
 
   throw(velocity) {

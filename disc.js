@@ -1,9 +1,9 @@
 
-import { dist2d, dist3d, linearInterpolate, project2d, project3d } from './math_utils.js';
+import { add3d, dist2d, dist3d, mul3d, sub3d, linearInterpolate, project2d, project3d } from './math_utils.js';
 
-const GROUND_FRICTION = 0.8;
-const AIR_FRICTION = 0.99;
-const PLAYER_HEIGHT = 2;
+const GROUND_FRICTION = 0.2;
+const AIR_FRICTION = 0.01;
+const PLAYER_HEIGHT = 4;
 
 const MAX_CATCH_DIST = 1;
 const MAX_PICKUP_DIST = 1;
@@ -68,12 +68,10 @@ export class Disc {
       const wasGrounded = this.grounded;
 
       // Momentum
-      for (let i of [0, 1, 2]) {
-        this.position[i] += this.velocity[i] || 0;
-      }
+      this.position = add3d(this.position, this.velocity);
 
       // Gravity
-      this.velocity[2] -= 9.8 / 5;
+      this.velocity[2] -= 0.1;
 
       // Ground contact
       if (this.position[2] <= 0) {
@@ -81,22 +79,20 @@ export class Disc {
         this.velocity[2] = 0;
         this.grounded = true;
         if (!wasGrounded) { this.game.discGrounded(); }
-        for (let i of [0, 1]) { this.velocity[i] *= GROUND_FRICTION; }
+        this.velocity = mul3d(this.velocity, 1 - GROUND_FRICTION);
       } else {
         // TODO: Add lift
-        for (let i of [0, 1, 2]) { this.velocity[i] *= AIR_FRICTION; }
+        this.velocity = mul3d(this.velocity, 1 - AIR_FRICTION);
       }
 
       if (this.grounded) {
         let pickupCandidate;
         let pickupDist;
-        for (let team of this.game.teams) {
-          for (let player of team.players) {
-            let d = dist2d(player.position, this.position);
-            if (d < (pickupDist || MAX_PICKUP_DIST)) {
-              pickupCandidate = player;
-              pickupDist = d;
-            }
+        for (let player of this.game.offensiveTeam().players) {
+          let d = dist2d(player.position, this.position);
+          if (d < (pickupDist || MAX_PICKUP_DIST)) {
+            pickupCandidate = player;
+            pickupDist = d;
           }
         }
         if (pickupCandidate) {
@@ -116,8 +112,8 @@ export class Disc {
           }
         }
         if (catchCandidate) {
-          this.setPlayer(pickupCandidate);
-          this.game.discCaughtBy(pickupCandidate);
+          this.setPlayer(catchCandidate);
+          this.game.discCaughtBy(catchCandidate);
         }
       }
     }

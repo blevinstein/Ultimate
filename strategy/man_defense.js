@@ -26,11 +26,10 @@ export class ManToManDefenseStrategy extends Strategy {
     for (let player of this.team.players) {
       const match = this.matchup.get(player);
       if (!match) { console.log('Player has no matchup!'); continue; }
-      if (match.hasDisc) {
-        player.move(add2d(sub2d(match.position, player.position), this.markOffset));
-      } else {
-        player.move(add2d(sub2d(match.position, player.position), this.offset));
-      }
+      let target = match.hasDisc
+          ? add2d(match.position, this.markOffset)
+          : add2d(match.position, this.offset);
+      player.move(sub2d(target, player.position));
     }
   }
 }
