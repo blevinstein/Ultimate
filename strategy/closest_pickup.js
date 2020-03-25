@@ -1,6 +1,5 @@
 
-import { dist2d, sub2d } from '../math_utils.js';
-import { ChargeStrategy } from './charge.js';
+import { dist2d, mul2d, sub2d, getVector } from '../math_utils.js';
 import { Strategy } from './strategy.js';
 
 export class ClosestPickupStrategy extends Strategy {
@@ -28,7 +27,7 @@ export class ClosestPickupStrategy extends Strategy {
       if (player == closestPlayer) {
         player.move(sub2d(this.game.disc.position, player.position));
       } else {
-        player.move(ChargeStrategy.getVector(this.team.goalDirection));
+        player.move(mul2d(getVector(this.team.goalDirection), 10));
       }
     }
   }

@@ -1,14 +1,6 @@
 
+import { getVector, mul2d } from '../math_utils.js';
 import { Strategy } from './strategy.js';
-
-function getVector(kickoffDirection) {
-  switch(kickoffDirection) {
-    case 'E':
-      return [4, 2, 5];
-    case 'W':
-      return [-4, 2, 5];
-  }
-}
 
 export class KickoffStrategy extends Strategy {
   static create(game, team) {
@@ -19,7 +11,7 @@ export class KickoffStrategy extends Strategy {
     if (!this.team.hasDisc()) { console.log('Cannot pull without the disc!'); return true; }
     const playerWithDisc = this.team.players.find(p => p.hasDisc);
     if (!playerWithDisc) { console.log('No player has the disc!!!'); return true; }
-    const vector = getVector(this.team.goalDirection);
+    const vector = mul2d(getVector(this.team.goalDirection), 5).concat(5);
     playerWithDisc.throw(vector);
     return true;
   }

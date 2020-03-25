@@ -1,4 +1,5 @@
 
+import { getVector, mul2d } from '../math_utils.js';
 import { Strategy } from './strategy.js';
 
 export class ChargeStrategy extends Strategy {
@@ -6,18 +7,9 @@ export class ChargeStrategy extends Strategy {
     return new ChargeStrategy(game, team);
   }
 
-  static getVector(goalDirection) {
-    switch(goalDirection) {
-      case 'E':
-        return [10, 0];
-      case 'W':
-        return [-10, 0];
-    }
-  }
-
   update() {
     for (let player of this.team.players) {
-      player.move(ChargeStrategy.getVector(this.team.goalDirection));
+      player.move(mul2d(getVector(this.team.goalDirection), 10));
     }
     return true;
   }

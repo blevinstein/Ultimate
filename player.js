@@ -54,6 +54,8 @@ export class Player {
   }
 
   throw(velocity) {
+    if (velocity.length < 3) { console.log('Expected a 3d vector, got ' + velocity); return; }
+    if (velocity.some(isNaN)) { console.log('Velocity contains NaN: ' + velocity); return; }
     if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }
     this.team.game.disc.setPosition(this.position.concat(PLAYER_HEIGHT)).setVelocity(velocity);
     this.team.game.discThrownBy(this);
