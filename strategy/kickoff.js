@@ -9,7 +9,7 @@ export class KickoffStrategy extends Strategy {
 
   constructor(game, team) {
     super(game, team);
-    this.delay = 100;
+    this.delay = 30;
   }
 
   update() {
