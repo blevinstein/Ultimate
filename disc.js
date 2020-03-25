@@ -3,10 +3,10 @@ import { add3d, dist2d, dist3d, mul3d, sub3d, linearInterpolate, project2d, proj
 
 const GROUND_FRICTION = 0.2;
 const AIR_FRICTION = 0.01;
-const PLAYER_HEIGHT = 4;
+const HAND_HEIGHT = 3;
 const GRAVITY = 0.1;
 
-const MAX_CATCH_DIST = 1;
+const MAX_CATCH_DIST = 2;
 const MAX_PICKUP_DIST = 1;
 
 export class Disc {
@@ -110,8 +110,8 @@ export class Disc {
         for (let team of this.game.teams) {
           for (let player of team.players) {
             if (this.game.lastThrower == player) { continue; }
-            let d = dist3d(player.position.concat(PLAYER_HEIGHT), this.position);
-            if (d < (catchDist || MAX_PICKUP_DIST)) {
+            let d = dist3d(player.position.concat(HAND_HEIGHT), this.position);
+            if (d < (catchDist || MAX_CATCH_DIST)) {
               catchCandidate = player;
               catchDist = d;
             }

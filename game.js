@@ -101,7 +101,10 @@ export class Game {
     }
     this.disc.draw(frameBuffer);
 
+    context.save();
+    context.setTransform(1, 0, 0, 1, 0, 0);
     context.clearRect(0, 0, canvas.width, canvas.height);
+    context.restore();
     context.drawImage(this.resources.fieldSprite, 0, 0);
     frameBuffer.drawScene(context);
   }
@@ -182,6 +185,11 @@ export class Game {
         // Defensive player cannot intercept the pull
         player.drop();
         this.state = STATES.Pickup;
+      }
+    } else {
+      // Interception!
+      if (!player.team.onOffense) {
+        this.setOffensiveTeam(player.team);
       }
     }
   }

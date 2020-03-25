@@ -1,7 +1,9 @@
 
-import { dist2d, mul2d, sub2d, getVector } from '../math_utils.js';
+import { dist2d, mul2d, sub2d, sub3d, getVector } from '../math_utils.js';
 import { Strategy } from './strategy.js';
 import { Disc } from '../disc.js';
+
+const HAND_HEIGHT = 3;
 
 export class ClosestPickupStrategy extends Strategy {
   static create(game, team) {
@@ -18,7 +20,7 @@ export class ClosestPickupStrategy extends Strategy {
     if (this.game.disc.grounded) {
       target = this.game.disc.position;
     } else {
-      [target] = Disc.simulateUntilGrounded(this.game.disc.position, this.game.disc.velocity);
+      [target] = Disc.simulateUntilGrounded(sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]), this.game.disc.velocity);
     }
 
     // Determine closest player
