@@ -7,10 +7,6 @@ import { Strategy } from './strategy.js';
 const HAND_HEIGHT = 3;
 
 export class ClosestPickupStrategy extends Strategy {
-  static create(game, team) {
-    return new ClosestPickupStrategy(game, team);
-  }
-
   update() {
     // Strategy expires when disc is picked up
     if (!this.game.disc.position) { return true; }

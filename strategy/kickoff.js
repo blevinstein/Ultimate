@@ -6,10 +6,6 @@ import { Strategy } from './strategy.js';
 const MAX_THROW_SPEED = 4;
 
 export class KickoffStrategy extends Strategy {
-  static create(game, team) {
-    return new KickoffStrategy(game, team);
-  }
-
   constructor(game, team) {
     super(game, team);
     this.delay = 30;

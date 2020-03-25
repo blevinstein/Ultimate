@@ -5,10 +5,6 @@ import { Matchup } from './matchup.js';
 import { Strategy } from './strategy.js';
 
 export class ManToManDefenseStrategy extends Strategy {
-  static create(game, team) {
-    return new ManToManDefenseStrategy(game, team);
-  }
-
   constructor(game, team) {
     super(game, team);
     this.matchup = Matchup.minMeanSquaredDistance(game.teams);

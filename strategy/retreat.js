@@ -6,10 +6,6 @@ import { Strategy } from './strategy.js';
 const BOUNDS = [[19, 91], [5, 35]];
 
 export class RetreatStrategy extends Strategy {
-  static create(game, team) {
-    return new RetreatStrategy(game, team);
-  }
-
   update() {
     for (let player of this.team.players) {
       if (this.team.goalDirection === 'W' && player.position[0] >= 90 && Game.boundsCheck(player.position, BOUNDS)) {

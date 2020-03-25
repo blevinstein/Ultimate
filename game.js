@@ -56,37 +56,37 @@ function pickStrategy(game, team) {
     case STATES.Kickoff:
       if (team.onOffense === team.hasDisc()) { console.log('The wrong team has the disc!'); return; }
       if (!team.onOffense) {
-        return KickoffStrategy.create(game, team);
+        return new KickoffStrategy(game, team);
       } else {
-        return IdleStrategy.create(game, team);
+        return new IdleStrategy(game, team);
       }
       break;
     case STATES.Receiving:
     case STATES.Pickup:
       if (team.onOffense) {
-        return ClosestPickupStrategy.create(game, team);
+        return new ClosestPickupStrategy(game, team);
       } else {
-        return ManToManDefenseStrategy.create(game, team);
+        return new ManToManDefenseStrategy(game, team);
       }
     case STATES.Normal:
       if (game.disc.position) {
         if (team.onOffense) {
-          return ClosestPickupStrategy.create(game, team);
+          return new ClosestPickupStrategy(game, team);
         } else {
-          return ManToManDefenseStrategy.create(game, team);
+          return new ManToManDefenseStrategy(game, team);
         }
       } else {
         if (team.onOffense) {
-          return RandomOffenseStrategy.create(game, team);
+          return new RandomOffenseStrategy(game, team);
         } else {
-          return ManToManDefenseStrategy.create(game, team);
+          return new ManToManDefenseStrategy(game, team);
         }
       }
     case STATES.Reset:
-      return RetreatStrategy.create(game, team);
+      return new RetreatStrategy(game, team);
     case STATES.GameOver:
       // TODO: More fun behavior? High fives, celebrations?
-      return RetreatStrategy.create(game, team);
+      return new RetreatStrategy(game, team);
   }
   throw new Error('Unexpected state: ' + game.state);
 }

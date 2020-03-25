@@ -6,10 +6,6 @@ import { Strategy } from './strategy.js';
 const BOUNDS = [[5, 105], [5, 35]];
 
 export class ChargeStrategy extends Strategy {
-  static create(game, team) {
-    return new ChargeStrategy(game, team);
-  }
-
   update() {
     for (let player of this.team.players) {
       if (this.team.goalDirection === 'E' && player.position[0] >= 90 && Game.boundsCheck(player.position, BOUNDS)) {

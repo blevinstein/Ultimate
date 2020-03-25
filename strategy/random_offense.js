@@ -29,10 +29,6 @@ function getClosestPlayer(players, location) {
 // Totally uncoordinated scramble. Players look for open areas of the field,
 // from 10m behind the handler to back of the endzone.
 export class RandomOffenseStrategy extends Strategy {
-  static create(game, team) {
-    return new RandomOffenseStrategy(game, team);
-  }
-
   constructor(game, team) {
     super(game, team);
     this.destinationMap = new Map;
