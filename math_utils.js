@@ -69,16 +69,18 @@ export function mag2d(vector) {
   return Math.sqrt(Math.pow(vector[0], 2) + Math.pow(vector[1], 2));
 }
 
+const INV_SQRT_2 = 1 / Math.sqrt(2)
+
 export function getVector(direction) {
   switch (direction) {
     case 'E': return [1, 0]
     case 'W': return [-1, 0]
     case 'S': return [0, 1]
     case 'N': return [0, -1]
-    case 'NE': return [1, -1]
-    case 'SE': return [1, 1]
-    case 'NW': return [-1, -1]
-    case 'SW': return [-1, 1]
+    case 'NE': return [INV_SQRT_2, -INV_SQRT_2]
+    case 'SE': return [INV_SQRT_2, INV_SQRT_2]
+    case 'NW': return [-INV_SQRT_2, -INV_SQRT_2]
+    case 'SW': return [-INV_SQRT_2, INV_SQRT_2]
     default:
       throw new Error('Invalid direction: ' + direction);
   }
