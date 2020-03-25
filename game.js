@@ -1,4 +1,5 @@
 
+import { dist2d } from './math_utils.js';
 import { Disc } from './disc.js';
 import { FrameBuffer } from './frame_buffer.js';
 import { Team } from './team.js';
@@ -276,5 +277,19 @@ export class Game {
     if (result[1] < bounds[1][0]) { result[1] = bounds[1][0]; }
     if (result[1] > bounds[1][1]) { result[1] = bounds[1][1]; }
     return result;
+  }
+
+  // returns [player, distance]
+  static getClosestPlayer(players, location) {
+    let closestPlayer;
+    let closestPlayerDistance;
+    for (let player of players) {
+      let dist = dist2d(player.position, location);
+      if (!closestPlayer || dist < closestPlayerDistance) {
+        closestPlayer = player;
+        closestPlayerDistance = dist;
+      }
+    }
+    return [closestPlayer, closestPlayerDistance];
   }
 }

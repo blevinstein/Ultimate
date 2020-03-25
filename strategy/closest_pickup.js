@@ -22,18 +22,7 @@ export class ClosestPickupStrategy extends Strategy {
           this.game.disc.velocity);
     }
 
-    // Determine closest player
-    let closestPlayer;
-    let closestDist;
-    for (let player of this.team.players) {
-      if (this.game.lastThrower == player) { continue; }
-      // Note that we can use 3d disc.position as a 2d position; z coord is ignored
-      let dist = dist2d(player.position, target);
-      if (!closestPlayer || dist < closestDist) {
-        closestPlayer = player;
-        closestDist = dist;
-      }
-    }
+    const [closestPlayer] = Game.getClosestPlayer(this.team.players, target);
 
     for (let player of this.team.players) {
       if (player == closestPlayer) {

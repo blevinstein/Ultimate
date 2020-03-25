@@ -12,20 +12,6 @@ const GOAL_RADIUS = 2;
 const MAX_THROW_SPEED = 2;
 const MIN_PROGRESS = 5;
 
-// returns [player, distance]
-function getClosestPlayer(players, location) {
-  let closestPlayer;
-  let closestPlayerDistance;
-  for (let player of players) {
-    let dist = dist2d(player.position, location);
-    if (!closestPlayer || dist < closestPlayerDistance) {
-      closestPlayer = player;
-      closestPlayerDistance = dist;
-    }
-  }
-  return [closestPlayer, closestPlayerDistance];
-}
-
 // Totally uncoordinated scramble. Players look for open areas of the field,
 // from 10m behind the handler to back of the endzone.
 export class RandomOffenseStrategy extends Strategy {
@@ -48,7 +34,7 @@ export class RandomOffenseStrategy extends Strategy {
       // Choose a random location no more than 5 yards behind the thrower
       let newDestination =
           [minX + Math.random() * (maxX - minX), Math.random() * 40];
-      let closestDefenderDistance = getClosestPlayer(this.game.defensiveTeam().players, newDestination)[1];
+      let closestDefenderDistance = Game.getClosestPlayer(this.game.defensiveTeam().players, newDestination)[1];
       if (!bestDestination || closestDefenderDistance > bestClosestDefenderDistance) {
         bestDestination = newDestination;
         bestClosestDefenderDistance = closestDefenderDistance;
@@ -72,8 +58,8 @@ export class RandomOffenseStrategy extends Strategy {
         for (let i = 0; i < NUM_CANDIDATE_THROWS; i++) {
           // Choose a random location no more than 5 yards behind the thrower
           let destination = [minX + Math.random() * (maxX - minX), Math.random() * 40];
-          let closestDefenderDistance = getClosestPlayer(this.game.defensiveTeam().players, destination)[1];
-          let [closestReceiver, closestReceiverDistance] = getClosestPlayer(this.team.players.filter(p => p != player), destination);
+          let closestDefenderDistance = Game.getClosestPlayer(this.game.defensiveTeam().players, destination)[1];
+          let [closestReceiver, closestReceiverDistance] = Game.getClosestPlayer(this.team.players.filter(p => p != player), destination);
           if (closestReceiverDistance > closestDefenderDistance) { continue; }
           let runtime = Player.simulateRunTime(
               sub2d(destination, closestReceiver.position),
