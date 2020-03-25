@@ -143,19 +143,16 @@ export class Game {
     this.disc.update();
     // Special transition if we are waiting for reset
     if (this.state === STATES.Reset) {
-      let notReady = 0;
+      let ready = true;
       for (let team of this.teams) {
         let homeEndzone = Game.endzone(team.goalDirection === 'W' ? 'E' : 'W');
         for (let player of team.players) {
           if (!Game.boundsCheck(player.position, homeEndzone)) {
-            console.log(player.position);
-            notReady++;
+            ready = false;
           }
         }
       }
-      if (notReady) {
-        console.log(notReady + ' players are not ready.');
-      } else {
+      if (ready) {
         this.state = STATES.Kickoff;
       }
     }
@@ -219,7 +216,7 @@ export class Game {
         this.state = STATES.Pickup;
       }
     } else {
-      // Interception!
+      console.log('Interception!');
       if (!player.team.onOffense) {
         this.setOffensiveTeam(player.team);
       }
