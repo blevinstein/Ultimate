@@ -18,6 +18,10 @@ const SOCKS = [255, 255, 255, 255];
 const BG = [0, 0, 0, 0];
 const EYES = [7, 11, 90, 255];
 
+const WIN_SCORE = 11;
+export const FIELD_BOUNDS = [[0, 110], [0, 40]]
+export const FIELD_BOUNDS_NO_ENDZONES = [[20, 90], [0, 40]];
+
 const RED_COLORS = [
   [BG],
   [EYES],
@@ -79,7 +83,10 @@ function pickStrategy(game, team) {
           return ManToManDefenseStrategy.create(game, team);
         }
       }
-      break;
+    case STATES.Reset:
+      return RetreatStrategy.create(game, team);
+    case STATES.GameOver:
+      return RetreatStrategy.create(game, team);
   }
   console.log('Default idle in state ' + game.state);
   return IdleStrategy.create(game, team);
@@ -116,7 +123,7 @@ export class Game {
       // Pick a strategy if we don't have one active
       if (!team.strategy) {
         team.strategy = pickStrategy(this, team);
-        console.log('New strategy: ' + team.strategy.constructor.name);
+        // DEBUG: console.log('New strategy: ' + team.strategy.constructor.name);
       }
       if (team.strategy) {
         if (team.strategy.update()) {
@@ -134,11 +141,35 @@ export class Game {
       }
     }
     this.disc.update();
+    // Special transition if we are waiting for reset
+    if (this.state === STATES.Reset) {
+      let notReady = 0;
+      for (let team of this.teams) {
+        let homeEndzone = Game.endzone(team.goalDirection === 'W' ? 'E' : 'W');
+        for (let player of team.players) {
+          if (!Game.boundsCheck(player.position, homeEndzone)) {
+            console.log(player.position);
+            notReady++;
+          }
+        }
+      }
+      if (notReady) {
+        console.log(notReady + ' players are not ready.');
+      } else {
+        this.state = STATES.Kickoff;
+      }
+    }
   }
 
   offensiveTeam() { return this.teams.find(t => t.onOffense); }
 
   defensiveTeam() { return this.teams.find(t => !t.onOffense); }
+
+  swapSides() {
+    const temp = this.teams[0].goalDirection;
+    this.teams[0].goalDirection = this.teams[1].goalDirection;
+    this.teams[1].goalDirection = temp;
+  }
 
   playerWithDisc() {
     switch (this.state) {
@@ -193,6 +224,21 @@ export class Game {
         this.setOffensiveTeam(player.team);
       }
     }
+
+    if (Game.isInBounds(player.position)) {
+      if ((player.team.goalDirection === 'E' && player.position[0] > 90)
+          || (player.team.goalDirection === 'W' && player.position[0] < 20)) {
+        player.team.score++;
+        console.log('Score is: ' + this.teams[0].score + ' vs ' + this.teams[1].score);
+        if (player.team.score > WIN_SCORE) {
+          this.state = STATES.GameOver;
+        } else {
+          this.state = STATES.Reset;
+          this.setOffensiveTeam(this.defensiveTeam());
+          this.swapSides();
+        }
+      }
+    }
   }
 
   discPickedUpBy(player) {
@@ -203,16 +249,25 @@ export class Game {
     }
   }
 
-  static isInBounds(position) {
-    return 0 <= position[0] && position[0] <= 110 && 0 <= position[1] && position[1] <= 40;
+  static endzone(goalDirection) {
+    return goalDirection === 'E' ? [[90, 110], [0, 40]] : [[0, 20], [0, 40]];
   }
 
-  static snapToBounds(position) {
+  static isInBounds(position) {
+    return Game.boundsCheck(position, FIELD_BOUNDS);
+  }
+
+  static boundsCheck(position, bounds) {
+    return bounds[0][0] <= position[0] && position[0] <= bounds[0][1]
+        && bounds[1][0] <= position[1] && position[1] <= bounds[1][1];
+  }
+
+  static snapToBounds(position, bounds) {
     let result = position.slice();
-    if (result[0] < 20) { result[0] = 20; }
-    if (result[0] > 90) { result[0] = 90; }
-    if (result[1] < 0) { result[1] = 0; }
-    if (result[1] > 40) { result[1] = 40; }
+    if (result[0] < bounds[0][0]) { result[0] = bounds[0][0]; }
+    if (result[0] > bounds[0][1]) { result[0] = bounds[0][1]; }
+    if (result[1] < bounds[1][0]) { result[1] = bounds[1][0]; }
+    if (result[1] > bounds[1][1]) { result[1] = bounds[1][1]; }
     return result;
   }
 }

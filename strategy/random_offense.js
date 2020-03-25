@@ -8,6 +8,7 @@ import { Strategy } from './strategy.js';
 const NUM_CANDIDATES = 10;
 const GOAL_RADIUS = 2;
 const MAX_THROW_SPEED = 3;
+const MIN_PROGRESS = 5;
 
 // returns [player, distance]
 function getClosestPlayer(players, location) {
@@ -87,10 +88,7 @@ export class RandomOffenseStrategy extends Strategy {
             bestVector = vector;
           }
         }
-        if (bestDestination && bestForwardProgress > 5) {
-          console.log('Throw to location ' + bestDestination);
-          let [simulatedLocation] = Disc.simulateUntilGrounded(player.position.concat(3), bestVector);
-          console.log('Expected grounding ' + simulatedLocation);
+        if (bestDestination && bestForwardProgress > MIN_PROGRESS) {
           player.throw(bestVector);
         } else {
           player.rest(getVector(this.team.goalDirection));

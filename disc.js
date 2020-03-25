@@ -1,6 +1,6 @@
 
 import { add3d, dist2d, dist3d, mul3d, sub3d, linearInterpolate, project2d, project3d } from './math_utils.js';
-import { Game } from './game.js';
+import { Game, FIELD_BOUNDS_NO_ENDZONES } from './game.js';
 
 const GROUND_FRICTION = 0.2;
 const AIR_FRICTION = 0.01;
@@ -96,7 +96,7 @@ export class Disc {
         // Reset to last in-bounds position
         // TODO: snap to sideline
         if (!Game.isInBounds(this.position)) {
-          this.position = Game.snapToBounds(this.position);
+          this.position = Game.snapToBounds(this.position, FIELD_BOUNDS_NO_ENDZONES);
           this.velocity = [0, 0, 0];
         }
         let pickupCandidate;
