@@ -12,12 +12,19 @@ export class ClosestPickupStrategy extends Strategy {
     // Strategy expires when disc is picked up
     if (!this.game.disc.position) { return true; }
 
+    let target;
+    if (this.game.disc.grounded) {
+      target = this.game.disc.position;
+    } else {
+      [target] = Disc.simulateUntilGrounded(this.game, this.game.disc.position, this.game.disc.velocity);
+    }
+
     // Determine closest player
     let closestPlayer;
     let closestDist;
     for (let player of this.team.players) {
       // Note that we can use 3d disc.position as a 2d position; z coord is ignored
-      let dist = dist2d(player.position, this.game.disc.position);
+      let dist = dist2d(player.position, target);
       if (!closestPlayer || dist < closestDist) {
         closestPlayer = player;
         closestDist = dist;
@@ -26,12 +33,7 @@ export class ClosestPickupStrategy extends Strategy {
 
     for (let player of this.team.players) {
       if (player == closestPlayer) {
-        if (this.game.disc.grounded) {
-          player.move(sub2d(this.game.disc.position, player.position));
-        } else {
-          let [location] = Disc.simulateUntilGrounded(this.game, this.game.disc.position, this.game.disc.velocity);
-          player.move(sub2d(location, player.position));
-        }
+        player.move(sub2d(target, player.position));
       } else {
         player.move(mul2d(getVector(this.team.goalDirection), 10));
       }
