@@ -1,5 +1,7 @@
 
-import { dist2d, mag2d, mul2d, sub2d, getVector, magnitudeAlong } from '../math_utils.js';
+import { dist2d, mag2d, sub2d, getVector, magnitudeAlong } from '../math_utils.js';
+import { Disc } from '../disc.js';
+import { Player } from '../player.js';
 import { RangeFinder } from '../range_finder.js';
 import { Strategy } from './strategy.js';
 
@@ -7,10 +9,10 @@ const NUM_CANDIDATES = 10;
 const GOAL_RADIUS = 2;
 
 // returns [player, distance]
-function getClosestPlayer(team, location) {
+function getClosestPlayer(players, location) {
   let closestPlayer;
   let closestPlayerDistance;
-  for (let player of team.players) {
+  for (let player of players) {
     let dist = dist2d(player.position, location);
     if (!closestPlayer || dist < closestPlayerDistance) {
       closestPlayer = player;
@@ -46,7 +48,7 @@ export class RandomOffenseStrategy extends Strategy {
       // Choose a random location no more than 5 yards behind the thrower
       let newDestination =
           [minX + Math.random() * (maxX - minX), Math.random() * 40];
-      let closestDefenderDistance = getClosestPlayer(this.game.defensiveTeam(), newDestination)[1];
+      let closestDefenderDistance = getClosestPlayer(this.game.defensiveTeam().players, newDestination)[1];
       if (!bestDestination || closestDefenderDistance > bestClosestDefenderDistance) {
         bestDestination = newDestination;
         bestClosestDefenderDistance = closestDefenderDistance;
@@ -60,27 +62,37 @@ export class RandomOffenseStrategy extends Strategy {
 
     for (let player of this.team.players) {
       if (player.hasDisc) {
+        const [minX, maxX] = this.team.goalDirection === 'E'
+            ? [player.position[0] - 5, 110]
+            : [0, player.position[0] + 5];
         let bestDestination;
-        let bestClosestDefenderDistance;
         let bestForwardProgress;
-        for (let receiver of this.team.players) {
-          if (player == receiver) { continue; }
-          let destination = this.destinationMap.get(receiver);
-          if (!destination) { continue; }
-          let closestDefenderDistance = getClosestPlayer(this.game.defensiveTeam(), destination)[1];
+        let bestVector;
+        for (let i = 0; i < NUM_CANDIDATES; i++) {
+          // Choose a random location no more than 5 yards behind the thrower
+          let destination = [minX + Math.random() * (maxX - minX), Math.random() * 40];
+          let closestDefenderDistance = getClosestPlayer(this.game.defensiveTeam().players, destination)[1];
+          let [closestReceiver, closestReceiverDistance] = getClosestPlayer(this.team.players.filter(p => p != player), destination);
+          if (closestReceiverDistance > closestDefenderDistance) { continue; }
+          let runtime = Player.simulateRunTime(
+              sub2d(destination, closestReceiver.position),
+              closestReceiver.velocity);
+          let vector = this.rangeFinder.getThrowVector(sub2d(destination, player.position), runtime);
+          if (!vector) { continue; }
           let forwardProgress = magnitudeAlong(sub2d(destination, player.position), getVector(this.team.goalDirection));
-          if (!bestDestination || closestDefenderDistance > bestClosestDefenderDistance && forwardProgress > bestForwardProgress) {
+          if (!bestDestination || forwardProgress > bestForwardProgress) {
             bestDestination = destination;
-            bestClosestDefenderDistance = closestDefenderDistance;
             bestForwardProgress = forwardProgress;
+            bestVector = vector;
           }
         }
-        player.rest(getVector(this.team.goalDirection));
-        if (bestDestination && bestClosestDefenderDistance > 5 && bestForwardProgress > 5) {
-          let vector2d = sub2d(bestDestination, player.position);
-          let [forward, upward] = this.rangeFinder.getParams(mag2d(vector2d));
-          let vector3d = mul2d(vector2d, forward / mag2d(vector2d)).concat(upward);
-          player.throw(vector3d);
+        if (bestDestination && bestForwardProgress > 5) {
+          console.log('Throw to location ' + bestDestination);
+          let [simulatedLocation] = Disc.simulateUntilGrounded(player.position.concat(3), bestVector);
+          console.log('Expected grounding ' + simulatedLocation);
+          player.throw(bestVector);
+        } else {
+          player.rest(getVector(this.team.goalDirection));
         }
       } else {
         let destination = this.destinationMap.get(player) || this.chooseDestination();
