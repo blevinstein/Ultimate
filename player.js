@@ -106,7 +106,7 @@ export class Player {
 
   drop() {
     if (!this.hasDisc) { console.log('Attempted to drop without the disc!'); return; }
-    this.team.game.disc.setPosition(this.position).setVelocity([0, 0, 0]);
+    this.team.game.disc.setPosition(this.position.concat(0)).setVelocity([0, 0, 0]);
   }
 
   setHasDisc(hasDisc) {

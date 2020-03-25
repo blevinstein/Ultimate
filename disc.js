@@ -5,7 +5,7 @@ import { Game, FIELD_BOUNDS_NO_ENDZONES } from './game.js';
 const GROUND_FRICTION = 0.2;
 const AIR_FRICTION = 0.01;
 const HAND_HEIGHT = 3;
-const GRAVITY = 0.1;
+const GRAVITY = 0.05;
 
 const MAX_CATCH_DIST = 2;
 const MAX_PICKUP_DIST = 1;

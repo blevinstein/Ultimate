@@ -1,6 +1,9 @@
 
 import { getVector, mag2d, mul2d, sub2d } from '../math_utils.js';
+import { RangeFinder } from '../range_finder.js';
 import { Strategy } from './strategy.js';
+
+const MAX_THROW_SPEED = 3;
 
 export class KickoffStrategy extends Strategy {
   static create(game, team) {
@@ -10,6 +13,7 @@ export class KickoffStrategy extends Strategy {
   constructor(game, team) {
     super(game, team);
     this.delay = 30;
+    this.rangeFinder = new RangeFinder(MAX_THROW_SPEED);
   }
 
   update() {
@@ -20,11 +24,7 @@ export class KickoffStrategy extends Strategy {
     const playerWithDisc = this.game.playerWithDisc();
     if (!playerWithDisc) { console.log('No player has the disc!!!'); return true; }
     const target = this.team.goalDirection === 'W' ? [10, Math.random() * 40] : [100, Math.random() * 40];
-    const vector2d = sub2d(target, playerWithDisc.position);
-    const forward = Math.random() * 2 + 1;
-    const upward = Math.random() * 2 + 1;
-    const vector = mul2d(vector2d, forward / mag2d(vector2d)).concat(upward);
-    playerWithDisc.throw(vector);
+    playerWithDisc.throw(this.rangeFinder.getThrowVector(sub2d(target, playerWithDisc.position)));
     return true;
   }
 }

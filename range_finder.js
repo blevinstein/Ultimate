@@ -10,7 +10,7 @@ export class RangeFinder {
     this.samples = [];
 
     for (let i = STEP; i < maxSpeed; i += STEP) {
-      for (let j = STEP; j <= i; j += STEP) {
+      for (let j = STEP; j < maxSpeed; j += STEP) {
         if (mag2d([i, j]) < maxSpeed) {
           this.samples.push({
             input: [i, j],

@@ -242,6 +242,10 @@ export class Game {
           this.swapSides();
         }
       }
+    } else {
+      // Player is not in bounds; disc is surrendered to the other team
+      player.drop()
+      this.setState(STATES.Pickup)
     }
   }
 

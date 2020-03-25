@@ -7,7 +7,7 @@ import { Strategy } from './strategy.js';
 
 const NUM_CANDIDATES = 10;
 const GOAL_RADIUS = 2;
-const MAX_THROW_SPEED = 3;
+const MAX_THROW_SPEED = 2;
 const MIN_PROGRESS = 5;
 
 // returns [player, distance]

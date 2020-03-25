@@ -20,7 +20,9 @@ export class ClosestPickupStrategy extends Strategy {
     if (this.game.disc.grounded) {
       target = this.game.disc.position;
     } else {
-      [target] = Disc.simulateUntilGrounded(sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]), this.game.disc.velocity);
+      [target] = Disc.simulateUntilGrounded(
+          sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]),
+          this.game.disc.velocity);
     }
 
     // Determine closest player
