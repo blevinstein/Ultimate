@@ -129,7 +129,7 @@ export class Disc {
   static simulateUntilGrounded(initialPosition, initialVelocity) {
     if (initialPosition.some(isNaN)) { throw new Error('Invalid initialPosition: ' + initialPosition); }
     if (initialVelocity.some(isNaN)) { throw new Error('Invalid initialVelocity: ' + initialVelocity); }
-    let disc = new Disc(null, null, initialPosition).setVelocity(initialVelocity);
+    const disc = new Disc(null, null, initialPosition).setVelocity(initialVelocity);
     let time = 0;
     while (!disc.grounded) {
       time++;

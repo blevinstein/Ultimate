@@ -13,9 +13,11 @@ const ARM_LENGTH = 1;
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
     this.team = team;
-    this.discSprite = team.game.resources.discSprite;
-    this.runningSprites = team.resources.runningSprites;
-    this.standingSprites = team.resources.standingSprites;
+    if (team && team.game && team.game.resources) {
+      this.discSprite = team.game.resources.discSprite;
+      this.runningSprites = team.resources.runningSprites;
+      this.standingSprites = team.resources.standingSprites;
+    }
     this.position = initialPosition;
     this.velocity = [0, 0];
     this.direction = initialDirection;
@@ -109,5 +111,19 @@ export class Player {
 
   setHasDisc(hasDisc) {
     this.hasDisc = hasDisc;
+  }
+
+  // return time to reach the location
+  static simulateRunTime(location, initialVelocity, goalRadius = 1) {
+    const player = new Player(null, [0, 0]);
+    let time = 0;
+    let target;
+    do {
+      target = sub2d(location, player.position);
+      player.move(target);
+      player.update();
+      time++;
+    } while (mag2d(target) > goalRadius);
+    return time;
   }
 }
