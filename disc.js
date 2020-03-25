@@ -68,12 +68,12 @@ export class Disc {
     this.position = add3d(this.position, this.velocity);
 
     // Gravity
-    this.velocity[2] -= 0.1;
+    this.velocity = add3d(this.velocity, [0, 0, -0.1]);
 
     // Ground contact
     if (this.position[2] <= 0) {
-      this.position[2] = 0;
-      this.velocity[2] = 0;
+      this.position = this.position.slice(0, 2).concat(0);
+      this.velocity = this.velocity.slice(0, 2).concat(0);
       this.grounded = true;
       this.velocity = mul3d(this.velocity, 1 - GROUND_FRICTION);
     } else {
