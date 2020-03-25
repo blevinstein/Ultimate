@@ -11,6 +11,8 @@ export class ClosestPickupStrategy extends Strategy {
   update() {
     // Strategy expires when disc is picked up
     if (!this.game.disc.position) { return true; }
+    // Strategy expires if the other team has possession
+    if (this.game.disc.grounded && !this.team.onOffense) { return true; }
 
     let target;
     if (this.game.disc.grounded) {
@@ -23,6 +25,7 @@ export class ClosestPickupStrategy extends Strategy {
     let closestPlayer;
     let closestDist;
     for (let player of this.team.players) {
+      if (this.game.lastThrower == player) { continue; }
       // Note that we can use 3d disc.position as a 2d position; z coord is ignored
       let dist = dist2d(player.position, target);
       if (!closestPlayer || dist < closestDist) {
