@@ -1,6 +1,7 @@
 
 import { dist2d, mul2d, sub2d, getVector } from '../math_utils.js';
 import { Strategy } from './strategy.js';
+import { Disc } from '../disc.js';
 
 export class ClosestPickupStrategy extends Strategy {
   static create(game, team) {
@@ -25,7 +26,12 @@ export class ClosestPickupStrategy extends Strategy {
 
     for (let player of this.team.players) {
       if (player == closestPlayer) {
-        player.move(sub2d(this.game.disc.position, player.position));
+        if (this.game.disc.grounded) {
+          player.move(sub2d(this.game.disc.position, player.position));
+        } else {
+          let [location] = Disc.simulateUntilGrounded(this.game, this.game.disc.position, this.game.disc.velocity);
+          player.move(sub2d(location, player.position));
+        }
       } else {
         player.move(mul2d(getVector(this.team.goalDirection), 10));
       }

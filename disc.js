@@ -13,6 +13,7 @@ export class Disc {
     this.game = game;
     this.sprite = game.resources.discSprite;
     this.shadowSprite = game.resources.discShadowSprite;
+    this.velocity = [0, 0, 0];
     if (initialPlayer) {
       setPlayer(initialPlayer);
     } else if (initialPosition) {
@@ -62,30 +63,34 @@ export class Disc {
     // TODO: Draw near player? Highlight player?
   }
 
+  updatePhysics() {
+    // Momentum
+    this.position = add3d(this.position, this.velocity);
+
+    // Gravity
+    this.velocity[2] -= 0.1;
+
+    // Ground contact
+    if (this.position[2] <= 0) {
+      this.position[2] = 0;
+      this.velocity[2] = 0;
+      this.grounded = true;
+      this.velocity = mul3d(this.velocity, 1 - GROUND_FRICTION);
+    } else {
+      // TODO: Add lift
+      this.velocity = mul3d(this.velocity, 1 - AIR_FRICTION);
+    }
+  }
+
   // Update disc, including catch/pickup and grounding events.
   update() {
     if (this.position) {
       const wasGrounded = this.grounded;
 
-      // Momentum
-      this.position = add3d(this.position, this.velocity);
-
-      // Gravity
-      this.velocity[2] -= 0.1;
-
-      // Ground contact
-      if (this.position[2] <= 0) {
-        this.position[2] = 0;
-        this.velocity[2] = 0;
-        this.grounded = true;
-        if (!wasGrounded) { this.game.discGrounded(); }
-        this.velocity = mul3d(this.velocity, 1 - GROUND_FRICTION);
-      } else {
-        // TODO: Add lift
-        this.velocity = mul3d(this.velocity, 1 - AIR_FRICTION);
-      }
+      this.updatePhysics();
 
       if (this.grounded) {
+        if (!wasGrounded) { this.game.discGrounded(); }
         let pickupCandidate;
         let pickupDist;
         for (let player of this.game.offensiveTeam().players) {
@@ -117,5 +122,16 @@ export class Disc {
         }
       }
     }
+  }
+
+  // returns [groundedPosition, groundedTime]
+  static simulateUntilGrounded(game, initialPosition, initialVelocity) {
+    let disc = new Disc(game, null, initialPosition).setVelocity(initialVelocity);
+    let time = 0;
+    while (!disc.grounded) {
+      time++;
+      disc.updatePhysics();
+    }
+    return [disc.position, time]
   }
 }
