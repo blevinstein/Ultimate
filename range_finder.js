@@ -39,8 +39,6 @@ export class RangeFinder {
         min = mid;
       }
     }
-    console.log('Chose sample: ' + filteredSamples[min].input + ' => ' + filteredSamples[min].output);
-    console.log('Chose sample: ' + filteredSamples[max].input + ' => ' + filteredSamples[max].output);
     return filteredSamples[max].input;
   }
 
@@ -48,9 +46,6 @@ export class RangeFinder {
     let params = this.getParams(mag2d(vector2d), minTime);
     if (!params) { return null; }
     let [forward, upward] = params;
-    let vector3d = mul2d(vector2d, forward / mag2d(vector2d)).concat(upward);
-    let [simulatedDisplacement] = Disc.simulateUntilGrounded([0, 0, 0.1], vector3d);
-    console.log('requested ' + vector2d + ' actual ' + simulatedDisplacement);
-    return vector3d;
+    return mul2d(vector2d, forward / mag2d(vector2d)).concat(upward);
   }
 }
