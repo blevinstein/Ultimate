@@ -3,7 +3,7 @@ import { getVector, mag2d, mul2d, sub2d } from '../math_utils.js';
 import { RangeFinder } from '../range_finder.js';
 import { Strategy } from './strategy.js';
 
-const MAX_THROW_SPEED = 3;
+const MAX_THROW_SPEED = 4;
 
 export class KickoffStrategy extends Strategy {
   static create(game, team) {

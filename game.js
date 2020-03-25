@@ -2,7 +2,6 @@
 import { Disc } from './disc.js';
 import { FrameBuffer } from './frame_buffer.js';
 import { Team } from './team.js';
-import { ChargeStrategy } from './strategy/charge.js';
 import { ClosestPickupStrategy } from './strategy/closest_pickup.js';
 import { IdleStrategy } from './strategy/idle.js';
 import { KickoffStrategy } from './strategy/kickoff.js';
@@ -86,10 +85,10 @@ function pickStrategy(game, team) {
     case STATES.Reset:
       return RetreatStrategy.create(game, team);
     case STATES.GameOver:
+      // TODO: More fun behavior? High fives, celebrations?
       return RetreatStrategy.create(game, team);
   }
-  console.log('Default idle in state ' + game.state);
-  return IdleStrategy.create(game, team);
+  throw new Error('Unexpected state: ' + game.state);
 }
 
 export class Game {

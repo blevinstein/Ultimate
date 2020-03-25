@@ -23,6 +23,5 @@ export class ChargeStrategy extends Strategy {
         player.move(sub2d(target, player.position));
       }
     }
-    return true;
   }
 }

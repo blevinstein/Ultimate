@@ -3,7 +3,7 @@ import { add3d, dist2d, dist3d, mul3d, sub3d, linearInterpolate, project2d, proj
 import { Game, FIELD_BOUNDS_NO_ENDZONES } from './game.js';
 
 const GROUND_FRICTION = 0.2;
-const AIR_FRICTION = 0.01;
+const AIR_FRICTION = 0.03;
 const HAND_HEIGHT = 3;
 const GRAVITY = 0.05;
 
