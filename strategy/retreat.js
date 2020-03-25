@@ -3,7 +3,7 @@ import { getVector, add2d, mul2d, sub2d } from '../math_utils.js';
 import { Game } from '../game.js';
 import { Strategy } from './strategy.js';
 
-const BOUNDS = [[5, 105], [5, 35]];
+const BOUNDS = [[19, 91], [5, 35]];
 
 export class RetreatStrategy extends Strategy {
   static create(game, team) {
@@ -12,9 +12,9 @@ export class RetreatStrategy extends Strategy {
 
   update() {
     for (let player of this.team.players) {
-      if (this.team.goalDirection === 'W' && player.position[0] >= 90) {
+      if (this.team.goalDirection === 'W' && player.position[0] >= 90 && Game.isInBounds(player.position)) {
         player.rest(getVector(this.team.goalDirection));
-      } else if (this.team.goalDirection === 'E' && player.position[0] <= 20) {
+      } else if (this.team.goalDirection === 'E' && player.position[0] <= 20 && Game.isInBounds(player.position)) {
         player.rest(getVector(this.team.goalDirection));
       } else {
         let target = Game.snapToBounds(

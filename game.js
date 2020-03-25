@@ -123,7 +123,7 @@ export class Game {
       // Pick a strategy if we don't have one active
       if (!team.strategy) {
         team.strategy = pickStrategy(this, team);
-        // DEBUG: console.log('New strategy: ' + team.strategy.constructor.name);
+        console.log('New strategy: ' + team.strategy.constructor.name);
       }
       if (team.strategy) {
         if (team.strategy.update()) {
@@ -260,7 +260,7 @@ export class Game {
   }
 
   static snapToBounds(position, bounds) {
-    let result = position.slice();
+    let result = position.slice(0, 2);
     if (result[0] < bounds[0][0]) { result[0] = bounds[0][0]; }
     if (result[0] > bounds[0][1]) { result[0] = bounds[0][1]; }
     if (result[1] < bounds[1][0]) { result[1] = bounds[1][0]; }

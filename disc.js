@@ -93,10 +93,8 @@ export class Disc {
 
       if (this.grounded) {
         if (!wasGrounded) { this.game.discGrounded(); }
-        // Reset to last in-bounds position
-        // TODO: snap to sideline
         if (!Game.isInBounds(this.position)) {
-          this.position = Game.snapToBounds(this.position, FIELD_BOUNDS_NO_ENDZONES);
+          this.position = Game.snapToBounds(this.position, FIELD_BOUNDS_NO_ENDZONES).concat(0);
           this.velocity = [0, 0, 0];
         }
         let pickupCandidate;

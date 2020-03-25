@@ -10,7 +10,6 @@ const fieldSize = [992, 408];
 
 let resources = {};
 let initialized = false;
-let game;
 let fieldScale;
 let fieldOffset;
 
@@ -21,7 +20,7 @@ window.initialize = function () {
   window.onkeypress = (event) => {
     if (event.key.toUpperCase() === 'R') {
       window.clearTimeout(frameCallback);
-      game = new Game(resources);
+      window.game = new Game(resources);
       frameCallback = window.setTimeout(draw, FRAME_TIME);
     } else if (event.key.toUpperCase() === 'Q') {
       window.clearTimeout(frameCallback);
@@ -78,7 +77,7 @@ function start() {
   const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
   context.save()
-  game = new Game(resources);
+  window.game = new Game(resources);
 
   frameCallback = setTimeout(draw, FRAME_TIME);
 }
