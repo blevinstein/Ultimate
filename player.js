@@ -1,10 +1,10 @@
 
-import { linearInterpolate, project3d, project2d, getDirection } from './math_utils.js';
+import { linearInterpolate, project3d, project2d, getDirection, add2d, mul2d, mag2d } from './math_utils.js';
 
 const STEP = [0, 1, 2, 1];
 const SUBFRAMES = 10;
 const PLAYER_SPEED = 0.5;
-const MIN_MOVEMENT = 1;
+const MIN_MOVEMENT = 0.1;
 const HANDLE_HEIGHT = 3;
 const ARM_LENGTH = 1;
 
@@ -47,11 +47,10 @@ export class Player {
     // TODO: Use max accel instead of max speed
     const magnitude = Math.sqrt(Math.pow(amount[0], 2) + Math.pow(amount[1], 2));
     const multiplier = magnitude > PLAYER_SPEED ? PLAYER_SPEED / magnitude : 1;
-    for (let i of [0, 1]) {
-      this.position[i] += amount[i] * multiplier;
-    }
-    this.moving = Math.sqrt(Math.pow(amount[0], 2) + Math.pow(amount[1], 2)) > MIN_MOVEMENT;
-    this.direction = getDirection(amount);
+    const scaledAmount = mul2d(amount, multiplier);
+    this.position = add2d(this.position, scaledAmount);
+    this.moving = mag2d(scaledAmount) > MIN_MOVEMENT;
+    this.direction = getDirection(scaledAmount);
   }
 
   rest() {
