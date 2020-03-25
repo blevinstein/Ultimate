@@ -5,7 +5,7 @@ import { toImageData, fromImageData, loadImage, sliceImage, getPixel, writePixel
 import { Game } from './game.js';
 import { Team } from './team.js';
 
-const fieldSize = [496, 204];
+const fieldSize = [992, 408];
 
 let resources = {};
 let initialized = false;

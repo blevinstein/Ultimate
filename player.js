@@ -1,23 +1,17 @@
 
-import { linearInterpolate } from './math_utils.js';
+import { linearInterpolate, project3d, project2d } from './math_utils.js';
 
 const STEP = [0, 1, 2, 1];
 const SUBFRAMES = 10;
-const PLAYER_HEIGHT = 2;
 const PLAYER_SPEED = 0.5;
 const MIN_MOVEMENT = 1;
-
-// Project from rect 110x40 to trapezoid 410/445x172 offset 25x30
-function project(position) {
-  let xShrinkFactor = linearInterpolate(415.0/445, 1, position[1] / 40);
-  let xPosition = (xShrinkFactor * (position[0] - 55) + 55) * 445.0/110 + 25;
-  let yPosition = 30 + position[1] * 172.0/40;
-  return [xPosition, yPosition];
-}
+const HANDLE_HEIGHT = 3;
+const ARM_LENGTH = 1;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
     this.team = team;
+    this.discSprite = team.game.resources.discSprite;
     this.runningSprites = team.resources.runningSprites;
     this.standingSprites = team.resources.standingSprites;
     this.position = initialPosition;
@@ -28,7 +22,7 @@ export class Player {
   }
 
   draw(frameBuffer) {
-    const screenPosition = project(this.position);
+    const screenPosition = project2d(this.position);
     const sprite = this.moving
       ? this.runningSprites[this.direction][STEP[Math.trunc(this.frame++ / SUBFRAMES) % 4]]
       : this.standingSprites[this.direction];
@@ -37,9 +31,18 @@ export class Player {
         screenPosition[0] - sprite.width / 2,
         screenPosition[1] - sprite.height,
         this.position[1]);
+    if (this.hasDisc) {
+      const discScreenPosition = project3d([this.position[0] + ARM_LENGTH, this.position[1], HANDLE_HEIGHT]);
+      frameBuffer.drawImage(
+          this.discSprite,
+          discScreenPosition[0] - this.discSprite.width / 2,
+          discScreenPosition[1] - this.discSprite.height / 2,
+          this.position[1] + 0.1);
+    }
   }
 
   move(amount) {
+    if (amount.some(isNaN)) { throw new Error('Invalid move amount: ' + amount); }
     // TODO: Add interactions between players (e.g. must cut around defender, pick call?)
     // TODO: Use max accel instead of max speed
     const magnitude = Math.sqrt(Math.pow(amount[0], 2) + Math.pow(amount[1], 2));
@@ -60,7 +63,7 @@ export class Player {
     if (velocity.length < 3) { console.log('Expected a 3d vector, got ' + velocity); return; }
     if (velocity.some(isNaN)) { console.log('Velocity contains NaN: ' + velocity); return; }
     if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }
-    this.team.game.disc.setPosition(this.position.concat(PLAYER_HEIGHT)).setVelocity(velocity);
+    this.team.game.disc.setPosition(this.position.concat(HANDLE_HEIGHT)).setVelocity(velocity);
     this.team.game.discThrownBy(this);
   }
 

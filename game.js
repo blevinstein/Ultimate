@@ -8,6 +8,7 @@ import { IdleStrategy } from './strategy/idle.js';
 import { KickoffStrategy } from './strategy/kickoff.js';
 import { ManToManDefenseStrategy } from './strategy/man_defense.js';
 import { RetreatStrategy } from './strategy/retreat.js';
+import { RandomOffenseStrategy } from './strategy/random_offense.js';
 
 const SHIRT = [224, 80, 0, 255];
 const PANTS = [72, 88, 0, 255];
@@ -42,7 +43,7 @@ const STATES = {
   Receiving: 'receiving', // Waiting for offense to receive pull
   Pickup: 'pickup', // Waiting for offense to pickup grounded disc
   Normal: 'normal', // Normal play; posession changes on grounded disc
-  Reset: 'rest', // Waiting for players to return to the line after a score
+  Reset: 'reset', // Waiting for players to return to the line after a score
 };
 
 // returns the create function for the chosen strategy
@@ -67,7 +68,7 @@ function pickStrategy(game, team) {
       }
     case STATES.Normal:
       if (team.onOffense) {
-        return IdleStrategy.create(game, team);
+        return RandomOffenseStrategy.create(game, team);
       } else {
         return ManToManDefenseStrategy.create(game, team);
       }
@@ -120,6 +121,18 @@ export class Game {
   offensiveTeam() { return this.teams.find(t => t.onOffense); }
 
   defensiveTeam() { return this.teams.find(t => !t.onOffense); }
+
+  playerWithDisc() {
+    switch (this.state) {
+      case STATES.Kickoff:
+      case STATES.Reset:
+        return this.defensiveTeam().players.find(p => p.hasDisc);
+      case STATES.Normal:
+        return this.offensiveTeam().players.find(p => p.hasDisc);
+      default:
+        return null;
+    }
+  }
 
   setOffensiveTeam(team) {
     for (let t of this.teams) { t.onOffense = false; }

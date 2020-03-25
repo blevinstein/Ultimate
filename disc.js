@@ -1,5 +1,5 @@
 
-import { dist2d, dist3d, linearInterpolate } from './math_utils.js';
+import { dist2d, dist3d, linearInterpolate, project2d, project3d } from './math_utils.js';
 
 const GROUND_FRICTION = 0.8;
 const AIR_FRICTION = 0.99;
@@ -7,14 +7,6 @@ const PLAYER_HEIGHT = 2;
 
 const MAX_CATCH_DIST = 1;
 const MAX_PICKUP_DIST = 1;
-
-// Project from cuboid 110x40xInf to trapezoid 410/455x172 offset 25x30
-function project(position) {
-  let xShrinkFactor = linearInterpolate(415.0/445, 1, position[1] / 40);
-  let xPosition = (xShrinkFactor * (position[0] - 55) + 55) * 445.0/110 + 25;
-  let yPosition = 30 + (position[1] - position[2] / 2) * 172.0/40;
-  return [xPosition, yPosition];
-}
 
 export class Disc {
   constructor(game, initialPlayer, initialPosition) {
@@ -54,8 +46,8 @@ export class Disc {
 
   draw(frameBuffer) {
     if (this.position) {
-      const screenPosition = project(this.position);
-      const shadowPosition = project([this.position[0], this.position[1], 0]);
+      const screenPosition = project3d(this.position);
+      const shadowPosition = project2d(this.position);
       frameBuffer.drawImage(
           this.shadowSprite,
           shadowPosition[0] - this.shadowSprite.width / 2,

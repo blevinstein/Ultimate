@@ -9,9 +9,9 @@ export class KickoffStrategy extends Strategy {
 
   update() {
     if (!this.team.hasDisc()) { console.log('Cannot pull without the disc!'); return true; }
-    const playerWithDisc = this.team.players.find(p => p.hasDisc);
+    const playerWithDisc = this.game.playerWithDisc();
     if (!playerWithDisc) { console.log('No player has the disc!!!'); return true; }
-    const target = this.team.goalDirection === 'W' ? [10, 20] : [100, 20];
+    const target = this.team.goalDirection === 'W' ? [10, Math.random() * 40] : [100, Math.random() * 40];
     const vector2d = sub2d(target, playerWithDisc.position);
     const vector = mul2d(vector2d, 5 / mag2d(vector2d)).concat(5);
     playerWithDisc.throw(vector);
