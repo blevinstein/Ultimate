@@ -70,7 +70,7 @@ function pickStrategy(game, team) {
         return new ManToManDefenseStrategy(game, team);
       }
     case STATES.Normal:
-      if (game.disc.position) {
+      if (game.disc.isLoose()) {
         if (team.onOffense) {
           return new ClosestPickupStrategy(game, team);
         } else {

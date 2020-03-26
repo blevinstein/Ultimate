@@ -45,7 +45,7 @@ export class RandomOffenseStrategy extends Strategy {
   }
 
   update() {
-    if (!this.team.onOffense || this.game.disc.position) { return true; }
+    if (!this.team.onOffense || this.game.disc.isLoose()) { return true; }
 
     for (let player of this.team.players) {
       if (player.hasDisc) {

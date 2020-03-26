@@ -34,6 +34,10 @@ export class Disc {
     }
   }
 
+  isLoose() {
+    return !!this.position;
+  }
+
   setPosition(position) {
     if (this.player) { this.player.setHasDisc(false); }
     this.position = check3d(position);

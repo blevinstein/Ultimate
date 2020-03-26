@@ -23,8 +23,7 @@ export class ManToManDefenseStrategy extends Strategy {
   update() {
     if (this.team.onOffense) { return true; }
 
-    // If the disc is in the air, assign closest player to intercept
-    const interceptor = this.game.disc.position
+    const interceptor = this.game.disc.isLoose()
         && Game.getClosestPlayer(this.team.players, this.game.disc.position)[0];
 
     for (let player of this.team.players) {

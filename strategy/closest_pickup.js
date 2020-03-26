@@ -8,13 +8,12 @@ const HAND_HEIGHT = 3;
 
 export class ClosestPickupStrategy extends Strategy {
   update() {
-    // Strategy expires when disc is picked up
-    if (!this.game.disc.position) { return true; }
-    // Strategy expires if the other team has possession
+    if (!this.game.disc.isLoose()) { return true; }
+    // Strategy expires if the other team has possession.
     if (this.game.disc.grounded && !this.team.onOffense) { return true; }
 
     const target = this.game.disc.grounded
-        ?  this.game.disc.position
+        ? this.game.disc.position
         : Disc.simulateUntilGrounded(
               sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]),
               this.game.disc.velocity,
