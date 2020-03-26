@@ -1,24 +1,35 @@
 
-// Records all drawImage calls, then replays them in order of increasing
-// y-coordinate.
+// Records all draw actions, then replays them in order of increasing depth
 export class FrameBuffer {
   constructor() {
-    this.sprites = [];
+    this.drawOperations = [];
   }
 
-  drawImage(image, screenX, screenY, y) {
-    this.sprites.push({
-      image,
-      screenX,
-      screenY,
-      y
+  drawImage(image, screenX, screenY, depth) {
+    this.drawOperations.push({
+        depth,
+        draw: context => context.drawImage(image, screenX, screenY),
+    });
+  }
+
+  drawEllipse(screenX, screenY, radiusX, radiusY, rotation, depth) {
+    this.drawOperations.push({
+        depth,
+        draw: context =>
+            context.drawEllipse(screenX,
+                screenY,
+                radiusX,
+                radiusY,
+                rotation,
+                0,
+                2 * Math.PI),
     });
   }
 
   drawScene(context) {
-    this.sprites.sort((a, b) => a.y - b.y);
-    for (let sprite of this.sprites) {
-      context.drawImage(sprite.image, sprite.screenX, sprite.screenY);
+    this.drawOperations.sort((a, b) => a.depth - b.depth);
+    for (let drawOperation of this.drawOperations) {
+      drawOperation.draw(context);
     }
   }
 }
