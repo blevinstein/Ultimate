@@ -43,3 +43,4 @@ Backlog
   - Dump cut
   - Rest
   - Clear the lane
+- Cleanup Disc constructor
