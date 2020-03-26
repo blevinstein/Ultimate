@@ -7,11 +7,11 @@ const HAND_HEIGHT = 3;
 const GRAVITY = 0.05;
 
 const OPTIMAL_DRAG_ANGLE = 0;
-const DRAG_CONST = 0.02;
-const DRAG_QUADRATIC = 0.02;
+const DRAG_CONST = 0.001;
+const DRAG_QUADRATIC = 0.1;
 
-const LIFT_CONST = 0.001;
-const LIFT_LINEAR = 0.01;
+const LIFT_CONST = 0.0001;
+const LIFT_LINEAR = 0.02;
 
 const MAX_CATCH_DIST = 2;
 const MAX_PICKUP_DIST = 1;
@@ -95,7 +95,8 @@ export class Disc {
       const speed = mag3d(this.velocity);
       const velocityDirection = mul3d(this.velocity, 1 / speed);
       const sideDirection = norm3d(cross3d(velocityDirection, this.upVector));
-      const liftDirection = cross3d(velocityDirection, sideDirection);
+      let liftDirection = cross3d(velocityDirection, sideDirection);
+      if (magnitudeAlong3d(liftDirection, this.upVector) < 0) { liftDirection = mul3d(liftDirection, -1); }
 
       const angleOfAttack = this.angleOfAttack();
 
@@ -171,6 +172,7 @@ export class Disc {
           }
         }
         if (catchCandidate) {
+          // TODO: Decelerate disc gracefully?
           this.setPlayer(catchCandidate);
           this.game.discCaughtBy(catchCandidate);
         }

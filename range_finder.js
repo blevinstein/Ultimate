@@ -3,6 +3,7 @@ import { mag2d, mul2d } from './math_utils.js';
 import { Disc } from './disc.js';
 
 const VELOCITY_STEP = 0.1;
+const MAX_LAUNCH_ANGLE = Math.PI / 4;
 const MIN_ANGLE = -Math.PI / 6;
 const MAX_ANGLE = Math.PI / 2;
 const ANGLE_STEP = Math.PI / 12;
@@ -27,8 +28,10 @@ export class RangeFinder {
     this.samples = [];
 
     for (let xVelocity = VELOCITY_STEP; xVelocity <= maxSpeed; xVelocity += VELOCITY_STEP) {
-      // Calculate max y component which keeps |velocity| < maxSpeed
-      let maxZVelocity = Math.sqrt(Math.pow(maxSpeed, 2) - Math.pow(xVelocity, 2));
+      // Calculate max y component which keeps |velocity| < maxSpeed and respect MAX_LAUNCH_ANGLE
+      let maxZVelocity = Math.min(
+          Math.sqrt(Math.pow(maxSpeed, 2) - Math.pow(xVelocity, 2)),
+          xVelocity * Math.sin(MAX_LAUNCH_ANGLE));
       for (let zVelocity = VELOCITY_STEP; zVelocity <= maxZVelocity; zVelocity += VELOCITY_STEP) {
         for (let angleOfAttack = 0; angleOfAttack <= MAX_ANGLE; angleOfAttack += ANGLE_STEP) {
           let velocity = [xVelocity, 0, zVelocity];
