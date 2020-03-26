@@ -24,7 +24,7 @@ export class Disc {
       this.shadowSprite = game.resources.discShadowSprite;
     }
     if (initialPlayer) {
-      setPlayer(initialPlayer);
+      this.setPlayer(initialPlayer);
     } else if (initialPosition) {
       this.setPosition(initialPosition);
       this.velocity = [0, 0, 0];

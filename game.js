@@ -2,7 +2,7 @@
 import { dist2d, mag2d, sub2d } from './math_utils.js';
 import { Disc } from './disc.js';
 import { FrameBuffer } from './frame_buffer.js';
-import { Team } from './team.js';
+import { Team, NUM_PLAYERS } from './team.js';
 import { ClosestPickupStrategy } from './strategy/closest_pickup.js';
 import { IdleStrategy } from './strategy/idle.js';
 import { KickoffStrategy } from './strategy/kickoff.js';
@@ -99,7 +99,7 @@ export class Game {
     this.teams = [
         new Team(this, RED_COLORS, 'W').addPlayers(false),
         new Team(this, BLUE_COLORS, 'E').addPlayers(true).setOnOffense(true)];
-    this.disc = new Disc(this).setPlayer(this.teams[0].players[Math.trunc(Math.random() * Team.NUM_PLAYERS)]);
+    this.disc = new Disc(this).setPlayer(this.teams[0].players[Math.trunc(Math.random() * NUM_PLAYERS)]);
     this.setState(STATES.Kickoff);
   }
 
