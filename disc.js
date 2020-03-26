@@ -54,6 +54,10 @@ export class Disc {
     return this;
   }
 
+  accelerate(acceleration) {
+    this.velocity = add3d(this.velocity, check3d(acceleration));
+  }
+
   setUpVector(upVector) {
     check3d(upVector);
     this.upVector = mul3d(upVector, 1 / mag3d(upVector));
@@ -74,6 +78,16 @@ export class Disc {
           screenPosition[0] - this.sprite.width / 2,
           screenPosition[1] - this.sprite.height / 2,
           this.position[1]);
+    }
+  }
+
+  applyFriction(amount) {
+    if (typeof amount === 'number') {
+      this.velocity = mul3d(this.velocity, 1 - amount);
+    } else if (amount instanceof Array) {
+      this.velocity = mul3d(this.velocity, amount.map(a => 1 - a));
+    } else {
+      throw new Error('Unexpected argument: ' + amount);
     }
   }
 
