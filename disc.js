@@ -30,7 +30,6 @@ export class Disc {
 
   isLoose() {
     return !this.player;
-    return !!this.position;
   }
 
   setPosition(position) {
@@ -93,7 +92,6 @@ export class Disc {
 
   updatePhysics() {
     if (!this.position) { throw new Error('Cannot updatePhysics for a held disc!'); }
-    //console.log('start updatePhysics position=' + this.position + ' velocity=' + this.velocity);
     this.position = add3d(this.position, this.velocity);
     this.velocity = add3d(this.velocity, [0, 0, -GRAVITY]);
 
@@ -179,7 +177,6 @@ export class Disc {
             if (this.game.lastThrower == player) { continue; }
             let d = dist3d(player.position.concat(HAND_HEIGHT), this.position);
             if (d < (catchDist || MAX_CATCH_DIST)) {
-              console.log('good catchCandidate player=' + player + ' lastThrower=' + this.game.lastThrower);
               catchCandidate = player;
               catchDist = d;
             }
