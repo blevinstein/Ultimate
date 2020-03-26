@@ -43,6 +43,7 @@ export class Disc {
   setPlayer(player) {
     if (this.player) { this.player.setHasDisc(false); }
     this.player = player;
+    if (!this.position) { this.position = player.position.concat(HAND_HEIGHT); }
     this.player.setHasDisc(true);
     this.grounded = false;
     return this;
