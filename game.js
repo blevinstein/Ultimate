@@ -216,7 +216,7 @@ export class Game {
       if (player.team.onOffense) {
         this.setState(STATES.Normal);
       } else {
-        // Defensive player cannot intercept the pull
+        console.log('Defensive player cannot intercept the pull!');
         player.drop();
         this.setState(STATES.Pickup);
       }

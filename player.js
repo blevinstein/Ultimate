@@ -13,6 +13,9 @@ const ARM_LENGTH = 1;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
+    Player.maxId = Player.maxId || 0;
+    this.id = Player.maxId++;
+
     this.team = team;
     if (team && team.game && team.game.resources) {
       this.discSprite = team.game.resources.discSprite;
@@ -25,6 +28,10 @@ export class Player {
     this.moving = false;
     this.frame = Math.trunc(Math.random() * 4 * SUBFRAMES);
     this.hasDisc = false;
+  }
+
+  toString() {
+    return 'Player[' + this.id + ']';
   }
 
   draw(frameBuffer) {
