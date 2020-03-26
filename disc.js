@@ -17,24 +17,19 @@ const MAX_CATCH_DIST = 2;
 const MAX_PICKUP_DIST = 1;
 
 export class Disc {
-  constructor(game, initialPlayer, initialPosition) {
+  constructor(game) {
     this.game = game;
+    this.velocity = [0, 0, 0];
+    this.upVector = [0, 0, 1];
+    this.position = [55, 20, 0];
     if (game && game.resources) {
       this.sprite = game.resources.discSprite;
       this.shadowSprite = game.resources.discShadowSprite;
     }
-    if (initialPlayer) {
-      this.setPlayer(initialPlayer);
-    } else if (initialPosition) {
-      this.setPosition(initialPosition);
-      this.velocity = [0, 0, 0];
-      this.upVector = [0, 0, 1];
-    } else {
-      this.setPosition([55, 20, 0]);
-    }
   }
 
   isLoose() {
+    return !this.player;
     return !!this.position;
   }
 
@@ -50,7 +45,6 @@ export class Disc {
     if (this.player) { this.player.setHasDisc(false); }
     this.player = player;
     this.player.setHasDisc(true);
-    this.position = null;
     this.grounded = false;
     return this;
   }
@@ -208,7 +202,7 @@ export class Disc {
 
   // returns [groundedPosition, groundedTime]
   static simulateUntilGrounded(initialPosition, initialVelocity, upVector) {
-    const disc = new Disc(null, null, check3d(initialPosition))
+    const disc = new Disc().setPosition(check3d(initialPosition))
         .setVelocity(check3d(initialVelocity))
         .setUpVector(upVector);
     let time = 0;

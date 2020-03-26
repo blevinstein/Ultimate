@@ -10,6 +10,8 @@ const DECEL_STEPS = MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
 const MIN_MOVEMENT = 0.04;
 const HANDLE_HEIGHT = 3;
 const ARM_LENGTH = 1;
+const CATCH_FRICTION = 0.5;
+const HANDLE_ACCEL = 1;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
