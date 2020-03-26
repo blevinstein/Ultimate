@@ -144,7 +144,7 @@ export class Disc {
 
   // Update disc, including catch/pickup and grounding events.
   update() {
-    if (this.position) {
+    if (this.isLoose()) {
       const wasGrounded = this.grounded;
 
       this.updatePhysics();
