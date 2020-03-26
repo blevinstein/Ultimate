@@ -1,5 +1,5 @@
 
-import { linearInterpolate, magnitudeAlong, project3d, project2d, getDirection, getVector, add2d, check2d, check3d, mul2d, mag2d, sub2d } from './math_utils.js';
+import { linearInterpolate, magnitudeAlong2d, project3d, project2d, getDirection, getVector, add2d, check2d, check3d, mul2d, mag2d, sub2d } from './math_utils.js';
 import { Disc } from './disc.js';
 
 const STEP = [0, 1, 2, 1];
@@ -61,7 +61,7 @@ export class Player {
         : mul2d(vector, 1 / DECEL_STEPS);
     const desiredAcceleration = sub2d(desiredVelocity, this.velocity);
 
-    const currentSpeed = Math.max(0, magnitudeAlong(this.velocity, desiredAcceleration));
+    const currentSpeed = Math.max(0, magnitudeAlong2d(this.velocity, desiredAcceleration));
     const maxAcceleration = MAX_PLAYER_ACCEL * (1 - currentSpeed / MAX_PLAYER_SPEED);
 
     this.accelerate(mag2d(desiredAcceleration) <= maxAcceleration
@@ -72,7 +72,7 @@ export class Player {
   rest(faceVector) {
     const desiredAcceleration = mul2d(this.velocity, -1);
 
-    const currentSpeed = Math.max(0, magnitudeAlong(this.velocity, desiredAcceleration));
+    const currentSpeed = Math.max(0, magnitudeAlong2d(this.velocity, desiredAcceleration));
     const maxAcceleration = MAX_PLAYER_ACCEL * (1 - currentSpeed / MAX_PLAYER_SPEED);
 
     this.accelerate(mag2d(desiredAcceleration) <= maxAcceleration
@@ -98,6 +98,7 @@ export class Player {
   throw(velocity, angleOfAttack) {
     // TODO: Max throw velocity
     // TODO: Add noise for high velocity throws
+    console.log('angleOfAttack = ' + angleOfAttack);
     check3d(velocity);
     if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }
     this.team.game.disc
@@ -105,8 +106,6 @@ export class Player {
         .setVelocity(velocity)
         .setUpVector(Disc.createUpVector(velocity, angleOfAttack));
     this.team.game.discThrownBy(this);
-    console.log('Intended angleOfAttack: ' + angleOfAttack);
-    console.log('Actual angleOfAttack: ' + this.team.game.disc.angleOfAttack());
   }
 
   drop() {

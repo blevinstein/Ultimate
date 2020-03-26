@@ -1,25 +1,17 @@
 
-import { add3d, check1d, check3d, cross3d, dist2d, dist3d, dot3d, mag3d, mul3d, sub3d, linearInterpolate, magnitudeAlong, project2d, project3d } from './math_utils.js';
+import { add3d, check1d, check3d, cross3d, dist2d, dist3d, dot3d, mag3d, mul3d, norm3d, sub3d, linearInterpolate, magnitudeAlong3d, project2d, project3d } from './math_utils.js';
 import { Game, FIELD_BOUNDS_NO_ENDZONES } from './game.js';
 
 const GROUND_FRICTION = 0.2;
 const HAND_HEIGHT = 3;
 const GRAVITY = 0.05;
 
-/*
-const OPTIMAL_DRAG_ANGLE = -0.07;
-const DRAG_CONST = 0.08;
-const DRAG_QUADRATIC = 2.72;
-
-const LIFT_CONST = 0.1;
-const LIFT_LINEAR = 1.4;
-*/
 const OPTIMAL_DRAG_ANGLE = 0;
-const DRAG_CONST = 0.01;
-const DRAG_QUADRATIC = 0.0;
+const DRAG_CONST = 0.02;
+const DRAG_QUADRATIC = 0.02;
 
-const LIFT_CONST = 0.0;
-const LIFT_LINEAR = 0.02;
+const LIFT_CONST = 0.001;
+const LIFT_LINEAR = 0.01;
 
 const MAX_CATCH_DIST = 2;
 const MAX_PICKUP_DIST = 1;
@@ -102,7 +94,7 @@ export class Disc {
       // Flight
       const speed = mag3d(this.velocity);
       const velocityDirection = mul3d(this.velocity, 1 / speed);
-      const sideDirection = cross3d(velocityDirection, this.upVector);
+      const sideDirection = norm3d(cross3d(velocityDirection, this.upVector));
       const liftDirection = cross3d(velocityDirection, sideDirection);
 
       const angleOfAttack = this.angleOfAttack();
@@ -119,18 +111,23 @@ export class Disc {
   }
 
   angleOfAttack() {
-    const velocityDirection = mul3d(this.velocity, 1 / mag3d(this.velocity));
+    const velocityDirection = norm3d(this.velocity);
+    if (dist3d(velocityDirection, this.upVector) === 0) { return Math.PI / 2; }
     // Get a side unit vector perpendicular to velocityDirection and upVector
-    const sideDirection = cross3d(velocityDirection, this.upVector);
-    // Get a lift vector perpendicular to velocity in the plane of velocityDirection/upVector
-    const liftDirection = cross3d(velocityDirection, sideDirection);
+    const sideDirection = norm3d(cross3d(velocityDirection, this.upVector));
     // Get a forward unit vector in the plane of velocityDirection/upVector
     let forwardDirection = cross3d(this.upVector, sideDirection);
-    if (magnitudeAlong(forwardDirection, velocityDirection) < 0) {
+    if (magnitudeAlong3d(forwardDirection, velocityDirection) < 0) {
       forwardDirection = mul3d(forwardDirection, -1);
     }
+
     // Calculate angle of attack using dot product identity
-    return Math.acos(dot3d(forwardDirection, velocityDirection));
+    let angleOfAttack = Math.acos(dot3d(forwardDirection, velocityDirection));
+    if (angleOfAttack > Math.PI / 2) { angleOfAttack = angleOfAttack - Math.PI; }
+    // Convention: if forwardDirection is more +z than velocityDirection, angleOfAttack is positive
+    return magnitudeAlong3d(sub3d(forwardDirection, velocityDirection), [0, 0, 1]) > 0
+        ? Math.abs(angleOfAttack)
+        : -Math.abs(angleOfAttack);
   }
 
   // Update disc, including catch/pickup and grounding events.
@@ -189,14 +186,15 @@ export class Disc {
     check1d(angleOfAttack);
     if (mag3d(velocity) === 0) { return [0, 0, 1]; }
     // Construct an orthogonal basis of unit vectors
-    const velocityDirection = mul3d(velocity, 1 / mag3d(velocity));
-    const sideDirection = cross3d(velocityDirection, [0, 0, 1]);
+    const velocityDirection = norm3d(velocity);
+    const sideDirection = norm3d(cross3d(velocityDirection, [0, 0, 1]));
     const liftDirection = cross3d(sideDirection, velocityDirection);
+
     // return velocityDirection rotated upwards by angleOfAttack using the
     // formula: velocityDirection * cos(angleOfAttack) + liftDirection * sin(angleOfAttack)
     let result = add3d(
-        mul3d(velocityDirection, Math.cos(angleOfAttack)),
-        mul3d(liftDirection, Math.sin(angleOfAttack)));
+        mul3d(velocityDirection, -Math.sin(angleOfAttack)),
+        mul3d(liftDirection, Math.cos(angleOfAttack)));
     return result;
   }
 
@@ -205,7 +203,6 @@ export class Disc {
     const disc = new Disc(null, null, check3d(initialPosition))
         .setVelocity(check3d(initialVelocity))
         .setUpVector(upVector);
-    console.log('Actual angleOfAttack: ' + disc.angleOfAttack());
     let time = 0;
     while (!disc.grounded) {
       time++;

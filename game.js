@@ -131,7 +131,7 @@ export class Game {
           team.strategy = null;
         }
       } else {
-        console.log('Failed to pick a strategy.');
+        throw new Error('Failed to pick a strategy.');
       }
     }
     // Players and physics update
@@ -195,7 +195,6 @@ export class Game {
   discThrownBy(player) {
     // DEBUG: console.log('discThrown');
     this.lastThrower = player;
-    this.lastThrowStart = this.disc.position;
     if (this.state === STATES.Kickoff) {
       this.setState(STATES.Receiving);
     }
@@ -204,8 +203,6 @@ export class Game {
   discGrounded() {
     // DEBUG: console.log('discGrounded');
     this.lastThrower = null;
-    let offset = sub2d(this.disc.position, this.lastThrowStart);
-    console.log('distance traveled ' + mag2d(offset) + ' (' + offset + ')');
     if (this.state === STATES.Receiving) {
       this.setState(STATES.Pickup);
     } else if (this.state === STATES.Normal) {

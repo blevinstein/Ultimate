@@ -26,8 +26,7 @@ export function mul3d(vector, multiplier) {
   } else if (multiplier instanceof Array) {
     return [vector[0] * multiplier[0], vector[1] * multiplier[1], vector[2] * multiplier[2]]
   } else {
-    console.log('Cannot multiply by ' + multiplier);
-    return [NaN, NaN, NaN]
+    throw new Error('Cannot multiply by ' + multiplier);
   }
 }
 
@@ -45,6 +44,21 @@ export function check3d(vector) {
     throw new Error('Invalid 3d vector: ' + vector);
   }
   return vector;
+}
+
+export function norm3d(vector) {
+  return mul3d(vector, 1 / mag3d(vector));
+}
+
+// returns the magnitude of 'vector' along 'direction' using this formula:
+// vector (dot) direction / |direction|
+//   = |vector| * cos(angle between vector and direction)
+export function magnitudeAlong3d(vector, direction) {
+  let mag = mag3d(direction);
+  if (mag === 0) {
+    return 0;
+  }
+  return dot3d(vector, direction) / mag;
 }
 
 export function check2d(vector) {
@@ -80,7 +94,7 @@ export function dot2d(a, b) {
 // returns the magnitude of 'vector' along 'direction' using this formula:
 // vector (dot) direction / |direction|
 //   = |vector| * cos(angle between vector and direction)
-export function magnitudeAlong(vector, direction) {
+export function magnitudeAlong2d(vector, direction) {
   let mag = mag2d(direction);
   if (mag === 0) {
     return 0;
@@ -94,8 +108,7 @@ export function mul2d(vector, multiplier) {
   } else if (multiplier instanceof Array) {
     return [vector[0] * multiplier[0], vector[1] * multiplier[1]]
   } else {
-    console.log('Cannot multiply by ' + multiplier);
-    return [NaN, NaN]
+    throw new Error('Cannot multiply by ' + multiplier);
   }
 }
 

@@ -4,8 +4,22 @@ import { Disc } from './disc.js';
 
 const VELOCITY_STEP = 0.1;
 const MIN_ANGLE = -Math.PI / 6;
-const MAX_ANGLE = Math.PI * 1/3;
+const MAX_ANGLE = Math.PI / 2;
 const ANGLE_STEP = Math.PI / 12;
+
+export class RangeFinderFactory {
+  static create(maxSpeed) {
+    RangeFinderFactory.registry = RangeFinderFactory.registry || new Map;
+    let existing = RangeFinderFactory.registry.get(maxSpeed);
+    if (existing) {
+      return existing;
+    } else {
+      let rangeFinder = new RangeFinder(maxSpeed);
+      RangeFinderFactory.registry.set(maxSpeed, rangeFinder);
+      return rangeFinder;
+    }
+  }
+}
 
 export class RangeFinder {
   constructor(maxSpeed) {
@@ -16,9 +30,8 @@ export class RangeFinder {
       // Calculate max y component which keeps |velocity| < maxSpeed
       let maxZVelocity = Math.sqrt(Math.pow(maxSpeed, 2) - Math.pow(xVelocity, 2));
       for (let zVelocity = VELOCITY_STEP; zVelocity <= maxZVelocity; zVelocity += VELOCITY_STEP) {
-        for (let angleOfAttack = MIN_ANGLE; angleOfAttack <= MAX_ANGLE; angleOfAttack += ANGLE_STEP) {
+        for (let angleOfAttack = 0; angleOfAttack <= MAX_ANGLE; angleOfAttack += ANGLE_STEP) {
           let velocity = [xVelocity, 0, zVelocity];
-          console.log('Intended angleOfAttack: ' + angleOfAttack);
           this.samples.push({
             input: [xVelocity, zVelocity, angleOfAttack],
             output: Disc.simulateUntilGrounded(
@@ -63,8 +76,12 @@ export class RangeFinder {
     if (!sample) { return null; }
     const [forward, upward, angleOfAttack] = sample.input;
     const velocity = mul2d(vector2d, forward / mag2d(vector2d)).concat(upward);
-    console.log('getThrowParams ' + mag2d(vector2d));
-    console.log('closest position ' + mag2d(sample.output[0]) + ' (' + sample.output[0] + ')');
+    return [velocity, angleOfAttack];
+  }
+
+  getLongestThrowParams(vector2d) {
+    const [forward, upward, angleOfAttack] = this.samples[this.samples.length - 1].input;
+    const velocity = mul2d(vector2d, forward / mag2d(vector2d)).concat(upward);
     return [velocity, angleOfAttack];
   }
 }

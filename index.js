@@ -5,6 +5,7 @@ import { toImageData, fromImageData, loadImage, sliceImage, getPixel, writePixel
 import { Disc } from './disc.js';
 import { Game } from './game.js';
 import { Team } from './team.js';
+import { RangeFinderFactory } from './range_finder.js';
 
 const fieldSize = [992, 408];
 
@@ -13,9 +14,13 @@ let initialized = false;
 let fieldScale;
 let fieldOffset;
 
-window.initialize = function () {
+window.initialize = () => {
   console.log('Initializing...');
   setupCanvas();
+
+  // Populate RangeFinder cache
+  RangeFinderFactory.create(2);
+
   window.onresize = setupCanvas;
   window.onkeypress = (event) => {
     if (event.key.toUpperCase() === 'R') {

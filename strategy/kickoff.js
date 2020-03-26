@@ -1,15 +1,15 @@
 
 import { getVector, mag2d, mul2d, sub2d } from '../math_utils.js';
-import { RangeFinder } from '../range_finder.js';
+import { RangeFinderFactory } from '../range_finder.js';
 import { Strategy } from './strategy.js';
 
-const MAX_THROW_SPEED = 4;
+const MAX_THROW_SPEED = 2;
 
 export class KickoffStrategy extends Strategy {
   constructor(game, team) {
     super(game, team);
     this.delay = 30;
-    this.rangeFinder = new RangeFinder(MAX_THROW_SPEED);
+    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED);
   }
 
   update() {
@@ -20,9 +20,8 @@ export class KickoffStrategy extends Strategy {
     const playerWithDisc = this.game.playerWithDisc();
     if (!playerWithDisc) { console.log('No player has the disc!!!'); return true; }
     const target = this.team.goalDirection === 'W' ? [10, Math.random() * 40] : [100, Math.random() * 40];
-    const vectors = this.rangeFinder.getThrowParams(sub2d(target, playerWithDisc.position));
-    const [velocity, angleOfAttack] = vectors;
-    playerWithDisc.throw(velocity, angleOfAttack);
+    const params = this.rangeFinder.getLongestThrowParams(sub2d(target, playerWithDisc.position));
+    playerWithDisc.throw(...params);
     return true;
   }
 }

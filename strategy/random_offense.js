@@ -1,9 +1,9 @@
 
-import { dist2d, mag2d, sub2d, getVector, magnitudeAlong } from '../math_utils.js';
+import { dist2d, mag2d, sub2d, getVector, magnitudeAlong2d } from '../math_utils.js';
 import { Disc } from '../disc.js';
 import { Game } from '../game.js';
 import { Player } from '../player.js';
-import { RangeFinder } from '../range_finder.js';
+import { RangeFinderFactory } from '../range_finder.js';
 import { Strategy } from './strategy.js';
 
 const NUM_CANDIDATE_ROUTES = 10;
@@ -19,7 +19,7 @@ export class RandomOffenseStrategy extends Strategy {
   constructor(game, team) {
     super(game, team);
     this.destinationMap = new Map;
-    this.rangeFinder = new RangeFinder(MAX_THROW_SPEED);
+    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED);
   }
 
   chooseDestination() {
@@ -67,7 +67,7 @@ export class RandomOffenseStrategy extends Strategy {
               closestReceiver.velocity);
           let params = this.rangeFinder.getThrowParams(sub2d(destination, player.position), runtime);
           if (!params) { continue; }
-          let forwardProgress = magnitudeAlong(sub2d(destination, player.position), getVector(this.team.goalDirection));
+          let forwardProgress = magnitudeAlong2d(sub2d(destination, player.position), getVector(this.team.goalDirection));
           if (!bestDestination || forwardProgress > bestForwardProgress) {
             bestDestination = destination;
             bestForwardProgress = forwardProgress;

@@ -1,5 +1,6 @@
 
 import { getVector, add2d, mul2d, sub2d, sub3d } from '../math_utils.js';
+import { Disc } from '../disc.js';
 import { Game, FIELD_BOUNDS } from '../game.js';
 import { Matchup } from './matchup.js';
 import { Strategy } from './strategy.js';
@@ -24,10 +25,10 @@ export class ManToManDefenseStrategy extends Strategy {
 
     // If the disc is in the air, assign closest player to intercept
     const interceptor = this.game.disc.position
-        && Game.getClosestPlayer(this.team.players, this.game.disc.position);
+        && Game.getClosestPlayer(this.team.players, this.game.disc.position)[0];
 
     for (let player of this.team.players) {
-      if (interceptor == player) {
+      if (player == interceptor) {
         const [target] = Disc.simulateUntilGrounded(
             sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]),
             this.game.disc.velocity,
