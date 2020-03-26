@@ -27,6 +27,8 @@ Backlog
   - Background music
 - Asset improvements
   - Better player sprites
+  - Special sprites for handlers
+  - Sprites for diving, jumping
   - Better field sprite
   - Add stands, cheerleaders, etc
 - Thrower behavior
@@ -34,6 +36,8 @@ Backlog
   - React to other potential interceptors
   - React to stall count
   - Different throw types, incl. release positions offset
+  - Pump fake?
+  - Is there a good way to show pivot foot movement? Look at basketball games?
 - Cutter behavior
   - React to stall count
   - Dump cut
