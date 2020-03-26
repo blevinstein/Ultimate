@@ -1,0 +1,20 @@
+
+body {
+}
+
+#output {
+}
+
+.success {
+  color: green;
+  background-color: lightGrey;
+  padding: 10px;
+  margin: 5px;
+}
+
+.error {
+  color: red;
+  background-color: lightGrey;
+  padding: 10px;
+  margin: 5px;
+}
