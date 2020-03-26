@@ -1,4 +1,42 @@
 
+
+const INV_SQRT_2 = 1 / Math.sqrt(2)
+
+export function getVector(direction) {
+  switch (direction) {
+    case 'E': return [1, 0]
+    case 'W': return [-1, 0]
+    case 'S': return [0, 1]
+    case 'N': return [0, -1]
+    case 'NE': return [INV_SQRT_2, -INV_SQRT_2]
+    case 'SE': return [INV_SQRT_2, INV_SQRT_2]
+    case 'NW': return [-INV_SQRT_2, -INV_SQRT_2]
+    case 'SW': return [-INV_SQRT_2, INV_SQRT_2]
+    default:
+      throw new Error('Invalid direction: ' + direction);
+  }
+}
+
+export function getDirection(vector) {
+  const angle = Math.atan2(vector[1], vector[0]);
+  if (angle < -7/8 * Math.PI || angle > 7/8 * Math.PI) {
+    return 'W';
+  } else if (angle < -5/8 * Math.PI) {
+    return 'NW';
+  } else if (angle < -3/8 * Math.PI) {
+    return 'N';
+  } else if (angle < -1/8 * Math.PI) {
+    return 'NE';
+  } else if (angle > 5/8 * Math.PI) {
+    return 'SW';
+  } else if (angle > 3/8 * Math.PI) {
+    return 'S';
+  } else if (angle > 1/8 * Math.PI) {
+    return 'SE'
+  } else {
+    return 'E';
+  }
+}
 export function linearInterpolate(from, to, amount) {
   return from + (to - from) * amount;
 }
@@ -61,18 +99,20 @@ export function magnitudeAlong3d(vector, direction) {
   return dot3d(vector, direction) / mag;
 }
 
+// Project from cuboid 110x40xInf to trapezoid 830/890x344 offset 50x60
+export function project3d(position) {
+  let xShrinkFactor = linearInterpolate(830/890, 1, position[1] / 40);
+  let xPosition = (xShrinkFactor * (position[0] - 55) + 55) * 890/110 + 50;
+  let yPosition = 60 + (position[1] - position[2] / 2) * 344/40;
+  return [xPosition, yPosition];
+}
+
 export function check2d(vector) {
   if (vector.length < 2
       || vector.some(elem => isNaN(elem) || !isFinite(elem) || typeof elem !== 'number')) {
     throw new Error('Invalid 2d vector: ' + vector);
   }
   return vector;
-}
-
-export function check1d(value) {
-  if (isNaN(value) || !isFinite(value) || typeof value !== 'number') {
-    throw new Error('Invalid 1d value: ' + value);
-  }
 }
 
 export function dist2d(a, b) {
@@ -116,44 +156,6 @@ export function mag2d(vector) {
   return Math.sqrt(Math.pow(vector[0], 2) + Math.pow(vector[1], 2));
 }
 
-const INV_SQRT_2 = 1 / Math.sqrt(2)
-
-export function getVector(direction) {
-  switch (direction) {
-    case 'E': return [1, 0]
-    case 'W': return [-1, 0]
-    case 'S': return [0, 1]
-    case 'N': return [0, -1]
-    case 'NE': return [INV_SQRT_2, -INV_SQRT_2]
-    case 'SE': return [INV_SQRT_2, INV_SQRT_2]
-    case 'NW': return [-INV_SQRT_2, -INV_SQRT_2]
-    case 'SW': return [-INV_SQRT_2, INV_SQRT_2]
-    default:
-      throw new Error('Invalid direction: ' + direction);
-  }
-}
-
-export function getDirection(vector) {
-  const angle = Math.atan2(vector[1], vector[0]);
-  if (angle < -7/8 * Math.PI || angle > 7/8 * Math.PI) {
-    return 'W';
-  } else if (angle < -5/8 * Math.PI) {
-    return 'NW';
-  } else if (angle < -3/8 * Math.PI) {
-    return 'N';
-  } else if (angle < -1/8 * Math.PI) {
-    return 'NE';
-  } else if (angle > 5/8 * Math.PI) {
-    return 'SW';
-  } else if (angle > 3/8 * Math.PI) {
-    return 'S';
-  } else if (angle > 1/8 * Math.PI) {
-    return 'SE'
-  } else {
-    return 'E';
-  }
-}
-
 // Project from rect 110x40 to trapezoid 410/890x344 offset 50x60
 export function project2d(position) {
   let xShrinkFactor = linearInterpolate(830/890, 1, position[1] / 40);
@@ -162,10 +164,34 @@ export function project2d(position) {
   return [xPosition, yPosition];
 }
 
-// Project from cuboid 110x40xInf to trapezoid 830/890x344 offset 50x60
-export function project3d(position) {
-  let xShrinkFactor = linearInterpolate(830/890, 1, position[1] / 40);
-  let xPosition = (xShrinkFactor * (position[0] - 55) + 55) * 890/110 + 50;
-  let yPosition = 60 + (position[1] - position[2] / 2) * 344/40;
-  return [xPosition, yPosition];
+export function check1d(value) {
+  if (isNaN(value) || !isFinite(value) || typeof value !== 'number') {
+    throw new Error('Invalid 1d value: ' + value);
+  }
+}
+
+export function installMathUtils(window) {
+  for (let name of [
+      'linearInterpolate',
+      'dist3d',
+      'add3d',
+      'sub3d',
+      'mag3d',
+      'mul3d',
+      'dot3d',
+      'cross3d',
+      'check3d',
+      'norm3d',
+      'magnitudeAlong3d',
+      'check2d',
+      'dist2d',
+      'add2d',
+      'sub2d',
+      'dot2d',
+      'magnitudeAlong2d',
+      'mul2d',
+      'mag2d',
+      'project2d']) {
+    window[name] = eval(name);
+  }
 }

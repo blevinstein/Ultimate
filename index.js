@@ -1,6 +1,7 @@
 const FRAME_TIME = 30;
 
 import { toImageData, fromImageData, loadImage, sliceImage, getPixel, writePixel, mirrorImage, splitSprite, mirrorImages, colorEquals } from './image_utils.js';
+import { installMathUtils } from './math_utils.js';
 
 import { Disc } from './disc.js';
 import { Game } from './game.js';
@@ -16,10 +17,10 @@ let fieldOffset;
 
 window.initialize = () => {
   console.log('Initializing...');
-  setupCanvas();
 
-  // Populate RangeFinder cache
-  RangeFinderFactory.create(2);
+  setupCanvas();
+  window.rangeFinder = RangeFinderFactory.create(2);
+  installMathUtils(window);
 
   window.onresize = setupCanvas;
   window.onkeypress = (event) => {

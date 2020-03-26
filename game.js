@@ -202,7 +202,6 @@ export class Game {
 
   discGrounded() {
     // DEBUG: console.log('discGrounded');
-    this.lastThrower = null;
     if (this.state === STATES.Receiving) {
       this.setState(STATES.Pickup);
     } else if (this.state === STATES.Normal) {
@@ -213,7 +212,6 @@ export class Game {
 
   discCaughtBy(player) {
     // DEBUG: console.log('discCaught');
-    this.lastThrower = null;
     if (this.state === STATES.Receiving) {
       if (player.team.onOffense) {
         this.setState(STATES.Normal);
