@@ -109,7 +109,6 @@ export class Player {
     // TODO: Add noise for high velocity throws
     check3d(velocity);
     let discPosition = this.position.concat(HANDLE_HEIGHT);
-    console.log('Throw with params discPosition=' + discPosition + ' velocity=' + velocity + ' angleOfAttack=' + angleOfAttack);
     if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }
     this.team.game.disc
         .setPosition(discPosition)
