@@ -90,6 +90,10 @@ export class Disc {
     }
   }
 
+  updateBasicPhysics() {
+    this.position = add3d(this.position, this.velocity);
+  }
+
   updatePhysics() {
     if (!this.position) { throw new Error('Cannot updatePhysics for a held disc!'); }
     this.position = add3d(this.position, this.velocity);
@@ -188,6 +192,8 @@ export class Disc {
           this.game.discCaughtBy(catchCandidate);
         }
       }
+    } else {
+      this.updateBasicPhysics();
     }
   }
 
