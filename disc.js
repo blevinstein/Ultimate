@@ -95,7 +95,6 @@ export class Disc {
       this.velocity = mul3d(this.velocity, [1 - GROUND_FRICTION, 1 - GROUND_FRICTION, 0]);
       this.upVector = [0, 0, 1];
       this.grounded = true;
-      //console.log('Ground contact position=' + this.position + ' velocity=' + this.velocity);
     } else {
       // Flight
       const speed = mag3d(this.velocity);
@@ -114,7 +113,6 @@ export class Disc {
           Math.pow(speed, 2) * (LIFT_CONST + angleOfAttack * LIFT_LINEAR));
       const acceleration = add3d(drag, lift);
       this.velocity = add3d(this.velocity, acceleration);
-      //console.log('Flight position=' + this.position + ' velocity=' + this.velocity);
     }
   }
 
