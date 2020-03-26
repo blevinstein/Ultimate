@@ -98,7 +98,6 @@ export class Player {
   throw(velocity, angleOfAttack) {
     // TODO: Max throw velocity
     // TODO: Add noise for high velocity throws
-    console.log('angleOfAttack = ' + angleOfAttack);
     check3d(velocity);
     if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }
     this.team.game.disc
