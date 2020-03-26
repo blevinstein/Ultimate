@@ -6,8 +6,8 @@ import { Team } from './team.js';
 import { ClosestPickupStrategy } from './strategy/closest_pickup.js';
 import { IdleStrategy } from './strategy/idle.js';
 import { KickoffStrategy } from './strategy/kickoff.js';
+import { LineupStrategy } from './strategy/lineup.js';
 import { ManToManDefenseStrategy } from './strategy/man_defense.js';
-import { RetreatStrategy } from './strategy/retreat.js';
 import { RandomOffenseStrategy } from './strategy/random_offense.js';
 
 const SHIRT = [224, 80, 0, 255];
@@ -18,7 +18,8 @@ const SOCKS = [255, 255, 255, 255];
 const BG = [0, 0, 0, 0];
 const EYES = [7, 11, 90, 255];
 
-const WIN_SCORE = 11;
+const WIN_SCORE = 1000; // loadtesting 11;
+
 export const FIELD_BOUNDS = [[0, 110], [0, 40]]
 export const FIELD_BOUNDS_NO_ENDZONES = [[20, 90], [0, 40]];
 
@@ -84,10 +85,10 @@ function pickStrategy(game, team) {
         }
       }
     case STATES.Reset:
-      return new RetreatStrategy(game, team);
+      return new LineupStrategy(game, team);
     case STATES.GameOver:
       // TODO: More fun behavior? High fives, celebrations?
-      return new RetreatStrategy(game, team);
+      return new LineupStrategy(game, team);
   }
   throw new Error('Unexpected state: ' + game.state);
 }
@@ -98,7 +99,7 @@ export class Game {
     this.teams = [
         new Team(this, RED_COLORS, 'W').addPlayers(false),
         new Team(this, BLUE_COLORS, 'E').addPlayers(true).setOnOffense(true)];
-    this.disc = new Disc(this).setPlayer(this.teams[0].players[Math.trunc(Math.random() * 7)]);
+    this.disc = new Disc(this).setPlayer(this.teams[0].players[Math.trunc(Math.random() * Team.NUM_PLAYERS)]);
     this.setState(STATES.Kickoff);
   }
 
@@ -211,7 +212,7 @@ export class Game {
   }
 
   discCaughtBy(player) {
-    // DEBUG: console.log('discCaught');
+    console.log('discCaught');
     if (this.state === STATES.Receiving) {
       if (player.team.onOffense) {
         this.setState(STATES.Normal);
@@ -241,14 +242,14 @@ export class Game {
         }
       }
     } else {
-      // Player is not in bounds; disc is surrendered to the other team
-      player.drop()
-      this.setState(STATES.Pickup)
+      console.log('Player is not in bounds! Disc surrendered to the other team.');
+      player.drop();
+      this.setState(STATES.Pickup);
     }
   }
 
   discPickedUpBy(player) {
-    // DEBUG: console.log('discPickedUp');
+    console.log('discPickedUp');
     if (this.state === STATES.Pickup) {
       this.setState(STATES.Normal);
       this.setOffensiveTeam(player.team);

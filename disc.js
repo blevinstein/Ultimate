@@ -85,6 +85,7 @@ export class Disc {
 
   updatePhysics() {
     if (!this.position) { throw new Error('Cannot updatePhysics for a held disc!'); }
+    //console.log('start updatePhysics position=' + this.position + ' velocity=' + this.velocity);
     this.position = add3d(this.position, this.velocity);
     this.velocity = add3d(this.velocity, [0, 0, -GRAVITY]);
 
@@ -94,6 +95,7 @@ export class Disc {
       this.velocity = mul3d(this.velocity, [1 - GROUND_FRICTION, 1 - GROUND_FRICTION, 0]);
       this.upVector = [0, 0, 1];
       this.grounded = true;
+      //console.log('Ground contact position=' + this.position + ' velocity=' + this.velocity);
     } else {
       // Flight
       const speed = mag3d(this.velocity);
@@ -112,6 +114,7 @@ export class Disc {
           Math.pow(speed, 2) * (LIFT_CONST + angleOfAttack * LIFT_LINEAR));
       const acceleration = add3d(drag, lift);
       this.velocity = add3d(this.velocity, acceleration);
+      //console.log('Flight position=' + this.position + ' velocity=' + this.velocity);
     }
   }
 
@@ -170,6 +173,7 @@ export class Disc {
             if (this.game.lastThrower == player) { continue; }
             let d = dist3d(player.position.concat(HAND_HEIGHT), this.position);
             if (d < (catchDist || MAX_CATCH_DIST)) {
+              console.log('good catchCandidate player=' + player + ' lastThrower=' + this.game.lastThrower);
               catchCandidate = player;
               catchDist = d;
             }

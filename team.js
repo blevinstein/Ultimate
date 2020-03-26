@@ -2,6 +2,8 @@
 import { recolorImages } from './image_utils.js';
 import { Player } from './player.js';
 
+export const NUM_PLAYERS = 7;
+
 export class Team {
   constructor(game, colorMapping, goalDirection) {
     this.game = game;
@@ -41,8 +43,8 @@ export class Team {
 
   addPlayers(leftSide) {
     const xPosition = leftSide ? 20 : 90;
-    for (let i = 0; i < 7; i++) {
-      this.addPlayer([xPosition, 40 * (i+0.5) / 7], leftSide ? 'E' : 'W');
+    for (let i = 0; i < NUM_PLAYERS; i++) {
+      this.addPlayer([xPosition, 40 * (i+0.5) / NUM_PLAYERS], leftSide ? 'E' : 'W');
     }
     return this;
   }
