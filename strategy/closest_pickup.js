@@ -17,7 +17,8 @@ export class ClosestPickupStrategy extends Strategy {
         ?  this.game.disc.position
         : Disc.simulateUntilGrounded(
               sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]),
-              this.game.disc.velocity)[0];
+              this.game.disc.velocity,
+              this.game.disc.upVector)[0];
 
     const [closestPlayer] = Game.getClosestPlayer(this.team.players, target);
 

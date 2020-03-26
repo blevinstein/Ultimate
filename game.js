@@ -1,5 +1,5 @@
 
-import { dist2d } from './math_utils.js';
+import { dist2d, mag2d, sub2d } from './math_utils.js';
 import { Disc } from './disc.js';
 import { FrameBuffer } from './frame_buffer.js';
 import { Team } from './team.js';
@@ -123,7 +123,7 @@ export class Game {
       // Pick a strategy if we don't have one active
       if (!team.strategy) {
         team.strategy = pickStrategy(this, team);
-        console.log('New strategy: ' + team.strategy.constructor.name);
+        // DEBUG: console.log('New strategy: ' + team.strategy.constructor.name);
       }
       if (team.strategy) {
         if (team.strategy.update()) {
@@ -193,16 +193,19 @@ export class Game {
   }
 
   discThrownBy(player) {
-    console.log('discThrown');
+    // DEBUG: console.log('discThrown');
     this.lastThrower = player;
+    this.lastThrowStart = this.disc.position;
     if (this.state === STATES.Kickoff) {
       this.setState(STATES.Receiving);
     }
   }
 
   discGrounded() {
-    console.log('discGrounded');
+    // DEBUG: console.log('discGrounded');
     this.lastThrower = null;
+    let offset = sub2d(this.disc.position, this.lastThrowStart);
+    console.log('distance traveled ' + mag2d(offset) + ' (' + offset + ')');
     if (this.state === STATES.Receiving) {
       this.setState(STATES.Pickup);
     } else if (this.state === STATES.Normal) {
@@ -212,7 +215,7 @@ export class Game {
   }
 
   discCaughtBy(player) {
-    console.log('discCaught');
+    // DEBUG: console.log('discCaught');
     this.lastThrower = null;
     if (this.state === STATES.Receiving) {
       if (player.team.onOffense) {
@@ -250,7 +253,7 @@ export class Game {
   }
 
   discPickedUpBy(player) {
-    console.log('discPickedUp');
+    // DEBUG: console.log('discPickedUp');
     if (this.state === STATES.Pickup) {
       this.setState(STATES.Normal);
       this.setOffensiveTeam(player.team);

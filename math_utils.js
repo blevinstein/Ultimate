@@ -1,8 +1,4 @@
 
-export function dist2d(a, b) {
-  return Math.sqrt(Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2));
-}
-
 export function linearInterpolate(from, to, amount) {
   return from + (to - from) * amount;
 }
@@ -20,6 +16,10 @@ export function sub3d(a, b) {
   return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 }
 
+export function mag3d(vector) {
+  return Math.sqrt(Math.pow(vector[0], 2) + Math.pow(vector[1], 2) + Math.pow(vector[2], 2));
+}
+
 export function mul3d(vector, multiplier) {
   if (isFinite(multiplier)) {
     return [vector[0] * multiplier, vector[1] * multiplier, vector[2] * multiplier]
@@ -29,6 +29,40 @@ export function mul3d(vector, multiplier) {
     console.log('Cannot multiply by ' + multiplier);
     return [NaN, NaN, NaN]
   }
+}
+
+export function dot3d(a, b) {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+export function cross3d(a, b) {
+  return [a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]];
+}
+
+export function check3d(vector) {
+  if (vector.length < 3
+      || vector.some(elem => isNaN(elem) || !isFinite(elem) || typeof elem !== 'number')) {
+    throw new Error('Invalid 3d vector: ' + vector);
+  }
+  return vector;
+}
+
+export function check2d(vector) {
+  if (vector.length < 2
+      || vector.some(elem => isNaN(elem) || !isFinite(elem) || typeof elem !== 'number')) {
+    throw new Error('Invalid 2d vector: ' + vector);
+  }
+  return vector;
+}
+
+export function check1d(value) {
+  if (isNaN(value) || !isFinite(value) || typeof value !== 'number') {
+    throw new Error('Invalid 1d value: ' + value);
+  }
+}
+
+export function dist2d(a, b) {
+  return Math.sqrt(Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2));
 }
 
 export function add2d(a, b) {

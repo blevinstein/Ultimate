@@ -12,6 +12,7 @@ const GOAL_RADIUS = 2;
 const MAX_THROW_SPEED = 2;
 const MIN_PROGRESS = 5;
 
+
 // Totally uncoordinated scramble. Players look for open areas of the field,
 // from 10m behind the handler to back of the endzone.
 export class RandomOffenseStrategy extends Strategy {
@@ -54,7 +55,7 @@ export class RandomOffenseStrategy extends Strategy {
             : [0, player.position[0] + 5];
         let bestDestination;
         let bestForwardProgress;
-        let bestVector;
+        let bestParams;
         for (let i = 0; i < NUM_CANDIDATE_THROWS; i++) {
           // Choose a random location no more than 5 yards behind the thrower
           let destination = [minX + Math.random() * (maxX - minX), Math.random() * 40];
@@ -64,17 +65,17 @@ export class RandomOffenseStrategy extends Strategy {
           let runtime = Player.simulateRunTime(
               sub2d(destination, closestReceiver.position),
               closestReceiver.velocity);
-          let vector = this.rangeFinder.getThrowVector(sub2d(destination, player.position), runtime);
-          if (!vector) { continue; }
+          let params = this.rangeFinder.getThrowParams(sub2d(destination, player.position), runtime);
+          if (!params) { continue; }
           let forwardProgress = magnitudeAlong(sub2d(destination, player.position), getVector(this.team.goalDirection));
           if (!bestDestination || forwardProgress > bestForwardProgress) {
             bestDestination = destination;
             bestForwardProgress = forwardProgress;
-            bestVector = vector;
+            bestParams = params;
           }
         }
         if (bestDestination && bestForwardProgress > MIN_PROGRESS) {
-          player.throw(bestVector);
+          player.throw(...bestParams);
         } else {
           player.rest(getVector(this.team.goalDirection));
         }

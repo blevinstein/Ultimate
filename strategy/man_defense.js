@@ -30,7 +30,8 @@ export class ManToManDefenseStrategy extends Strategy {
       if (interceptor == player) {
         const [target] = Disc.simulateUntilGrounded(
             sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]),
-            this.game.disc.velocity);
+            this.game.disc.velocity,
+            this.game.disc.upVector);
         player.move(sub2d(target, player.position));
       } else {
         const match = this.matchup.get(player);

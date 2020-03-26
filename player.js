@@ -1,5 +1,6 @@
 
-import { linearInterpolate, magnitudeAlong, project3d, project2d, getDirection, getVector, add2d, mul2d, mag2d, sub2d } from './math_utils.js';
+import { linearInterpolate, magnitudeAlong, project3d, project2d, getDirection, getVector, add2d, check2d, check3d, mul2d, mag2d, sub2d } from './math_utils.js';
+import { Disc } from './disc.js';
 
 const STEP = [0, 1, 2, 1];
 const SUBFRAMES = 10;
@@ -51,7 +52,7 @@ export class Player {
   }
 
   move(vector) {
-    if (vector.some(isNaN)) { throw new Error('Invalid move vector: ' + vector); }
+    check2d(vector);
     // TODO: Add interactions between players (e.g. must cut around defender, pick call?)
     // TODO: Use max accel instead of max speed
 
@@ -94,19 +95,26 @@ export class Player {
     }
   }
 
-  throw(velocity) {
+  throw(velocity, angleOfAttack) {
     // TODO: Max throw velocity
     // TODO: Add noise for high velocity throws
-    if (velocity.length < 3) { console.log('Expected a 3d vector, got ' + velocity); return; }
-    if (velocity.some(isNaN)) { console.log('Velocity contains NaN: ' + velocity); return; }
+    check3d(velocity);
     if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }
-    this.team.game.disc.setPosition(this.position.concat(HANDLE_HEIGHT)).setVelocity(velocity);
+    this.team.game.disc
+        .setPosition(this.position.concat(HANDLE_HEIGHT))
+        .setVelocity(velocity)
+        .setUpVector(Disc.createUpVector(velocity, angleOfAttack));
     this.team.game.discThrownBy(this);
+    console.log('Intended angleOfAttack: ' + angleOfAttack);
+    console.log('Actual angleOfAttack: ' + this.team.game.disc.angleOfAttack());
   }
 
   drop() {
     if (!this.hasDisc) { console.log('Attempted to drop without the disc!'); return; }
-    this.team.game.disc.setPosition(this.position.concat(0)).setVelocity([0, 0, 0]);
+    this.team.game.disc
+        .setPosition(this.position.concat(0))
+        .setVelocity([0, 0, 0])
+        .setUpVector([0, 0, 1]);
   }
 
   setHasDisc(hasDisc) {
@@ -120,8 +128,8 @@ export class Player {
     let target;
     do {
       target = sub2d(location, player.position);
-      player.move(target);
       player.update();
+      player.move(target);
       time++;
     } while (mag2d(target) > goalRadius);
     return time;
