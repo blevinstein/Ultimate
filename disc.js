@@ -156,11 +156,6 @@ export class Disc {
 
       if (this.grounded) {
         if (!wasGrounded) { this.game.discGrounded(); }
-        if (!Game.isInBounds(this.position)) {
-          this.position = Game.snapToBounds(this.position, FIELD_BOUNDS_NO_ENDZONES).concat(0);
-          this.velocity = [0, 0, 0];
-          this.upVector = [0, 0, 1];
-        }
         let pickupCandidate;
         let pickupDist;
         for (let player of this.game.offensiveTeam().players) {

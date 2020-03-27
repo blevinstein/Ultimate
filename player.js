@@ -1,5 +1,5 @@
 
-import { linearInterpolate, magnitudeAlong2d, project3d, project2d, getDirection, getVector, add2d, check2d, check3d, mul2d, mag2d, sub2d } from './math_utils.js';
+import { linearInterpolate, magnitudeAlong2d, project3d, project2d, getDirection, getVector, add2d, check2d, check3d, mul2d, mag2d, norm2d, sub2d } from './math_utils.js';
 import { Disc } from './disc.js';
 
 const STEP = [0, 1, 2, 1];
@@ -70,9 +70,14 @@ export class Player {
     // TODO: Add interactions between players (e.g. must cut around defender, pick call?)
     // TODO: Use max accel instead of max speed
 
+    if (mag2d(vector) === 0.0) {
+      this.rest();
+      return;
+    }
+
     const desiredVelocity = mag2d(vector) > DECEL_STEPS * MAX_PLAYER_SPEED
-        ? mul2d(vector, MAX_PLAYER_SPEED / mag2d(vector))
-        : mul2d(vector, 1 / DECEL_STEPS);
+        ? mul2d(norm2d(vector), MAX_PLAYER_SPEED)
+        : mul2d(norm2d(vector), 1 / DECEL_STEPS);
     const desiredAcceleration = sub2d(desiredVelocity, this.velocity);
 
     const currentSpeed = Math.max(0, magnitudeAlong2d(this.velocity, desiredAcceleration));

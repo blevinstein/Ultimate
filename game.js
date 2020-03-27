@@ -167,11 +167,15 @@ export class Game {
         this.setState(STATES.Kickoff);
       }
     } else if (this.state === STATES.Pickup) {
-      this.setState(STATES.Normal);
+      let playerWithDisc = this.playerWithDisc();
+      if (playerWithDisc && Game.boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
+        this.setState(STATES.Normal);
+      }
     }
   }
 
   setState(state) {
+    // DEBUG: console.log('New state: ' + state);
     this.state = state;
     for (let team of this.teams) {
       team.strategy = null;
@@ -193,6 +197,7 @@ export class Game {
       case STATES.Kickoff:
       case STATES.Reset:
         return this.defensiveTeam().players.find(p => p.hasDisc);
+      case STATES.Pickup:
       case STATES.Normal:
         return this.offensiveTeam().players.find(p => p.hasDisc);
       default:

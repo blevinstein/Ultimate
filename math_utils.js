@@ -87,7 +87,15 @@ export function check3d(vector) {
 }
 
 export function norm3d(vector) {
-  return mul3d(vector, 1 / mag3d(vector));
+  let mag = mag3d(vector);
+  if (mag === 0) { throw new Error('Cannot normalize zero vector'); }
+  return mul3d(vector, 1 / mag);
+}
+
+export function norm2d(vector) {
+  let mag = mag2d(vector);
+  if (mag === 0) { throw new Error('Cannot normalize zero vector'); }
+  return mul2d(vector, 1 / mag);
 }
 
 // returns the magnitude of 'vector' along 'direction' using this formula:
