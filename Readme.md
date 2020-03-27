@@ -11,12 +11,9 @@ Backlog
 - Stack (vert, ho)
 - Zone D
 - Organize random constants everywhere
+- Pick/foul/injury/double-team
 - Visual improvements
-  - Text to show important events
-    - Interception!
-    - Score! 7-5
-    - Game over!
-    - Pick/foul/injury/double-team
+  - Add permanent scoreboard, game over message
   - Render disc, shadow with angleOfAttack
   - Render players with shadows
   - Render possessing player with ring
