@@ -3,6 +3,7 @@ import { dist2d, mag2d, sub2d } from './math_utils.js';
 import { Disc } from './disc.js';
 import { FrameBuffer } from './frame_buffer.js';
 import { Team, NUM_PLAYERS } from './team.js';
+import { ToastService } from './toast_service.js';
 import { ClosestPickupStrategy } from './strategy/closest_pickup.js';
 import { IdleStrategy } from './strategy/idle.js';
 import { KickoffStrategy } from './strategy/kickoff.js';
@@ -110,6 +111,7 @@ export class Game {
         .setPlayer(player)
         .setVelocity([0, 0, 0])
         .setPosition(player.position.concat(HAND_HEIGHT));
+    this.toastService = new ToastService();
     this.setState(STATES.Kickoff);
   }
 
@@ -119,6 +121,7 @@ export class Game {
       team.draw(frameBuffer);
     }
     this.disc.draw(frameBuffer);
+    this.toastService.draw(frameBuffer);
 
     context.save();
     context.setTransform(1, 0, 0, 1, 0, 0);
@@ -152,6 +155,7 @@ export class Game {
       }
     }
     this.disc.update();
+    this.toastService.update();
     // Special transition if we are waiting for reset or pickup/inbound
     if (this.state === STATES.Reset) {
       let ready = true;
@@ -240,7 +244,12 @@ export class Game {
       }
     } else {
       if (!player.team.onOffense) {
-        console.log('Interception!');
+        this.toastService.addToast(
+            'Interception!',
+            player.position.concat(5),
+            [0, 0, 0.1],
+            '#00ff00',
+            100);
         this.setOffensiveTeam(player.team);
       }
     }
