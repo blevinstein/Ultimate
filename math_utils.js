@@ -20,7 +20,7 @@ export function getVector(direction) {
 
 export function getDirection(vector) {
   check2d(vector);
-  const angle = Math.atan2(vector[1], vector[0]);
+  const angle = angle2d(vector);
   if (angle < -7/8 * Math.PI || angle > 7/8 * Math.PI) {
     return 'W';
   } else if (angle < -5/8 * Math.PI) {
@@ -92,12 +92,6 @@ export function norm3d(vector) {
   return mul3d(vector, 1 / mag);
 }
 
-export function norm2d(vector) {
-  let mag = mag2d(vector);
-  if (mag === 0) { throw new Error('Cannot normalize zero vector'); }
-  return mul2d(vector, 1 / mag);
-}
-
 // returns the magnitude of 'vector' along 'direction' using this formula:
 // vector (dot) direction / |direction|
 //   = |vector| * cos(angle between vector and direction)
@@ -115,6 +109,16 @@ export function project3d(position) {
   let xPosition = (xShrinkFactor * (position[0] - 55) + 55) * 890/110 + 50;
   let yPosition = 60 + (position[1] - position[2] / 2) * 344/40;
   return [xPosition, yPosition];
+}
+
+export function angle2d(vector) {
+  return Math.atan2(vector[1], vector[0]);
+}
+
+export function norm2d(vector) {
+  let mag = mag2d(vector);
+  if (mag === 0) { throw new Error('Cannot normalize zero vector'); }
+  return mul2d(vector, 1 / mag);
 }
 
 export function check2d(vector) {
