@@ -20,6 +20,8 @@ const EYES = [7, 11, 90, 255];
 
 const WIN_SCORE = 1000; // loadtesting 11;
 
+const HAND_HEIGHT = 3;
+
 export const FIELD_BOUNDS = [[0, 110], [0, 40]]
 export const FIELD_BOUNDS_NO_ENDZONES = [[20, 90], [0, 40]];
 
@@ -99,7 +101,12 @@ export class Game {
     this.teams = [
         new Team(this, RED_COLORS, 'W').addPlayers(false),
         new Team(this, BLUE_COLORS, 'E').addPlayers(true).setOnOffense(true)];
-    this.disc = new Disc(this).setPlayer(this.teams[0].players[Math.trunc(Math.random() * NUM_PLAYERS)]);
+    let player = this.teams[0].players[Math.trunc(Math.random() * NUM_PLAYERS)];
+    console.log(player);
+    this.disc = new Disc(this)
+        .setPlayer(player)
+        .setVelocity([0, 0, 0])
+        .setPosition(player.position.concat(HAND_HEIGHT));
     this.setState(STATES.Kickoff);
   }
 

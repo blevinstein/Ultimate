@@ -22,30 +22,27 @@ export class Disc {
     this.velocity = [0, 0, 0];
     this.upVector = [0, 0, 1];
     this.position = [55, 20, 0];
+    this.player = null;
     if (game && game.resources) {
       this.sprite = game.resources.discSprite;
       this.shadowSprite = game.resources.discShadowSprite;
     }
   }
 
-  isLoose() {
-    return !this.player;
-  }
-
   setPosition(position) {
-    if (this.player) { this.player.setHasDisc(false); }
     this.position = check3d(position);
-    this.player = null;
     this.grounded = this.position[2] <= 0;
     return this;
   }
 
   setPlayer(player) {
+    console.log('setPlayer');
     if (this.player) { this.player.setHasDisc(false); }
     this.player = player;
-    if (!this.position) { this.position = player.position.concat(HAND_HEIGHT); }
-    this.player.setHasDisc(true);
-    this.grounded = false;
+    if (this.player) {
+      this.player.setHasDisc(true);
+      this.grounded = false;
+    }
     return this;
   }
 
@@ -54,14 +51,18 @@ export class Disc {
     return this;
   }
 
-  accelerate(acceleration) {
-    this.velocity = add3d(this.velocity, check3d(acceleration));
-  }
-
   setUpVector(upVector) {
     check3d(upVector);
     this.upVector = mul3d(upVector, 1 / mag3d(upVector));
     return this;
+  }
+
+  isLoose() {
+    return !this.player;
+  }
+
+  accelerate(acceleration) {
+    this.velocity = add3d(this.velocity, check3d(acceleration));
   }
 
   draw(frameBuffer) {
@@ -91,13 +92,13 @@ export class Disc {
     }
   }
 
-  updateBasicPhysics() {
+  updatePosition() {
     this.position = add3d(this.position, this.velocity);
   }
 
   updatePhysics() {
     if (!this.position) { throw new Error('Cannot updatePhysics for a held disc!'); }
-    this.position = add3d(this.position, this.velocity);
+    this.updatePosition();
     this.velocity = add3d(this.velocity, [0, 0, -GRAVITY]);
 
     if (this.position[2] <= 0) {
@@ -194,7 +195,7 @@ export class Disc {
         }
       }
     } else {
-      this.updateBasicPhysics();
+      this.updatePosition();
     }
   }
 
@@ -220,7 +221,8 @@ export class Disc {
 
   // returns [groundedPosition, groundedTime]
   static simulateUntilGrounded(initialPosition, initialVelocity, upVector) {
-    const disc = new Disc().setPosition(check3d(initialPosition))
+    const disc = new Disc()
+        .setPosition(check3d(initialPosition))
         .setVelocity(check3d(initialVelocity))
         .setUpVector(upVector);
     let time = 0;

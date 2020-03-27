@@ -11,7 +11,7 @@ const MIN_MOVEMENT = 0.04;
 const HANDLE_HEIGHT = 3;
 const ARM_LENGTH = 1;
 const CATCH_FRICTION = 0.5;
-const HANDLE_ACCEL = 1;
+const HANDLE_ACCEL = 0.5;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
@@ -46,17 +46,18 @@ export class Player {
         screenPosition[0] - sprite.width / 2,
         screenPosition[1] - sprite.height,
         this.position[1]);
-    if (this.hasDisc) {
-      const discScreenPosition = project3d(add2d(this.position, mul2d(getVector(this.direction), ARM_LENGTH)).concat(HANDLE_HEIGHT));
-      frameBuffer.drawImage(
-          this.discSprite,
-          discScreenPosition[0] - this.discSprite.width / 2,
-          discScreenPosition[1] - this.discSprite.height / 2,
-          this.position[1] + 0.1);
-    }
   }
 
   update() {
+    if (this.hasDisc) {
+      const desiredHandlePosition = this.position.concat(HANDLE_HEIGHT);
+      const desiredVelocity = sub3d(desiredHandlePosition, this.team.game.disc.position);
+      const desiredAcceleration = sub3d(desiredVelocity, this.team.game.disc.velocity);
+      const actualAcceleration = mag3d(desiredAcceleration) > HANDLE_ACCEL
+          ? mul3d(norm3d(desiredAcceleration), HANDLE_ACCEL)
+          : desiredAcceleration;
+      this.team.game.disc.accelerate(actualAcceleration);
+    }
     this.position = add2d(this.position, this.velocity);
   }
 
@@ -113,7 +114,8 @@ export class Player {
     this.team.game.disc
         .setPosition(discPosition)
         .setVelocity(velocity)
-        .setUpVector(Disc.createUpVector(velocity, angleOfAttack));
+        .setUpVector(Disc.createUpVector(velocity, angleOfAttack))
+        .setPlayer(null);
     this.team.game.discThrownBy(this);
   }
 
@@ -123,7 +125,8 @@ export class Player {
     this.team.game.disc
         .setPosition(this.position.concat(0))
         .setVelocity([0, 0, 0])
-        .setUpVector([0, 0, 1]);
+        .setUpVector([0, 0, 1])
+        .setPlayer(null);
   }
 
   setHasDisc(hasDisc) {
