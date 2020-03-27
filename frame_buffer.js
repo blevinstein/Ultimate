@@ -5,24 +5,14 @@ export class FrameBuffer {
     this.drawOperations = [];
   }
 
+  drawOperation(depth, draw) {
+    this.drawOperations.push({depth, draw});
+  }
+
   drawImage(image, screenX, screenY, depth) {
     this.drawOperations.push({
         depth,
         draw: context => context.drawImage(image, screenX, screenY),
-    });
-  }
-
-  drawEllipse(screenX, screenY, radiusX, radiusY, rotation, depth) {
-    this.drawOperations.push({
-        depth,
-        draw: context =>
-            context.drawEllipse(screenX,
-                screenY,
-                radiusX,
-                radiusY,
-                rotation,
-                0,
-                2 * Math.PI),
     });
   }
 
