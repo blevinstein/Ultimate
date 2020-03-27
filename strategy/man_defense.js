@@ -24,16 +24,19 @@ export class ManToManDefenseStrategy extends Strategy {
   update() {
     if (this.team.onOffense) { return true; }
 
+    const discTarget = this.game.disc.grounded
+        ? add2d(this.game.disc.position, this.markOffset)
+        : Disc.simulateUntilGrounded(
+              sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]),
+              this.game.disc.velocity,
+              this.game.disc.upVector)[0];
+
     const interceptor = this.game.disc.isLoose()
-        && Game.getClosestPlayer(this.team.players, this.game.disc.position)[0];
+        && Game.getClosestPlayer(this.team.players, discTarget)[0];
 
     for (let player of this.team.players) {
       if (player == interceptor) {
-        const [target] = Disc.simulateUntilGrounded(
-            sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]),
-            this.game.disc.velocity,
-            this.game.disc.upVector);
-        player.move(sub2d(target, player.position));
+        player.move(sub2d(discTarget, player.position));
       } else {
         const match = this.matchup.get(player);
         if (!match) { console.log('Player has no matchup!'); continue; }
