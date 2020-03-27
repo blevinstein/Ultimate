@@ -53,8 +53,7 @@ export class RandomOffenseStrategy extends Strategy {
     for (let player of this.team.players) {
       if (player.hasDisc) {
         // Thrower behavior
-        let desiredHandlePosition = player.position.concat(HAND_HEIGHT);
-        if (dist3d(this.game.disc.position, desiredHandlePosition) > MAX_HANDLE_OFFSET) {
+        if (dist3d(this.game.disc.position, player.desiredHandlePosition()) > MAX_HANDLE_OFFSET) {
           player.rest(this.team.goalDirection);
           continue;
         }

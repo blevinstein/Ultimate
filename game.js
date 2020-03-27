@@ -58,9 +58,13 @@ const STATES = {
 function pickStrategy(game, team) {
   switch (game.state) {
     case STATES.Kickoff:
-      if (team.onOffense === team.hasDisc()) { console.log('The wrong team has the disc!'); return; }
       if (!team.onOffense) {
-        return new KickoffStrategy(game, team);
+        if (team.hasDisc()) {
+          return new KickoffStrategy(game, team);
+        } else {
+          if (game.defensiveTeam().hasDisc()) { console.log('The wrong team has the disc!'); return; }
+          return new ClosestPickupStrategy(game, team);
+        }
       } else {
         return new IdleStrategy(game, team);
       }
@@ -148,7 +152,7 @@ export class Game {
       }
     }
     this.disc.update();
-    // Special transition if we are waiting for reset
+    // Special transition if we are waiting for reset or pickup/inbound
     if (this.state === STATES.Reset) {
       let ready = true;
       for (let team of this.teams) {
@@ -162,6 +166,8 @@ export class Game {
       if (ready) {
         this.setState(STATES.Kickoff);
       }
+    } else if (this.state === STATES.Pickup) {
+      this.setState(STATES.Normal);
     }
   }
 
@@ -228,8 +234,8 @@ export class Game {
         this.setState(STATES.Pickup);
       }
     } else {
-      console.log('Interception!');
       if (!player.team.onOffense) {
+        console.log('Interception!');
         this.setOffensiveTeam(player.team);
       }
     }
@@ -256,10 +262,6 @@ export class Game {
 
   discPickedUpBy(player) {
     console.log('discPickedUp');
-    if (this.state === STATES.Pickup) {
-      this.setState(STATES.Normal);
-      this.setOffensiveTeam(player.team);
-    }
   }
 
   static endzone(goalDirection) {

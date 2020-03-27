@@ -10,8 +10,7 @@ const DECEL_STEPS = MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
 const MIN_MOVEMENT = 0.04;
 const HANDLE_HEIGHT = 3;
 const ARM_LENGTH = 1;
-const CATCH_FRICTION = 0.5;
-const HANDLE_ACCEL = 0.5;
+const HANDLE_SPEED = 0.5;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
@@ -48,15 +47,20 @@ export class Player {
         this.position[1]);
   }
 
+  desiredHandlePosition() {
+    // TODO: Make variable based on throw (hold to left or right)
+    return add3d(
+        this.position.concat(HANDLE_HEIGHT),
+        mul3d(getVector(this.direction).concat(0), ARM_LENGTH));
+  }
+
   update() {
     if (this.hasDisc) {
-      const desiredHandlePosition = this.position.concat(HANDLE_HEIGHT);
-      const desiredVelocity = sub3d(desiredHandlePosition, this.team.game.disc.position);
-      const desiredAcceleration = sub3d(desiredVelocity, this.team.game.disc.velocity);
-      const actualAcceleration = mag3d(desiredAcceleration) > HANDLE_ACCEL
-          ? mul3d(norm3d(desiredAcceleration), HANDLE_ACCEL)
-          : desiredAcceleration;
-      this.team.game.disc.accelerate(actualAcceleration);
+      const desiredVelocity = sub3d(this.desiredHandlePosition(), this.team.game.disc.position);
+      const actualVelocity = mag3d(desiredVelocity) > HANDLE_SPEED
+          ? mul3d(norm3d(desiredVelocity), HANDLE_SPEED)
+          : desiredVelocity;
+      this.team.game.disc.setVelocity(actualVelocity);
     }
     this.position = add2d(this.position, this.velocity);
   }
@@ -122,11 +126,7 @@ export class Player {
   drop() {
     if (!this.hasDisc) { console.log('Attempted to drop without the disc!'); return; }
     console.log('Player dropped disc');
-    this.team.game.disc
-        .setPosition(this.position.concat(0))
-        .setVelocity([0, 0, 0])
-        .setUpVector([0, 0, 1])
-        .setPlayer(null);
+    this.team.game.disc.setPlayer(null);
   }
 
   setHasDisc(hasDisc) {

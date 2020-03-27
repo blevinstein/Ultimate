@@ -13,7 +13,7 @@ const DRAG_QUADRATIC = 0.1;
 const LIFT_CONST = 0.0001;
 const LIFT_LINEAR = 0.02;
 
-const MAX_CATCH_DIST = 2;
+const MAX_CATCH_DIST = 1;
 const MAX_PICKUP_DIST = 1;
 
 export class Disc {
