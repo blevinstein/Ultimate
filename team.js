@@ -6,6 +6,9 @@ export const NUM_PLAYERS = 7;
 
 export class Team {
   constructor(game, colorMapping, goalDirection) {
+    Team.maxId = Team.maxId || 0;
+    this.id = Team.maxId++;
+
     this.game = game;
     this.colorMapping = colorMapping;
     this.players = [];
@@ -24,6 +27,9 @@ export class Team {
         this.resources.standingSprites[direction] = coloredImages[0];
       });
     });
+  }
+  toString() {
+    return 'Team[' + this.id + ']';
   }
 
   draw(context) {
