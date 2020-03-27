@@ -279,7 +279,12 @@ export class Game {
         }
       }
     } else {
-      console.log('Player is not in bounds! Disc surrendered to the other team.');
+      this.toastService.addToast(
+          'Out of bounds!',
+          player.position.concat(5),
+          [0, 0, 0.1],
+          '#00ff00',
+          100);
       player.drop();
       this.setState(STATES.Pickup);
     }
