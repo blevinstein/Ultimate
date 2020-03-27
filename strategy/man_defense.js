@@ -6,6 +6,7 @@ import { Matchup } from './matchup.js';
 import { Strategy } from './strategy.js';
 
 const HAND_HEIGHT = 3;
+const MARK_RADIUS = 1;
 
 export class ManToManDefenseStrategy extends Strategy {
   constructor(game, team) {
@@ -36,10 +37,14 @@ export class ManToManDefenseStrategy extends Strategy {
       } else {
         const match = this.matchup.get(player);
         if (!match) { console.log('Player has no matchup!'); continue; }
-        let target = Game.snapToBounds(
+        const target = Game.snapToBounds(
             add2d(match.position, match.hasDisc ? this.markOffset : this.offset),
             FIELD_BOUNDS);
-        player.move(sub2d(target, player.position));
+        if (dist2d(target, player.position) > MARK_RADIUS) {
+          player.move(sub2d(target, player.position));
+        } else {
+          player.rest(sub2d(match.position, player.position));
+        }
       }
     }
   }
