@@ -19,7 +19,7 @@ const SOCKS = [255, 255, 255, 255];
 const BG = [0, 0, 0, 0];
 const EYES = [7, 11, 90, 255];
 
-const WIN_SCORE = 1000; // loadtesting 11;
+const WIN_SCORE = 11;
 
 const HAND_HEIGHT = 3;
 
