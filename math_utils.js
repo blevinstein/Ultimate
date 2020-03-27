@@ -1,9 +1,10 @@
 
 
 const INV_SQRT_2 = 1 / Math.sqrt(2)
+const DIRECTIONS = ['E', 'W', 'N', 'S', 'SW', 'SE', 'NW', 'NE'];
 
 export function getVector(direction) {
-  switch (direction) {
+  switch (checkDirection(direction)) {
     case 'E': return [1, 0]
     case 'W': return [-1, 0]
     case 'S': return [0, 1]
@@ -18,6 +19,7 @@ export function getVector(direction) {
 }
 
 export function getDirection(vector) {
+  check2d(vector);
   const angle = Math.atan2(vector[1], vector[0]);
   if (angle < -7/8 * Math.PI || angle > 7/8 * Math.PI) {
     return 'W';
@@ -168,6 +170,14 @@ export function check1d(value) {
   if (isNaN(value) || !isFinite(value) || typeof value !== 'number') {
     throw new Error('Invalid 1d value: ' + value);
   }
+  return value;
+}
+
+export function checkDirection(value) {
+  if (!DIRECTIONS.includes(value)) {
+    throw new Error('Invalid direction: ' + value);
+  }
+  return value;
 }
 
 export function installMathUtils(window) {

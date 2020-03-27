@@ -54,7 +54,7 @@ export class RandomOffenseStrategy extends Strategy {
       if (player.hasDisc) {
         // Thrower behavior
         if (dist3d(this.game.disc.position, player.desiredHandlePosition()) > MAX_HANDLE_OFFSET) {
-          player.rest(this.team.goalDirection);
+          player.rest(getVector(this.team.goalDirection));
           continue;
         }
         const [minX, maxX] = this.team.goalDirection === 'E'
