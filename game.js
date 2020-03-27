@@ -229,6 +229,12 @@ export class Game {
     } else if (this.state === STATES.Normal) {
       this.setOffensiveTeam(this.defensiveTeam());
       this.setState(STATES.Pickup);
+      this.toastService.addToast(
+          'Turnover!',
+          this.disc.position,
+          [0, 0, 0.1],
+          '#00ff00',
+          100);
     }
   }
 
@@ -258,7 +264,12 @@ export class Game {
       if ((player.team.goalDirection === 'E' && player.position[0] > 90)
           || (player.team.goalDirection === 'W' && player.position[0] < 20)) {
         player.team.score++;
-        console.log('Score is: ' + this.teams[0].score + ' vs ' + this.teams[1].score);
+        this.toastService.addToast(
+            'Score! ' + this.offensiveTeam().score + ' vs ' + this.defensiveTeam().score,
+            player.position.concat(5),
+            [0, 0, 0.1],
+            '#00ff00',
+            300);
         if (player.team.score >= WIN_SCORE) {
           this.setState(STATES.GameOver);
         } else {

@@ -5,9 +5,29 @@ body {
   padding: 0;
 }
 
-.container {
+@font-face {
+  font-family: retroFont;
+  src: url(font/press-start/prstart.ttf);
+}
+
+.title {
+  color: white;
+  font: 24px retroFont;
+  padding: 12px;
+  text-align: center;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
   height: 100vh;
   width: 100vw;
+}
+
+.canvasContainer {
+  width: 100%;
+  flex-grow: 1;
+  overflow: hidden;
 }
 
 canvas {

@@ -23,6 +23,7 @@ export class ToastService {
     for (let toast of this.toasts) {
       frameBuffer.drawOperation(toast.position[1], context => {
         context.fillStyle = toast.color;
+        context.font = '8px retroFont';
         const textMetrics = context.measureText(toast.text);
         const screenPosition = project3d(toast.position);
         window.textMetrics = textMetrics;
