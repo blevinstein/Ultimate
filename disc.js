@@ -36,7 +36,6 @@ export class Disc {
   }
 
   setPlayer(player) {
-    console.log('setPlayer');
     if (this.player) { this.player.setHasDisc(false); }
     this.player = player;
     if (this.player) {

@@ -96,10 +96,10 @@ function setupCanvas() {
   fieldOffset = wRatio < hRatio
       ? [0, (canvas.parentElement.clientHeight - fieldSize[1] * fieldScale) / 2]
       : [(canvas.parentElement.clientWidth - fieldSize[0] * fieldScale) / 2, 0];
-  console.log('Field scale ' + fieldScale + ' offset ' + fieldOffset);
+  // DEBUG: console.log('Field scale ' + fieldScale + ' offset ' + fieldOffset);
   canvas.width = canvas.parentElement.clientWidth;
   canvas.height = canvas.parentElement.clientHeight;
-  console.log('Canvas size: ' + canvas.width + ', ' + canvas.height);
+  // DEBUG: console.log('Canvas size: ' + canvas.width + ', ' + canvas.height);
   const context = canvas.getContext('2d');
   context.restore()
   context.save()

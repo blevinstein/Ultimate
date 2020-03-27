@@ -102,7 +102,6 @@ export class Game {
         new Team(this, RED_COLORS, 'W').addPlayers(false),
         new Team(this, BLUE_COLORS, 'E').addPlayers(true).setOnOffense(true)];
     let player = this.teams[0].players[Math.trunc(Math.random() * NUM_PLAYERS)];
-    console.log(player);
     this.disc = new Disc(this)
         .setPlayer(player)
         .setVelocity([0, 0, 0])
