@@ -97,6 +97,8 @@ export class Disc {
 
     frameBuffer.drawOperation(this.position[1], context => {
       context.fillStyle = 'white';
+      context.strokeStyle = 'white';
+      context.lineWidth = 1;
       context.beginPath();
       context.ellipse(
           screenPosition[0],
@@ -107,10 +109,22 @@ export class Disc {
           0,
           Math.PI * 2);
       context.fill();
+      context.beginPath();
+      context.ellipse(
+          screenPosition[0],
+          screenPosition[1],
+          mag2d(screenMajorAxis) * DISC_SIZE,
+          mag2d(screenMinorAxis) * DISC_SIZE,
+          Math.atan2(screenMajorAxis[1], screenMajorAxis[0]),
+          0,
+          Math.PI * 2);
+      context.stroke();
 
       if (!this.grounded) {
         context.globalAlpha = 0.2;
         context.fillStyle = 'black';
+        context.strokeStyle = 'black';
+        context.lineWidth = 1;
         context.beginPath();
         context.ellipse(
             shadowPosition[0],
@@ -121,6 +135,17 @@ export class Disc {
             0,
             Math.PI * 2);
         context.fill();
+        context.globalAlpha = 0.1;
+        context.beginPath();
+        context.ellipse(
+            shadowPosition[0],
+            shadowPosition[1],
+            mag2d(shadowMajorAxis) * DISC_SIZE,
+            mag2d(shadowMinorAxis) * DISC_SIZE,
+            Math.atan2(shadowMajorAxis[1], shadowMajorAxis[0]),
+            0,
+            Math.PI * 2);
+        context.stroke();
         context.globalAlpha = 1;
       }
     });
