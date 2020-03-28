@@ -9,15 +9,12 @@ import { RandomOffenseStrategy } from './strategy/random_offense.js';
 import { STATES } from './game.js';
 
 export class Coach {
-  constructor(
-      offensiveStrategy = (game, team) => new RandomOffenseStrategy(game, team),
-      defensiveStrategy = (game, team) => new ManToManDefenseStrategy(game, team),
-      aerialStrategy = (game, team) => team.onOffense
+  constructor(offensiveStrategy, defensiveStrategy, aerialStrategy) {
+    this.offensiveStrategy = offensiveStrategy || ((game, team) => new RandomOffenseStrategy(game, team));
+    this.defensiveStrategy = defensiveStrategy || ((game, team) => new ManToManDefenseStrategy(game, team));
+    this.aerialStrategy = aerialStrategy || ((game, team) => team.onOffense
           ? new ClosestPickupStrategy(game, team)
-          : this.defensiveStrategy(game, team)) {
-    this.offensiveStrategy = offensiveStrategy;
-    this.defensiveStrategy = defensiveStrategy;
-    this.aerialStrategy = aerialStrategy;
+          : this.defensiveStrategy(game, team));
   }
 
   pickStrategy(game, team) {

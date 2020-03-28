@@ -57,6 +57,8 @@ export class RangeFinder {
     return this.samples[this.samples.length - 1].output[0][0];
   }
 
+  // TODO: Fix this code. It currently assumes that all output values are
+  // [x, 0, 0], which is NOT true due to tiltAngle.
   getBestSample(distance, minTime) {
     let filteredSamples = minTime ? this.samples.filter(s => s.output[1] > minTime) : this.samples;
     if (filteredSamples.length === 0) { return null; }
