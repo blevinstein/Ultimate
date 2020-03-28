@@ -1,7 +1,7 @@
 
 import { add3d, check1d, check3d, cross3d, dist2d, dist3d, dot3d, mag3d, mul3d, norm3d, sub3d, linearInterpolate, magnitudeAlong3d, project2d, project3d } from './math_utils.js';
 import { Game, STATES, FIELD_BOUNDS_NO_ENDZONES } from './game.js';
-import { ARM_HEIGHT } from './player.js';
+import { ARM_HEIGHT, ARM_LENGTH } from './player.js';
 
 const GROUND_FRICTION = 0.2;
 const GRAVITY = 0.05;
@@ -13,7 +13,6 @@ const DRAG_QUADRATIC = 0.1;
 const LIFT_CONST = 0.01;
 const LIFT_LINEAR = 0.04;
 
-const MAX_CATCH_DIST = 1;
 const MAX_PICKUP_DIST = 1;
 
 export class Disc {
@@ -177,7 +176,7 @@ export class Disc {
             if (this.game.lastThrower == player) { continue; }
             if (this.game.state == STATES.Pickup && !team.onOffense) { continue; }
             let d = dist3d(player.position.concat(ARM_HEIGHT), this.position);
-            if (d < (catchDist || MAX_CATCH_DIST)) {
+            if (d < (catchDist || ARM_LENGTH)) {
               catchCandidate = player;
               catchDist = d;
             }

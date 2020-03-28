@@ -8,10 +8,10 @@ const MAX_PLAYER_ACCEL = 0.03;
 const MAX_PLAYER_SPEED = 0.3;
 const DECEL_STEPS = MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL / 2;
 const MIN_MOVEMENT = 0.04;
-const ARM_LENGTH = 1;
 const HANDLE_SPEED = 0.5;
 
 export const ARM_HEIGHT = 3;
+export const ARM_LENGTH = 2;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
@@ -52,7 +52,7 @@ export class Player {
     // TODO: Make variable based on throw (hold to left or right)
     return add3d(
         this.position.concat(ARM_HEIGHT),
-        mul3d(getVector(this.direction).concat(0), ARM_LENGTH));
+        mul3d(getVector(this.direction).concat(0), ARM_LENGTH / 2));
   }
 
   update() {
