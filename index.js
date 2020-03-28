@@ -26,6 +26,7 @@ window.initialize = () => {
   window.onkeypress = (event) => {
     if (event.key.toUpperCase() === 'R') {
       window.game.reset();
+      if (!window.game.isRunning()) { window.game.start(); }
     } else if (event.key.toUpperCase() === 'Q') {
       if (window.game.isRunning()) { window.game.stop(); }
     } else if (event.key.toUpperCase() === 'W') {

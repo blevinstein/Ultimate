@@ -133,7 +133,8 @@ export class Game {
 
   stop() {
     if (!this.isRunning()) { throw new Error('Game is not running!'); }
-    window.clearTimeout(frameCallback);
+    window.clearTimeout(this.tickCallback);
+    this.tickCallback = null;
   }
 
   isRunning() {
@@ -144,7 +145,7 @@ export class Game {
     const context = canvas.getContext('2d');
     this.update();
     this.draw(context);
-    this.tickCallback = setTimeout(this.tick.bind(this), FRAME_TIME);
+    this.tickCallback = window.setTimeout(this.tick.bind(this), FRAME_TIME);
   }
 
   setupCanvas() {
