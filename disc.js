@@ -165,22 +165,36 @@ export class Disc {
       this.grounded = true;
     } else {
       // Flight
-      const speed = mag3d(this.velocity);
-      const velocityDirection = mul3d(this.velocity, 1 / speed);
-      const sideDirection = norm3d(cross3d(velocityDirection, this.upVector));
-      let liftDirection = cross3d(velocityDirection, sideDirection);
-      if (magnitudeAlong3d(liftDirection, this.upVector) < 0) { liftDirection = mul3d(liftDirection, -1); }
 
-      const angleOfAttack = this.angleOfAttack();
+      // If velocity is zero, we get no acceleration at all
+      if (mag3d(this.velocity) === 0) { return; }
+
+      const velocityDirection = norm3d(this.velocity);
+
+      let angleOfAttack;
+      let lift;
+      if (mag3d(cross3d(velocityDirection, this.upVector)) > 0) {
+        const sideDirection = norm3d(cross3d(velocityDirection, this.upVector));
+        let liftDirection = cross3d(velocityDirection, sideDirection);
+        if (magnitudeAlong3d(liftDirection, this.upVector) < 0) { liftDirection = mul3d(liftDirection, -1); }
+
+        angleOfAttack = this.angleOfAttack();
+        lift = mul3d(
+            liftDirection,
+            Math.pow(mag3d(this.velocity), 2)
+                * (LIFT_CONST + angleOfAttack * LIFT_LINEAR));
+      } else {
+        // If upVector is parallel to velocityDirection, we get no lift and drag is maximized
+        angleOfAttack = Math.PI / 2;
+        lift = [0, 0, 0];
+      }
 
       const drag = mul3d(
           velocityDirection,
-          -Math.pow(speed, 2) * (DRAG_CONST + Math.pow(angleOfAttack - OPTIMAL_DRAG_ANGLE, 2) * DRAG_QUADRATIC));
-      const lift = mul3d(
-          liftDirection,
-          Math.pow(speed, 2) * (LIFT_CONST + angleOfAttack * LIFT_LINEAR));
-      const acceleration = add3d(drag, lift);
-      this.velocity = add3d(this.velocity, acceleration);
+          -Math.pow(mag3d(this.velocity), 2)
+              * (DRAG_CONST + Math.pow(angleOfAttack - OPTIMAL_DRAG_ANGLE, 2) * DRAG_QUADRATIC));
+
+      this.velocity = add3d(this.velocity, add3d(drag, lift));
     }
   }
 
