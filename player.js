@@ -118,10 +118,8 @@ export class Player {
     // TODO: Max throw velocity
     // TODO: Add noise for high velocity throws
     check3d(velocity);
-    let discPosition = this.position.concat(HANDLE_HEIGHT);
     if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }
     this.team.game.disc
-        .setPosition(discPosition)
         .setVelocity(velocity)
         .setUpVector(Disc.createUpVector(velocity, angleOfAttack))
         .setPlayer(null);
