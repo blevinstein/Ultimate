@@ -24,10 +24,6 @@ export class Disc {
     this.upVector = [0, 0, 1];
     this.position = [55, 20, 0];
     this.player = null;
-    if (game && game.resources) {
-      this.sprite = game.resources.discSprite;
-      this.shadowSprite = game.resources.discShadowSprite;
-    }
   }
 
   setPosition(position) {

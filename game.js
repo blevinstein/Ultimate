@@ -417,10 +417,8 @@ export class Game {
     return Promise.all([
           loadImage('images/field.png'),
           loadImage('images/player_sprite_grid.png'),
-          loadImage('images/disc.png'),
-          loadImage('images/disc_shadow.png'),
         ]).then((results) => {
-          let [fieldSprite, playerSpriteSet, discSprite, discShadowSprite] = results;
+          let [fieldSprite, playerSpriteSet] = results;
           return splitSprite(playerSpriteSet, 16, 32).then((splitSprites) => {
             return mirrorImages(splitSprites).then((mirroredSprites) => {
               let playerSprites = [ ...splitSprites ].concat([ ...mirroredSprites ])
@@ -445,7 +443,7 @@ export class Game {
                 'NW': playerSprites[38],
                 'W': playerSprites[40],
               };
-              const resources = {fieldSprite, discSprite, playerSprites, discShadowSprite, runningSprites, standingSprites};
+              const resources = {fieldSprite, playerSprites, runningSprites, standingSprites};
               return resources;
             });
           });
