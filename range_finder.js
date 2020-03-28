@@ -5,8 +5,8 @@ import { Disc } from './disc.js';
 const VELOCITY_STEP = 0.1;
 const MAX_LAUNCH_ANGLE = Math.PI / 4;
 const MIN_ANGLE = -Math.PI / 6;
-const MAX_ANGLE = Math.PI / 2;
-const ANGLE_STEP = Math.PI / 12;
+const MAX_ANGLE = Math.PI / 6;
+const ANGLE_STEP = Math.PI / 24;
 
 export class RangeFinderFactory {
   static create(maxSpeed) {
@@ -33,7 +33,7 @@ export class RangeFinder {
           Math.sqrt(Math.pow(maxSpeed, 2) - Math.pow(xVelocity, 2)),
           xVelocity * Math.sin(MAX_LAUNCH_ANGLE));
       for (let zVelocity = VELOCITY_STEP; zVelocity <= maxZVelocity; zVelocity += VELOCITY_STEP) {
-        for (let angleOfAttack = 0; angleOfAttack <= MAX_ANGLE; angleOfAttack += ANGLE_STEP) {
+        for (let angleOfAttack = MIN_ANGLE; angleOfAttack <= MAX_ANGLE; angleOfAttack += ANGLE_STEP) {
           let velocity = [xVelocity, 0, zVelocity];
           this.samples.push({
             input: [xVelocity, zVelocity, angleOfAttack],

@@ -12,7 +12,7 @@ const HANDLE_SPEED = 0.5;
 
 export const ARM_HEIGHT = 1.5;
 export const ARM_LENGTH = 2;
-export const MAX_THROW_SPEED = 3;
+export const MAX_THROW_SPEED = 2.5;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
@@ -133,7 +133,8 @@ export class Player {
 
   throw(velocity, angleOfAttack) {
     // TODO: Add noise for high velocity throws
-    // DEBUG: console.log('angleOfAttack = ' + angleOfAttack);
+    // console.log('angleOfAttack = ' + angleOfAttack);
+    // DEBUG: console.log('angleToGround = ' + Math.acos(dot3d(norm3d(velocity), [0, 0, 1])));
     check3d(velocity);
     if (mag3d(velocity) > MAX_THROW_SPEED) {
         throw new Error(

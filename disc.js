@@ -7,13 +7,15 @@ const GROUND_FRICTION = 0.2;
 const GRAVITY = 0.05;
 
 const OPTIMAL_DRAG_ANGLE = -0.08;
-const DRAG_CONST = 0.01;
-const DRAG_QUADRATIC = 0.1;
+const DRAG_CONST = 0.001;
+const DRAG_QUADRATIC = 0.25;
 
 const LIFT_CONST = 0.001;
-const LIFT_LINEAR = 0.04;
+const LIFT_LINEAR = 0.02;
 
 const MAX_PICKUP_DIST = 1;
+
+const DISC_SIZE = 3;
 
 export class Disc {
   constructor(game) {
@@ -39,6 +41,7 @@ export class Disc {
     this.player = player;
     if (this.player) {
       this.player.setHasDisc(true);
+      this.upVector = [0, 0, 1];
       this.grounded = false;
     }
     return this;
@@ -65,17 +68,78 @@ export class Disc {
 
   draw(frameBuffer) {
     const screenPosition = project3d(this.position);
+    let screenMajorAxis;
+    let screenMinorAxis;
+    const intoScreenUnit = norm3d([0, -1, -1]);
+    if (mag3d(cross3d(this.upVector, intoScreenUnit)) > 0) {
+      const alongScreenUnit = norm3d(cross3d(this.upVector, intoScreenUnit));
+      const minorDiscAxisUnit = norm3d(cross3d(alongScreenUnit, this.upVector));
+      // TODO: This projection isn't consistent with project3d
+      screenMajorAxis = [alongScreenUnit[0], (alongScreenUnit[1] - alongScreenUnit[2]) / Math.sqrt(2)];
+      screenMinorAxis = [minorDiscAxisUnit[0], (minorDiscAxisUnit[1] - minorDiscAxisUnit[2]) / Math.sqrt(2)];
+    } else {
+      // If upVector = intoScreenAxis or -intoScreenAxis, the disc is a circle
+      screenMajorAxis = [1, 0];
+      screenMinorAxis = [0, 1];
+    }
+
     const shadowPosition = project2d(this.position);
-    frameBuffer.drawImage(
-        this.shadowSprite,
-        shadowPosition[0] - this.shadowSprite.width / 2,
-        shadowPosition[1] - this.shadowSprite.height / 2,
-        this.position[1]);
-    frameBuffer.drawImage(
-        this.sprite,
-        screenPosition[0] - this.sprite.width / 2,
-        screenPosition[1] - this.sprite.height / 2,
-        this.position[1]);
+    let shadowMajorAxis;
+    let shadowMinorAxis;
+    const verticalAxis = [0, 0, 1];
+    if (mag3d(cross3d(this.upVector, verticalAxis)) > 0) {
+      const alongGroundAxis = norm3d(cross3d(this.upVector, verticalAxis));
+      const minorDiscAxisUnit = norm3d(cross3d(alongGroundAxis, this.upVector));
+
+      shadowMajorAxis = alongGroundAxis.slice(0, 2);
+      shadowMinorAxis = minorDiscAxisUnit.slice(0, 2);
+    } else {
+      //if upVector = verticalAxis or -verticalAxis, the shadow is a circle
+      shadowMajorAxis = [1, 0];
+      shadowMinorAxis = [0, 1];
+    }
+
+    frameBuffer.drawOperation(this.position[1], context => {
+      context.fillStyle = 'white';
+      context.beginPath();
+      context.ellipse(
+          screenPosition[0],
+          screenPosition[1],
+          mag2d(screenMajorAxis) * DISC_SIZE,
+          mag2d(screenMinorAxis) * DISC_SIZE,
+          Math.atan2(screenMajorAxis[1], screenMajorAxis[0]),
+          0,
+          Math.PI * 2);
+      context.fill();
+      context.lineWidth = 1;
+      context.strokeStyle = 'white';
+      context.beginPath();
+      context.ellipse(
+          screenPosition[0],
+          screenPosition[1],
+          mag2d(screenMajorAxis) * DISC_SIZE,
+          mag2d(screenMinorAxis) * DISC_SIZE,
+          Math.atan2(screenMajorAxis[1], screenMajorAxis[0]),
+          0,
+          Math.PI * 2);
+      context.stroke();
+
+      if (!this.grounded) {
+        context.globalAlpha = 0.2;
+        context.fillStyle = 'black';
+        context.beginPath();
+        context.ellipse(
+            shadowPosition[0],
+            shadowPosition[1],
+            mag2d(shadowMajorAxis) * DISC_SIZE,
+            mag2d(shadowMinorAxis) * DISC_SIZE,
+            Math.atan2(shadowMajorAxis[1], shadowMajorAxis[0]),
+            0,
+            Math.PI * 2);
+        context.fill();
+        context.globalAlpha = 1;
+      }
+    });
   }
 
   applyFriction(amount) {
