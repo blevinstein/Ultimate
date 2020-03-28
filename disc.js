@@ -7,8 +7,8 @@ const GROUND_FRICTION = 0.2;
 const GRAVITY = 0.05;
 
 const OPTIMAL_DRAG_ANGLE = -0.08;
-const DRAG_CONST = 0.001;
-const DRAG_QUADRATIC = 0.25;
+const DRAG_CONST = 0.0001;
+const DRAG_QUADRATIC = 0.2;
 
 const LIFT_CONST = 0.003;
 const LIFT_LINEAR = 0.02;
