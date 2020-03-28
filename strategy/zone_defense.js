@@ -15,9 +15,9 @@ export class ZoneDefenseStrategy extends Strategy {
 
     this.cupOffsets = [
         mul2d(this.forceDirection, -4),
-        add2d(mul2d(this.forceDirection, -4), mul2d(goalDirection, 4)),
-        mul2d(goalDirection, 8),
-        add2d(mul2d(this.forceDirection, 4), mul2d(goalDirection, 4))
+        add2d(mul2d(this.forceDirection, -3), mul2d(goalDirection, 3)),
+        mul2d(goalDirection, 5),
+        add2d(mul2d(this.forceDirection, 3), mul2d(goalDirection, 3))
     ];
     this.offset = mul2d(goalDirection, 2);
   }
@@ -42,7 +42,7 @@ export class ZoneDefenseStrategy extends Strategy {
               this.game.disc.upVector)[0]
         : this.game.disc.position.slice(0, 2);
 
-    const handler = this.game.playerWithDisc();
+    const playerWithDisc = this.game.playerWithDisc();
 
     const interceptor = this.game.disc.isLoose()
         && Game.getClosestPlayer(this.team.players, discTarget)[0];
@@ -72,25 +72,26 @@ export class ZoneDefenseStrategy extends Strategy {
         // Cover top or bottom side depending on index
         const yRange = i === 4 ? [0, discTarget[1]] : [discTarget[1], 40];
         const myCutters = this.game.defensiveTeam().players
-            .filter(p => Game.boundsCheck(p.position, [xRange, yRange]) && p != handler);
+            .filter(p => Game.boundsCheck(p.position, [xRange, yRange]) && p != playerWithDisc);
 
         if (myCutters.length === 0) {
           const myTarget = [(xRange[0] + xRange[1]) / 2, (yRange[0] + yRange[1]) / 2];
-          this.team.players[i].move(sub2d(myTarget, this.team.players[i].position));
+          //this.team.players[i].move(sub2d(myTarget, this.team.players[i].position));
+          this.team.players[i].rest();
         } else {
           myCutters.sort((a, b) => this.wingThreatLevel(a, discTarget) - this.wingThreatLevel(b, discTarget));
-          const myTarget = add2d(myCutters[myCutters.length - 1], this.offset);
-          this.team.players[i].move(sub2d(myTarget.position, this.team.players[i].position));
+          const myTarget = add2d(myCutters[myCutters.length - 1].position, this.offset);
+          this.team.players[i].move(sub2d(myTarget, this.team.players[i].position));
         }
         continue;
       }
 
       // Deep: cover the deepest threat
       if (i === 6) {
-        const myCutters = this.game.offensiveTeam().players.slice();
+        const myCutters = this.game.offensiveTeam().players.filter(p => p != playerWithDisc);
         myCutters.sort((a, b) => this.deepThreatLevel(a) - this.deepThreatLevel(b));
-          const myTarget = add2d(myCutters[myCutters.length - 1], this.offset);
-        this.team.players[i].move(sub2d(myTarget.position, this.team.players[i].position));
+        const myTarget = add2d(myCutters[myCutters.length - 1].position, this.offset);
+        this.team.players[i].move(sub2d(myTarget, this.team.players[i].position));
       }
     }
   }

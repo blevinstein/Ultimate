@@ -138,6 +138,8 @@ export function add2d(a, b) {
 }
 
 export function sub2d(a, b) {
+  check2d(a);
+  check2d(b);
   return [a[0] - b[0], a[1] - b[1]];
 }
 

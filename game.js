@@ -238,6 +238,13 @@ export class Game {
       let playerWithDisc = this.playerWithDisc();
       if (playerWithDisc && Game.boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
         this.setState(STATES.Normal);
+        this.toastService.addToast(
+            'Disc in!',
+            playerWithDisc.position.concat(5),
+            [0, 0, 0.1],
+            '#00ff00',
+            100,
+            'black');
       }
     } else if (this.state === STATES.Normal) {
       // Waiting for a player to step out of bounds
