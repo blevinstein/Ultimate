@@ -265,8 +265,7 @@ export class Disc {
 
   // returns a unit upVector which results in the given angleOfAttack for the
   // given velocity
-  // TODO: add lateral tilt
-  static createUpVector(velocity, angleOfAttack) {
+  static createUpVector(velocity, angleOfAttack, tiltAngle = 0) {
     check3d(velocity);
     check1d(angleOfAttack);
     if (mag3d(velocity) === 0) { return [0, 0, 1]; }
@@ -276,10 +275,14 @@ export class Disc {
     const liftDirection = cross3d(sideDirection, velocityDirection);
 
     // return velocityDirection rotated upwards by angleOfAttack using the
-    // formula: velocityDirection * cos(angleOfAttack) + liftDirection * sin(angleOfAttack)
-    let result = add3d(
-        mul3d(velocityDirection, -Math.sin(angleOfAttack)),
-        mul3d(liftDirection, Math.cos(angleOfAttack)));
+    // formula:
+    // velocityDirection * sin(angleOfAttack)
+    //     + liftDirection * cos(angleOfAttack) * cos(tiltAngle)
+    //     + sideDirection * cos(angleOfAttack) * sin(tiltAngle)
+    let result = add3d(add3d(
+          mul3d(velocityDirection, -Math.sin(angleOfAttack)),
+          mul3d(liftDirection, Math.cos(angleOfAttack) * Math.cos(tiltAngle))),
+        mul3d(sideDirection, Math.cos(angleOfAttack) * Math.sin(tiltAngle)));
     return result;
   }
 

@@ -96,9 +96,13 @@ function pickStrategy(game, team) {
         }
       } else {
         if (team.onOffense) {
+          return new RandomOffenseStrategy(game, team);
+          /*
+          // player vs computer
           return team == game.teams[0]
               ? new RandomOffenseStrategy(game, team)
               : new ManualOffenseStrategy(game, team);
+          */
         } else {
           return new ManToManDefenseStrategy(game, team);
         }
