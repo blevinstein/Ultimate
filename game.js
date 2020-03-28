@@ -30,6 +30,8 @@ const FIELD_SPRITE_SIZE = [992, 408];
 export const FIELD_BOUNDS = [[0, 110], [0, 40]]
 export const FIELD_BOUNDS_NO_ENDZONES = [[20, 90], [0, 40]];
 
+const WARNING_COLOR = '#fc8b28';
+
 const RED_COLORS = [
   [BG],
   [EYES],
@@ -114,8 +116,8 @@ export class Game {
 
   reset() {
     this.teams = [
-        new Team(this, RED_COLORS, 'W').addPlayers(false),
-        new Team(this, BLUE_COLORS, 'E').addPlayers(true).setOnOffense(true)];
+        new Team(this, '#ff0000', RED_COLORS, 'W').addPlayers(false),
+        new Team(this, '#0000ff', BLUE_COLORS, 'E').addPlayers(true).setOnOffense(true)];
     let player = this.teams[0].players[Math.trunc(Math.random() * NUM_PLAYERS)];
     this.disc = new Disc(this)
         .setPlayer(player)
@@ -299,7 +301,7 @@ export class Game {
         'Turnover!',
         this.disc.position,
         [0, 0, 0.1],
-        '#00ff00',
+        WARNING_COLOR,
         100);
   }
 
@@ -332,11 +334,11 @@ export class Game {
           || (player.team.goalDirection === 'W' && player.position[0] < 20)) {
         player.team.score++;
         this.toastService.addToast(
-            (interception ? 'Callahan!' : 'Score!') + ' '
+            (interception ? 'Callahan!!' : 'Score!') + ' '
                 + this.offensiveTeam().score + ' vs ' + this.defensiveTeam().score,
             player.position.concat(5),
             [0, 0, 0.1],
-            '#00ff00',
+            this.offensiveTeam().textColor,
             300);
         if (player.team.score >= WIN_SCORE) {
           this.setState(STATES.GameOver);
@@ -350,7 +352,7 @@ export class Game {
             'Interception!',
             player.position.concat(5),
             [0, 0, 0.1],
-            '#00ff00',
+            player.team.textColor,
             100);
         this.setOffensiveTeam(player.team);
       }
@@ -359,7 +361,7 @@ export class Game {
           'Out of bounds!',
           player.position.concat(5),
           [0, 0, 0.1],
-          '#00ff00',
+          WARNING_COLOR,
           100);
       this.setState(STATES.Pickup);
       this.setOffensiveTeam(this.defensiveTeam());
