@@ -12,6 +12,7 @@ import { KickoffStrategy } from './strategy/kickoff.js';
 import { LineupStrategy } from './strategy/lineup.js';
 import { ManToManDefenseStrategy } from './strategy/man_defense.js';
 import { RandomOffenseStrategy } from './strategy/random_offense.js';
+import { ManualOffenseStrategy } from './strategy/manual_offense.js';
 
 const FRAME_TIME = 30;
 
@@ -92,7 +93,9 @@ function pickStrategy(game, team) {
         }
       } else {
         if (team.onOffense) {
-          return new RandomOffenseStrategy(game, team);
+          return team == game.teams[0]
+              ? new RandomOffenseStrategy(game, team)
+              : new ManualOffenseStrategy(game, team);
         } else {
           return new ManToManDefenseStrategy(game, team);
         }
@@ -158,19 +161,20 @@ export class Game {
 
     const wRatio = effectiveWidth / FIELD_SPRITE_SIZE[0];
     const hRatio = effectiveHeight / FIELD_SPRITE_SIZE[1];
-    const fieldScale = Math.min(wRatio, hRatio);
-    const fieldOffset = wRatio < hRatio
-        ? [0, (effectiveHeight - FIELD_SPRITE_SIZE[1] * fieldScale) / 2 + topMargin]
-        : [(effectiveWidth - FIELD_SPRITE_SIZE[0] * fieldScale) / 2, topMargin];
-    // DEBUG: console.log('Field scale ' + fieldScale + ' offset ' + fieldOffset);
+    this.fieldScale = Math.min(wRatio, hRatio);
+    this.fieldOffset = wRatio < hRatio
+        ? [0, (effectiveHeight - FIELD_SPRITE_SIZE[1] * this.fieldScale) / 2 + topMargin]
+        : [(effectiveWidth - FIELD_SPRITE_SIZE[0] * this.fieldScale) / 2, topMargin];
     this.canvas.width = this.canvas.parentElement.clientWidth;
     this.canvas.height = this.canvas.parentElement.clientHeight;
-    // DEBUG: console.log('Canvas size: ' + canvas.width + ', ' + canvas.height);
     const context = this.canvas.getContext('2d');
     context.imageSmoothingEnabled = false;
-    context.translate(fieldOffset[0], fieldOffset[1]);
-    context.scale(fieldScale, fieldScale);
+    context.translate(this.fieldOffset[0], this.fieldOffset[1]);
+    context.scale(this.fieldScale, this.fieldScale);
     context.save();
+
+    // DEBUG: console.log('Field scale ' + this.fieldScale + ' offset ' + this.fieldOffset);
+    // DEBUG: console.log('Canvas size: ' + canvas.width + ', ' + canvas.height);
 
     window.onresize = () => this.setupCanvas();
   }
