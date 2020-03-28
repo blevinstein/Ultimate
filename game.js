@@ -163,12 +163,13 @@ export class Game {
         ? [0, (effectiveHeight - FIELD_SPRITE_SIZE[1] * fieldScale) / 2 + topMargin]
         : [(effectiveWidth - FIELD_SPRITE_SIZE[0] * fieldScale) / 2, topMargin];
     // DEBUG: console.log('Field scale ' + fieldScale + ' offset ' + fieldOffset);
-    this.canvas.width = this.canvas.parentElement.clientWidth / fieldScale;
-    this.canvas.height = this.canvas.parentElement.clientHeight / fieldScale;
+    this.canvas.width = this.canvas.parentElement.clientWidth;
+    this.canvas.height = this.canvas.parentElement.clientHeight;
     // DEBUG: console.log('Canvas size: ' + canvas.width + ', ' + canvas.height);
     const context = this.canvas.getContext('2d');
     context.imageSmoothingEnabled = false;
-    context.translate(fieldOffset[0] / fieldScale, fieldOffset[1] / fieldScale);
+    context.translate(fieldOffset[0], fieldOffset[1]);
+    context.scale(fieldScale, fieldScale);
     context.save();
 
     window.onresize = () => this.setupCanvas();
