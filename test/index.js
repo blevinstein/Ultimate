@@ -1,8 +1,9 @@
 
 import { DiscTest } from './disc_test.js';
+import { MathUtilsTest } from './math_utils_test.js';
 
 window.runTests = () => {
-  for (let testSuite of [new DiscTest()]) {
+  for (let testSuite of [new DiscTest(), new MathUtilsTest()]) {
     testSuite.runTests((name) => {
         let div = document.createElement('div');
         div.className = 'success';

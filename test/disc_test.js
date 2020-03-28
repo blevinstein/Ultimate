@@ -1,5 +1,4 @@
 
-import '../math_utils.js';
 import { TestSuite, expect } from './suite.js';
 import { Disc } from '../disc.js';
 

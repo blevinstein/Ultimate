@@ -178,6 +178,14 @@ export function project2d(position) {
   return [xPosition, yPosition];
 }
 
+// Inverse of project2d
+export function inverseProject2d(screenPosition) {
+  let yPosition = screenPosition[1] * 40/344 - 60;
+  let xShrinkFactor = linearInterpolate(830/890, 1, yPosition / 40);
+  let xPosition = (((screenPosition[0] - 50) * 110/890) - 55) / xShrinkFactor + 55;
+  return [xPosition, yPosition];
+}
+
 export function check1d(value) {
   if (isNaN(value) || !isFinite(value) || typeof value !== 'number') {
     throw new Error('Invalid 1d value: ' + value);

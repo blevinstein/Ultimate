@@ -1,5 +1,5 @@
 
-import { dist3d } from '../math_utils.js';
+import { dist2d, dist3d } from '../math_utils.js';
 
 export class TestSuite {
   constructor() {
@@ -29,6 +29,11 @@ export const expect = {
   equalsWithin: (a, b, tolerance) => {
     if (Math.abs(a - b) > tolerance) {
       throw new Error('Expected ' + a + ' equalsWithin[' + tolerance  + '] ' + b);
+    }
+  },
+  equals2d: (a, b, tolerance) => {
+    if (dist2d(a, b) > tolerance) {
+      throw new Error('Expected ' + a + ' equals2d[' + tolerance + '] ' + b);
     }
   },
   equals3d: (a, b, tolerance) => {
