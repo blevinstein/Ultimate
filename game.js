@@ -189,7 +189,7 @@ export class Game {
       // Pick a strategy if we don't have one active
       if (!team.strategy) {
         team.strategy = pickStrategy(this, team);
-        // DEBUG: console.log('New strategy: ' + team.strategy.constructor.name);
+        console.log('New strategy (team ' + team.id + '): ' + team.strategy.constructor.name);
       }
       if (team.strategy) {
         if (team.strategy.update()) {
@@ -231,7 +231,7 @@ export class Game {
   }
 
   setState(state) {
-    // DEBUG: console.log('New state: ' + state);
+    if (this.state !== state) { console.log('New state: ' + state); }
     this.state = state;
     for (let team of this.teams) {
       team.strategy = null;
@@ -278,20 +278,23 @@ export class Game {
     // DEBUG: console.log('discGrounded');
     if (this.state === STATES.Receiving) {
       this.setState(STATES.Pickup);
-    } else if (this.state === STATES.Normal) {
-      this.setOffensiveTeam(this.defensiveTeam());
-      this.setState(STATES.Pickup);
-      this.toastService.addToast(
-          'Turnover!',
-          this.disc.position,
-          [0, 0, 0.1],
-          '#00ff00',
-          100);
+      return;
     }
+
+    if (this.state !== STATES.Normal) { throw new Error('Disc grounded in unexpected state: ' + this.state); }
+
+    this.setOffensiveTeam(this.defensiveTeam());
+    this.setState(STATES.Pickup);
+    this.toastService.addToast(
+        'Turnover!',
+        this.disc.position,
+        [0, 0, 0.1],
+        '#00ff00',
+        100);
   }
 
   discCaughtBy(player) {
-    console.log('discCaught');
+    // DEBUG: console.log('discCaught');
 
     // Special case: receiving the pull
     if (this.state === STATES.Receiving) {
@@ -304,6 +307,8 @@ export class Game {
       }
       return;
     }
+
+    if (this.state !== STATES.Normal) { throw new Error('Disc caught in unexpected state:' + this.state); }
 
     let interception = !player.team.onOffense;
     if (Game.isInBounds(player.position)) {
