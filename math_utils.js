@@ -107,7 +107,7 @@ export function magnitudeAlong3d(vector, direction) {
 export function project3d(position) {
   let xShrinkFactor = linearInterpolate(830/890, 1, position[1] / 40);
   let xPosition = (xShrinkFactor * (position[0] - 55) + 55) * 890/110 + 50;
-  let yPosition = 60 + (position[1] - position[2] / 2) * 344/40;
+  let yPosition = 60 + (position[1] - position[2]) * 344/40;
   return [xPosition, yPosition];
 }
 

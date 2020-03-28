@@ -6,11 +6,11 @@ import { ARM_HEIGHT, ARM_LENGTH } from './player.js';
 const GROUND_FRICTION = 0.2;
 const GRAVITY = 0.05;
 
-const OPTIMAL_DRAG_ANGLE = 0;
+const OPTIMAL_DRAG_ANGLE = -0.08;
 const DRAG_CONST = 0.01;
 const DRAG_QUADRATIC = 0.1;
 
-const LIFT_CONST = 0.01;
+const LIFT_CONST = 0.001;
 const LIFT_LINEAR = 0.04;
 
 const MAX_PICKUP_DIST = 1;
@@ -64,20 +64,18 @@ export class Disc {
   }
 
   draw(frameBuffer) {
-    if (this.position) {
-      const screenPosition = project3d(this.position);
-      const shadowPosition = project2d(this.position);
-      frameBuffer.drawImage(
-          this.shadowSprite,
-          shadowPosition[0] - this.shadowSprite.width / 2,
-          shadowPosition[1] - this.shadowSprite.height / 2,
-          this.position[1]);
-      frameBuffer.drawImage(
-          this.sprite,
-          screenPosition[0] - this.sprite.width / 2,
-          screenPosition[1] - this.sprite.height / 2,
-          this.position[1]);
-    }
+    const screenPosition = project3d(this.position);
+    const shadowPosition = project2d(this.position);
+    frameBuffer.drawImage(
+        this.shadowSprite,
+        shadowPosition[0] - this.shadowSprite.width / 2,
+        shadowPosition[1] - this.shadowSprite.height / 2,
+        this.position[1]);
+    frameBuffer.drawImage(
+        this.sprite,
+        screenPosition[0] - this.sprite.width / 2,
+        screenPosition[1] - this.sprite.height / 2,
+        this.position[1]);
   }
 
   applyFriction(amount) {

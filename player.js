@@ -5,13 +5,14 @@ import { Disc } from './disc.js';
 const STEP = [0, 1, 2, 1];
 const SUBFRAMES = 10;
 const MAX_PLAYER_ACCEL = 0.03;
-const MAX_PLAYER_SPEED = 0.3;
+const MAX_PLAYER_SPEED = 0.4;
 const DECEL_STEPS = MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL / 2;
 const MIN_MOVEMENT = 0.04;
 const HANDLE_SPEED = 0.5;
 
-export const ARM_HEIGHT = 3;
+export const ARM_HEIGHT = 1.5;
 export const ARM_LENGTH = 2;
+export const MAX_THROW_SPEED = 3;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
@@ -131,9 +132,13 @@ export class Player {
   }
 
   throw(velocity, angleOfAttack) {
-    // TODO: Max throw velocity
     // TODO: Add noise for high velocity throws
+    console.log('angleOfAttack = ' + angleOfAttack);
     check3d(velocity);
+    if (mag3d(velocity) > MAX_THROW_SPEED) {
+        throw new Error(
+          'Cannot throw that fast: ' + mag3d(velocity) + ' (' + velocity + ')');
+    }
     if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }
     this.team.game.disc
         .setVelocity(velocity)
