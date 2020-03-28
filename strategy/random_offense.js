@@ -71,8 +71,16 @@ export class RandomOffenseStrategy extends Strategy {
           let runtime = Player.simulateRunTime(
               sub2d(destination, closestReceiver.position),
               closestReceiver.velocity);
-          let params = this.rangeFinder.getThrowParams(sub2d(destination, player.position), runtime);
+          let params = this.rangeFinder.getThrowParams(
+              sub2d(destination, player.position),
+              runtime);
           if (!params) { continue; }
+          let interceptor = Disc.simulateInterceptions(
+              this.game.disc.position,
+              params[0],
+              Disc.createUpVector(params[0], params[1]),
+              this.game.defensiveTeam().players)[0];
+          if (interceptor) { continue; }
           let forwardProgress = magnitudeAlong2d(sub2d(destination, player.position), getVector(this.team.goalDirection));
           if (!bestDestination || forwardProgress > bestForwardProgress) {
             bestDestination = destination;

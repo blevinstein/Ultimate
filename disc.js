@@ -146,6 +146,34 @@ export class Disc {
         : -Math.abs(angleOfAttack);
   }
 
+  // returns the player who catches the disc, or undefined
+  tryCatch(players) {
+    let catchCandidate;
+    let catchDist;
+    for (let player of players) {
+      let d = dist3d(player.position.concat(ARM_HEIGHT), this.position);
+      if (d < (catchDist || ARM_LENGTH)) {
+        catchCandidate = player;
+        catchDist = d;
+      }
+    }
+    return catchCandidate;
+  }
+
+  // returns the player who picks up the disc, or undefined
+  tryPickup(players) {
+    let pickupCandidate;
+    let pickupDist;
+    for (let player of players) {
+      let d = dist2d(player.position, this.position);
+      if (d < (pickupDist || MAX_PICKUP_DIST)) {
+        pickupCandidate = player;
+        pickupDist = d;
+      }
+    }
+    return pickupCandidate;
+  }
+
   // Update disc, including catch/pickup and grounding events.
   update() {
     if (this.isLoose()) {
@@ -155,37 +183,19 @@ export class Disc {
 
       if (this.grounded) {
         if (!wasGrounded) { this.game.discGrounded(); }
-        let pickupCandidate;
-        let pickupDist;
-        for (let player of this.game.offensiveTeam().players) {
-          let d = dist2d(player.position, this.position);
-          if (d < (pickupDist || MAX_PICKUP_DIST)) {
-            pickupCandidate = player;
-            pickupDist = d;
-          }
-        }
-        if (pickupCandidate) {
-          this.setPlayer(pickupCandidate);
-          this.game.discPickedUpBy(pickupCandidate);
+        let picker = this.tryPickup(this.game.offensiveTeam().players);
+        if (picker) {
+          this.setPlayer(picker);
+          this.game.discPickedUpBy(picker);
         }
       } else {
-        let catchCandidate;
-        let catchDist;
-        for (let team of this.game.teams) {
-          for (let player of team.players) {
-            if (this.game.lastThrower == player) { continue; }
-            if (this.game.state == STATES.Pickup && !team.onOffense) { continue; }
-            let d = dist3d(player.position.concat(ARM_HEIGHT), this.position);
-            if (d < (catchDist || ARM_LENGTH)) {
-              catchCandidate = player;
-              catchDist = d;
-            }
-          }
-        }
-        if (catchCandidate) {
-          // TODO: Decelerate disc gracefully?
-          this.setPlayer(catchCandidate);
-          this.game.discCaughtBy(catchCandidate);
+        let catchCandidates = this.game.state == STATES.Pickup
+            ? this.game.offensiveTeam().players
+            : this.game.allPlayers().filter(p => p != this.game.lastThrower);
+        let catcher = this.tryCatch(catchCandidates);
+        if (catcher) {
+          this.setPlayer(catcher);
+          this.game.discCaughtBy(catcher);
         }
       }
     } else {
@@ -211,6 +221,22 @@ export class Disc {
         mul3d(velocityDirection, -Math.sin(angleOfAttack)),
         mul3d(liftDirection, Math.cos(angleOfAttack)));
     return result;
+  }
+
+  // returns [interceptor, interceptionTime] or [null, groundedTime]
+  static simulateInterceptions(initialPosition, initialVelocity, upVector, defenders) {
+    const disc = new Disc()
+        .setPosition(check3d(initialPosition))
+        .setVelocity(check3d(initialVelocity))
+        .setUpVector(upVector);
+    let time = 0;
+    while (!disc.grounded) {
+      let catcher = disc.tryCatch(defenders);
+      if (catcher) { return [catcher, time]; }
+      disc.updatePhysics();
+      time++;
+    }
+    return [null, time];
   }
 
   // returns [groundedPosition, groundedTime]

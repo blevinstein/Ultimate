@@ -248,6 +248,8 @@ export class Game {
 
   defensiveTeam() { return this.teams.find(t => !t.onOffense); }
 
+  allPlayers() { return this.teams[0].players.concat(this.teams[1].players); }
+
   swapSides() {
     const temp = this.teams[0].goalDirection;
     this.teams[0].goalDirection = this.teams[1].goalDirection;

@@ -82,6 +82,7 @@ export class RangeFinder {
     return [velocity, angleOfAttack];
   }
 
+  // returns [velocity, angleOfAttack]
   getLongestThrowParams(vector2d) {
     const [forward, upward, angleOfAttack] = this.samples[this.samples.length - 1].input;
     const velocity = mul2d(vector2d, forward / mag2d(vector2d)).concat(upward);
