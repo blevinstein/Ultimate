@@ -3,7 +3,7 @@ import { mag2d, mul2d } from './math_utils.js';
 import { Disc } from './disc.js';
 
 const VELOCITY_STEP = 0.1;
-const MAX_LAUNCH_ANGLE = Math.PI / 4;
+const MAX_LAUNCH_ANGLE = Math.PI / 6;
 const MIN_ANGLE_OF_ATTACK = -Math.PI / 6;
 const MAX_ANGLE_OF_ATTACK = Math.PI / 6;
 const MIN_TILT = -Math.PI / 4;
@@ -36,7 +36,8 @@ export class RangeFinder {
           xVelocity * Math.sin(MAX_LAUNCH_ANGLE));
       for (let zVelocity = VELOCITY_STEP; zVelocity <= maxZVelocity; zVelocity += VELOCITY_STEP) {
         for (let angleOfAttack = MIN_ANGLE_OF_ATTACK; angleOfAttack <= MAX_ANGLE_OF_ATTACK; angleOfAttack += ANGLE_STEP) {
-          for (let tiltAngle = MIN_TILT; tiltAngle <= MAX_TILT; tiltAngle += ANGLE_STEP) {
+          //for (let tiltAngle = MIN_TILT; tiltAngle <= MAX_TILT; tiltAngle += ANGLE_STEP) {
+            let tiltAngle = 0;
             let velocity = [xVelocity, 0, zVelocity];
             this.samples.push({
               input: [xVelocity, zVelocity, angleOfAttack, tiltAngle],
@@ -45,7 +46,7 @@ export class RangeFinder {
                   velocity,
                   Disc.createUpVector(velocity, angleOfAttack, tiltAngle)),
             });
-          }
+          //}
         }
       }
     }

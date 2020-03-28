@@ -19,7 +19,7 @@ export class ManToManDefenseStrategy extends Strategy {
       mul2d(this.forceDirection, 5));
     this.markOffset = add2d(
       mul2d(getVector(team.goalDirection), -3),
-      mul2d(this.forceDirection, -3));
+      mul2d(this.forceDirection, -2));
   }
 
   update() {

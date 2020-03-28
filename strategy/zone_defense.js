@@ -14,10 +14,10 @@ export class ZoneDefenseStrategy extends Strategy {
     let goalDirection = getVector(game.offensiveTeam().goalDirection);
 
     this.cupOffsets = [
-        mul2d(this.forceDirection, -4),
-        add2d(mul2d(this.forceDirection, -3), mul2d(goalDirection, 3)),
-        mul2d(goalDirection, 5),
-        add2d(mul2d(this.forceDirection, 3), mul2d(goalDirection, 3))
+        mul2d(this.forceDirection, -5),
+        add2d(mul2d(this.forceDirection, -4), mul2d(goalDirection, 4)),
+        mul2d(goalDirection, 6),
+        add2d(mul2d(this.forceDirection, 4), mul2d(goalDirection, 4))
     ];
     this.offset = mul2d(goalDirection, 2);
   }
