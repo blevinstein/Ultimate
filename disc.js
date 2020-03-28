@@ -7,10 +7,10 @@ const HAND_HEIGHT = 3;
 const GRAVITY = 0.05;
 
 const OPTIMAL_DRAG_ANGLE = 0;
-const DRAG_CONST = 0.001;
+const DRAG_CONST = 0.01;
 const DRAG_QUADRATIC = 0.1;
 
-const LIFT_CONST = 0.0001;
+const LIFT_CONST = 0.01;
 const LIFT_LINEAR = 0.02;
 
 const MAX_CATCH_DIST = 1;

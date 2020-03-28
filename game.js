@@ -292,6 +292,8 @@ export class Game {
 
   discCaughtBy(player) {
     console.log('discCaught');
+
+    // Special case: receiving the pull
     if (this.state === STATES.Receiving) {
       if (player.team.onOffense) {
         this.setState(STATES.Normal);
@@ -300,24 +302,17 @@ export class Game {
         player.drop();
         this.setState(STATES.Pickup);
       }
-    } else {
-      if (!player.team.onOffense) {
-        this.toastService.addToast(
-            'Interception!',
-            player.position.concat(5),
-            [0, 0, 0.1],
-            '#00ff00',
-            100);
-        this.setOffensiveTeam(player.team);
-      }
+      return;
     }
 
+    let interception = !player.team.onOffense;
     if (Game.isInBounds(player.position)) {
       if ((player.team.goalDirection === 'E' && player.position[0] > 90)
           || (player.team.goalDirection === 'W' && player.position[0] < 20)) {
         player.team.score++;
         this.toastService.addToast(
-            'Score! ' + this.offensiveTeam().score + ' vs ' + this.defensiveTeam().score,
+            (interception ? 'Callahan!' : 'Score!') + ' '
+                + this.offensiveTeam().score + ' vs ' + this.defensiveTeam().score,
             player.position.concat(5),
             [0, 0, 0.1],
             '#00ff00',
@@ -329,6 +324,14 @@ export class Game {
           this.setOffensiveTeam(this.defensiveTeam());
           this.swapSides();
         }
+      } else if (interception) {
+        this.toastService.addToast(
+            'Interception!',
+            player.position.concat(5),
+            [0, 0, 0.1],
+            '#00ff00',
+            100);
+        this.setOffensiveTeam(player.team);
       }
     } else {
       this.toastService.addToast(
@@ -339,6 +342,7 @@ export class Game {
           100);
       player.drop();
       this.setState(STATES.Pickup);
+      this.setOffensiveTeam(this.defensiveTeam());
     }
   }
 
