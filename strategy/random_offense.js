@@ -65,7 +65,8 @@ export class RandomOffenseStrategy extends Strategy {
           // Choose a random location no more than 5 yards behind the thrower
           let destination = [minX + Math.random() * (maxX - minX), Math.random() * 40];
           let closestDefenderDistance = Game.getClosestPlayer(this.game.defensiveTeam().players, destination)[1];
-          let [closestReceiver, closestReceiverDistance] = Game.getClosestPlayer(this.team.players.filter(p => p != player), destination);
+          let [closestReceiver, closestReceiverDistance] =
+              Game.getClosestPlayer(this.team.players.filter(p => p != player), destination);
           if (closestReceiverDistance > closestDefenderDistance) { continue; }
           let runtime = Player.simulateRunTime(
               sub2d(destination, closestReceiver.position),

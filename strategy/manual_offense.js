@@ -61,8 +61,18 @@ export class ManualOffenseStrategy extends Strategy {
           continue;
         }
 
+        let [closestReceiver, closestReceiverDistance] =
+            Game.getClosestPlayer(this.team.players.filter(p => p != player), this.throwTarget);
+        let runtime = Player.simulateRunTime(
+            sub2d(this.throwTarget, closestReceiver.position),
+            closestReceiver.velocity);
         let throwParams = this.rangeFinder.getThrowParams(
-            sub2d(this.throwTarget, player.position));
+            sub2d(this.throwTarget, player.position), runtime);
+        if (!throwParams) {
+          console.log('Fallback to any throw');
+          throwParams = this.rangeFinder.getThrowParams(
+              sub2d(this.throwTarget, player.position));
+        }
         if (!throwParams) {
           console.log('Fallback to longest throw');
           throwParams = this.rangeFinder.getLongestThrowParams(
