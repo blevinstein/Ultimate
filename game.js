@@ -149,12 +149,16 @@ export class Game {
   }
 
   setupCanvas() {
-    const wRatio = this.canvas.parentElement.clientWidth / FIELD_SPRITE_SIZE[0];
-    const hRatio = this.canvas.parentElement.clientHeight / FIELD_SPRITE_SIZE[1];
+    // Add some extra margin on the bottom of the screen so that we can see out-of-bounds catches.
+    const effectiveWidth = this.canvas.parentElement.clientWidth;
+    const effectiveHeight = this.canvas.parentElement.clientHeight * 0.85;
+
+    const wRatio = effectiveWidth / FIELD_SPRITE_SIZE[0];
+    const hRatio = effectiveHeight / FIELD_SPRITE_SIZE[1];
     const fieldScale = Math.min(wRatio, hRatio);
     const fieldOffset = wRatio < hRatio
-        ? [0, (this.canvas.parentElement.clientHeight - FIELD_SPRITE_SIZE[1] * fieldScale) / 2]
-        : [(this.canvas.parentElement.clientWidth - FIELD_SPRITE_SIZE[0] * fieldScale) / 2, 0];
+        ? [0, (effectiveHeight - FIELD_SPRITE_SIZE[1] * fieldScale) / 2]
+        : [(effectiveWidth - FIELD_SPRITE_SIZE[0] * fieldScale) / 2, 0];
     // DEBUG: console.log('Field scale ' + fieldScale + ' offset ' + fieldOffset);
     this.canvas.width = this.canvas.parentElement.clientWidth / fieldScale;
     this.canvas.height = this.canvas.parentElement.clientHeight / fieldScale;
@@ -177,7 +181,8 @@ export class Game {
 
     context.save();
     context.setTransform(1, 0, 0, 1, 0, 0);
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = '#50a003';
+    context.fillRect(0, 0, canvas.width, canvas.height);
     context.restore();
     context.drawImage(this.resources.fieldSprite, 0, 0);
     frameBuffer.drawScene(context);
