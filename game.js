@@ -338,7 +338,7 @@ export class Game {
             (interception ? 'Callahan!!' : 'Score!') + ' '
                 + this.offensiveTeam().score + ' vs ' + this.defensiveTeam().score,
             player.position.concat(5),
-            [0, 0, 0.1],
+            [0, 0, 0.03],
             this.offensiveTeam().textColor,
             300);
         if (player.team.score >= WIN_SCORE) {
