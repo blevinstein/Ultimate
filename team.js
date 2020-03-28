@@ -5,11 +5,12 @@ import { Player } from './player.js';
 export const NUM_PLAYERS = 7;
 
 export class Team {
-  constructor(game, textColor, colorMapping, goalDirection) {
+  constructor(game, coach, textColor, colorMapping, goalDirection) {
     Team.maxId = Team.maxId || 0;
     this.id = Team.maxId++;
 
     this.game = game;
+    this.coach = coach;
     this.textColor = textColor;
     this.colorMapping = colorMapping;
     this.players = [];

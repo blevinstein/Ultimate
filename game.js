@@ -1,18 +1,12 @@
 
 import { loadImage, splitSprite, mirrorImages } from './image_utils.js';
 import { dist2d, mag2d, mul2d, norm2d, sub2d } from './math_utils.js';
+import { Coach } from './coach.js';
 import { Disc } from './disc.js';
 import { FrameBuffer } from './frame_buffer.js';
 import { Team, NUM_PLAYERS } from './team.js';
 import { ARM_HEIGHT } from './player.js';
 import { ToastService } from './toast_service.js';
-import { ClosestPickupStrategy } from './strategy/closest_pickup.js';
-import { IdleStrategy } from './strategy/idle.js';
-import { KickoffStrategy } from './strategy/kickoff.js';
-import { LineupStrategy } from './strategy/lineup.js';
-import { ManToManDefenseStrategy } from './strategy/man_defense.js';
-import { RandomOffenseStrategy } from './strategy/random_offense.js';
-import { ManualOffenseStrategy } from './strategy/manual_offense.js';
 
 const FRAME_TIME = 30;
 
@@ -65,70 +59,24 @@ export const STATES = {
   GameOver: 'gameover', // Game is over because one team has scored 11 points
 };
 
-// returns the create function for the chosen strategy
-function pickStrategy(game, team) {
-  switch (game.state) {
-    case STATES.Kickoff:
-      if (!team.onOffense) {
-        if (team.hasDisc()) {
-          return new KickoffStrategy(game, team);
-        } else {
-          if (game.defensiveTeam().hasDisc()) { console.log('The wrong team has the disc!'); return; }
-          return new ClosestPickupStrategy(game, team);
-        }
-      } else {
-        return new IdleStrategy(game, team);
-      }
-      break;
-    case STATES.Receiving:
-    case STATES.Pickup:
-      if (team.onOffense) {
-        return new ClosestPickupStrategy(game, team);
-      } else {
-        return new ManToManDefenseStrategy(game, team);
-      }
-    case STATES.Normal:
-      if (game.disc.isLoose()) {
-        if (team.onOffense) {
-          return new ClosestPickupStrategy(game, team);
-        } else {
-          return new ManToManDefenseStrategy(game, team);
-        }
-      } else {
-        if (team.onOffense) {
-          return new RandomOffenseStrategy(game, team);
-          /*
-          // player vs computer
-          return team == game.teams[0]
-              ? new RandomOffenseStrategy(game, team)
-              : new ManualOffenseStrategy(game, team);
-          */
-        } else {
-          return new ManToManDefenseStrategy(game, team);
-        }
-      }
-    case STATES.Reset:
-      return new LineupStrategy(game, team);
-    case STATES.GameOver:
-      // TODO: More fun behavior? High fives, celebrations?
-      return new LineupStrategy(game, team);
-  }
-  throw new Error('Unexpected state: ' + game.state);
-}
-
 export class Game {
-  constructor(resources, canvas) {
+  constructor(resources, canvas, coaches = [new Coach(), new Coach()]) {
     this.canvas = canvas;
     this.resources = resources;
+    this.coaches = coaches;
     this.setupCanvas();
     this.reset();
   }
 
   reset() {
     this.teams = [
-        new Team(this, '#ff0000', RED_COLORS, 'W').addPlayers(false),
-        new Team(this, '#0000ff', BLUE_COLORS, 'E').addPlayers(true).setOnOffense(true)];
-    let player = this.teams[0].players[Math.trunc(Math.random() * NUM_PLAYERS)];
+        new Team(this, this.coaches[0], '#ff0000', RED_COLORS, 'W').addPlayers(false),
+        new Team(this, this.coaches[1], '#0000ff', BLUE_COLORS, 'E').addPlayers(true)];
+    // Random team is assigned to offense
+    let offensiveTeamIndex = Math.trunc(Math.random() * 2);
+    this.teams[offensiveTeamIndex].setOnOffense(true);
+    // Random player is assigned to pull
+    let player = this.defensiveTeam().players[Math.trunc(Math.random() * NUM_PLAYERS)];
     this.disc = new Disc(this)
         .setPlayer(player)
         .setVelocity([0, 0, 0])
@@ -218,7 +166,7 @@ export class Game {
     for (let team of this.teams) {
       // Pick a strategy if we don't have one active
       if (!team.strategy) {
-        team.strategy = pickStrategy(this, team);
+        team.strategy = team.coach.pickStrategy(this, team);
         // DEBUG: console.log('New strategy (team ' + team.id + '): ' + team.strategy.constructor.name);
       }
       if (team.strategy) {
