@@ -23,6 +23,8 @@ const WIN_SCORE = 11;
 
 const HAND_HEIGHT = 3;
 
+const FIELD_SPRITE_SIZE = [992, 408];
+
 export const FIELD_BOUNDS = [[0, 110], [0, 40]]
 export const FIELD_BOUNDS_NO_ENDZONES = [[20, 90], [0, 40]];
 
@@ -101,7 +103,8 @@ function pickStrategy(game, team) {
 }
 
 export class Game {
-  constructor(resources) {
+  constructor(resources, canvas) {
+    this.canvas = canvas;
     this.resources = resources;
     this.teams = [
         new Team(this, RED_COLORS, 'W').addPlayers(false),
@@ -113,6 +116,27 @@ export class Game {
         .setPosition(player.position.concat(HAND_HEIGHT));
     this.toastService = new ToastService();
     this.setState(STATES.Kickoff);
+
+    this.setupCanvas();
+  }
+
+  setupCanvas() {
+    const wRatio = this.canvas.parentElement.clientWidth / FIELD_SPRITE_SIZE[0];
+    const hRatio = this.canvas.parentElement.clientHeight / FIELD_SPRITE_SIZE[1];
+    const fieldScale = Math.min(wRatio, hRatio);
+    const fieldOffset = wRatio < hRatio
+        ? [0, (this.canvas.parentElement.clientHeight - FIELD_SPRITE_SIZE[1] * fieldScale) / 2]
+        : [(this.canvas.parentElement.clientWidth - FIELD_SPRITE_SIZE[0] * fieldScale) / 2, 0];
+    // DEBUG: console.log('Field scale ' + fieldScale + ' offset ' + fieldOffset);
+    this.canvas.width = this.canvas.parentElement.clientWidth;
+    this.canvas.height = this.canvas.parentElement.clientHeight;
+    // DEBUG: console.log('Canvas size: ' + canvas.width + ', ' + canvas.height);
+    const context = this.canvas.getContext('2d');
+    context.imageSmoothingEnabled = false;
+    context.translate(fieldOffset[0], fieldOffset[1]);
+    context.scale(fieldScale, fieldScale);
+
+    window.onresize = () => this.setupCanvas();
   }
 
   draw(context) {

@@ -8,25 +8,19 @@ import { Game } from './game.js';
 import { Team } from './team.js';
 import { RangeFinderFactory } from './range_finder.js';
 
-const fieldSize = [992, 408];
-
 let resources = {};
 let initialized = false;
-let fieldScale;
-let fieldOffset;
 
 window.initialize = () => {
   console.log('Initializing...');
 
-  setupCanvas();
   window.rangeFinder = RangeFinderFactory.create(2);
   installMathUtils(window);
 
-  window.onresize = setupCanvas;
   window.onkeypress = (event) => {
     if (event.key.toUpperCase() === 'R') {
       window.clearTimeout(frameCallback);
-      window.game = new Game(resources);
+      window.game = new Game(resources, document.getElementById('canvas'));
       frameCallback = window.setTimeout(draw, FRAME_TIME);
     } else if (event.key.toUpperCase() === 'Q') {
       window.clearTimeout(frameCallback);
@@ -80,32 +74,9 @@ window.initialize = () => {
 let frameCallback;
 
 function start() {
-  const canvas = document.getElementById('canvas');
-  const context = canvas.getContext('2d');
-  context.save()
-  window.game = new Game(resources);
+  window.game = new Game(resources, document.getElementById('canvas'));
 
   frameCallback = setTimeout(draw, FRAME_TIME);
-}
-
-function setupCanvas() {
-  const canvas = document.getElementById('canvas');
-  const wRatio = canvas.parentElement.clientWidth / fieldSize[0];
-  const hRatio = canvas.parentElement.clientHeight / fieldSize[1];
-  fieldScale = Math.min(wRatio, hRatio);
-  fieldOffset = wRatio < hRatio
-      ? [0, (canvas.parentElement.clientHeight - fieldSize[1] * fieldScale) / 2]
-      : [(canvas.parentElement.clientWidth - fieldSize[0] * fieldScale) / 2, 0];
-  // DEBUG: console.log('Field scale ' + fieldScale + ' offset ' + fieldOffset);
-  canvas.width = canvas.parentElement.clientWidth;
-  canvas.height = canvas.parentElement.clientHeight;
-  // DEBUG: console.log('Canvas size: ' + canvas.width + ', ' + canvas.height);
-  const context = canvas.getContext('2d');
-  context.restore()
-  context.save()
-  context.imageSmoothingEnabled = false;
-  context.translate(fieldOffset[0], fieldOffset[1]);
-  context.scale(fieldScale, fieldScale);
 }
 
 function draw() {
