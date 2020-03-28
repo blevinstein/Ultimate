@@ -141,6 +141,7 @@ export class Player {
   // return time to reach the location
   static simulateRunTime(location, initialVelocity, goalRadius = 1) {
     const player = new Player(null, [0, 0]);
+    player.velocity = initialVelocity;
     let time = 0;
     let target;
     do {
