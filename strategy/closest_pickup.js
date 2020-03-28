@@ -22,12 +22,12 @@ export class ClosestPickupStrategy extends Strategy {
 
       for (let player of this.team.players) {
         if (player == closestPlayer) {
-          player.moveExactly(sub2d(discTarget, player.position));
+          player.move(sub2d(discTarget, player.position));
         } else {
           const moveTarget = Game.snapToBounds(
               add2d(player.position, mul2d(getVector(this.team.goalDirection), 10)),
               FIELD_BOUNDS);
-          player.moveExactly(sub2d(moveTarget, player.position));
+          player.move(sub2d(moveTarget, player.position));
         }
       }
     } else {
@@ -36,7 +36,7 @@ export class ClosestPickupStrategy extends Strategy {
         return true;
       } else {
         const moveTarget = Game.snapToBounds(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES);
-        playerWithDisc.moveExactly(sub2d(moveTarget, playerWithDisc.position));
+        playerWithDisc.move(sub2d(moveTarget, playerWithDisc.position));
       }
     }
   }

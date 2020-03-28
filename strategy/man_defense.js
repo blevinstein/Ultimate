@@ -36,7 +36,7 @@ export class ManToManDefenseStrategy extends Strategy {
 
     for (let player of this.team.players) {
       if (player == interceptor) {
-        player.moveExactly(sub2d(discTarget, player.position));
+        player.move(sub2d(discTarget, player.position));
       } else {
         const match = this.matchup.get(player);
         if (!match) { console.log('Player has no matchup!'); continue; }
@@ -44,7 +44,7 @@ export class ManToManDefenseStrategy extends Strategy {
             add2d(match.position, match.hasDisc ? this.markOffset : this.offset),
             FIELD_BOUNDS);
         if (dist2d(target, player.position) > MARK_RADIUS) {
-          player.moveExactly(sub2d(target, player.position));
+          player.move(sub2d(target, player.position));
         } else {
           player.rest(sub2d(match.position, player.position));
         }

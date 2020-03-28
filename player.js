@@ -68,7 +68,8 @@ export class Player {
   }
 
   // Move with deceleration to avoid overshoot
-  moveExactly(vector) {
+  // TODO: Add interactions between players (e.g. must cut around defender, pick call?)
+  move(vector) {
     check2d(vector);
 
     if (mag2d(vector) === 0) {
@@ -79,22 +80,6 @@ export class Player {
     const desiredVelocity = mag2d(vector) > DECEL_STEPS * MAX_PLAYER_SPEED
         ? mul2d(norm2d(vector), MAX_PLAYER_SPEED)
         : mul2d(norm2d(vector), 1 / DECEL_STEPS);
-    this.approachVelocity(desiredVelocity);
-  }
-
-  // TODO: Add interactions between players (e.g. must cut around defender, pick call?)
-  move(vector) {
-    check2d(vector);
-
-    if (mag2d(vector) === 0) {
-      this.rest();
-      return;
-    }
-
-    this.approachVelocity(mul2d(norm2d(vector), MAX_PLAYER_SPEED));
-  }
-
-  approachVelocity(desiredVelocity) {
     const desiredAcceleration = sub2d(desiredVelocity, this.velocity);
 
     const currentSpeed = Math.max(0, magnitudeAlong2d(this.velocity, desiredAcceleration));
