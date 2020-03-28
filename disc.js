@@ -10,7 +10,7 @@ const OPTIMAL_DRAG_ANGLE = -0.08;
 const DRAG_CONST = 0.001;
 const DRAG_QUADRATIC = 0.25;
 
-const LIFT_CONST = 0.001;
+const LIFT_CONST = 0.002;
 const LIFT_LINEAR = 0.02;
 
 const MAX_PICKUP_DIST = 1;

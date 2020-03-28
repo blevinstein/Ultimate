@@ -12,7 +12,7 @@ const HANDLE_SPEED = 0.3;
 
 export const ARM_HEIGHT = 1.5;
 export const ARM_LENGTH = 2;
-export const MAX_THROW_SPEED = 2.5;
+export const MAX_THROW_SPEED = 2.2;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
