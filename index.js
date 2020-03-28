@@ -16,7 +16,7 @@ window.initialize = () => {
 
   Game.loadResources().then((resources) => {
     initialized = true;
-    console.log('Initialized: ' + Object.keys(resources));
+    console.log('Initialized.');
     start(resources);
   }, (error) => {
     console.log('Failed to initialize.');
