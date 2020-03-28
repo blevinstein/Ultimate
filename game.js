@@ -217,7 +217,7 @@ export class Game {
     }
     this.disc.update();
     this.toastService.update();
-    // Special transition if we are waiting for reset or pickup/inbound
+    // Special transition if we are waiting for reset
     if (this.state === STATES.Reset) {
       let ready = true;
       for (let team of this.teams) {
@@ -232,9 +232,16 @@ export class Game {
         this.setState(STATES.Kickoff);
       }
     } else if (this.state === STATES.Pickup) {
+      // Special transition if we are waiting for a player to inbound the disc
       let playerWithDisc = this.playerWithDisc();
       if (playerWithDisc && Game.boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
         this.setState(STATES.Normal);
+      }
+    } else if (this.state === STATES.Normal) {
+      // Special transition if a player steps out of bounds
+      let playerWithDisc = this.playerWithDisc();
+      if(playerWithDisc && !Game.boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
+        this.setState(STATES.Pickup);
       }
     }
   }

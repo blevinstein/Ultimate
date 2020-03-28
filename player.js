@@ -8,11 +8,11 @@ const MAX_PLAYER_ACCEL = 0.03;
 const MAX_PLAYER_SPEED = 0.4;
 const DECEL_STEPS = MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL / 2;
 const MIN_MOVEMENT = 0.04;
-const HANDLE_SPEED = 0.3;
+const HANDLE_SPEED = 0.4;
 
 export const ARM_HEIGHT = 1.5;
 export const ARM_LENGTH = 2;
-export const MAX_THROW_SPEED = 2.2;
+export const MAX_THROW_SPEED = 2;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
