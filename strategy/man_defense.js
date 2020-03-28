@@ -2,10 +2,10 @@
 import { getVector, add2d, mul2d, sub2d, sub3d } from '../math_utils.js';
 import { Disc } from '../disc.js';
 import { Game, FIELD_BOUNDS } from '../game.js';
+import { ARM_HEIGHT } from '../player.js';
 import { Matchup } from './matchup.js';
 import { Strategy } from './strategy.js';
 
-const HAND_HEIGHT = 3;
 const MARK_RADIUS = 1;
 
 export class ManToManDefenseStrategy extends Strategy {
@@ -27,7 +27,7 @@ export class ManToManDefenseStrategy extends Strategy {
     const discTarget = this.game.disc.grounded
         ? add2d(this.game.disc.position, this.markOffset)
         : Disc.simulateUntilGrounded(
-              sub3d(this.game.disc.position, [0, 0, HAND_HEIGHT]),
+              sub3d(this.game.disc.position, [0, 0, ARM_HEIGHT]),
               this.game.disc.velocity,
               this.game.disc.upVector)[0];
 
@@ -36,7 +36,7 @@ export class ManToManDefenseStrategy extends Strategy {
 
     for (let player of this.team.players) {
       if (player == interceptor) {
-        player.move(sub2d(discTarget, player.position));
+        player.moveExactly(sub2d(discTarget, player.position));
       } else {
         const match = this.matchup.get(player);
         if (!match) { console.log('Player has no matchup!'); continue; }
@@ -44,7 +44,7 @@ export class ManToManDefenseStrategy extends Strategy {
             add2d(match.position, match.hasDisc ? this.markOffset : this.offset),
             FIELD_BOUNDS);
         if (dist2d(target, player.position) > MARK_RADIUS) {
-          player.move(sub2d(target, player.position));
+          player.moveExactly(sub2d(target, player.position));
         } else {
           player.rest(sub2d(match.position, player.position));
         }

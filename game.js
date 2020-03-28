@@ -4,6 +4,7 @@ import { dist2d, mag2d, sub2d } from './math_utils.js';
 import { Disc } from './disc.js';
 import { FrameBuffer } from './frame_buffer.js';
 import { Team, NUM_PLAYERS } from './team.js';
+import { ARM_HEIGHT } from './player.js';
 import { ToastService } from './toast_service.js';
 import { ClosestPickupStrategy } from './strategy/closest_pickup.js';
 import { IdleStrategy } from './strategy/idle.js';
@@ -23,8 +24,6 @@ const BG = [0, 0, 0, 0];
 const EYES = [7, 11, 90, 255];
 
 const WIN_SCORE = 11;
-
-const HAND_HEIGHT = 3;
 
 const FIELD_SPRITE_SIZE = [992, 408];
 
@@ -121,7 +120,7 @@ export class Game {
     this.disc = new Disc(this)
         .setPlayer(player)
         .setVelocity([0, 0, 0])
-        .setPosition(player.position.concat(HAND_HEIGHT));
+        .setPosition(player.position.concat(ARM_HEIGHT));
     this.toastService = new ToastService();
     this.setState(STATES.Kickoff);
   }

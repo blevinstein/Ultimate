@@ -2,7 +2,7 @@
 import { dist2d, mag2d, sub2d, getVector, magnitudeAlong2d } from '../math_utils.js';
 import { Disc } from '../disc.js';
 import { Game } from '../game.js';
-import { Player } from '../player.js';
+import { Player, ARM_HEIGHT } from '../player.js';
 import { RangeFinderFactory } from '../range_finder.js';
 import { Strategy } from './strategy.js';
 
@@ -12,7 +12,6 @@ const GOAL_RADIUS = 2;
 const MAX_THROW_SPEED = 2;
 const MIN_PROGRESS = 5;
 
-const HAND_HEIGHT = 3;
 const MAX_HANDLE_OFFSET = 0.1;
 
 

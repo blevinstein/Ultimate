@@ -8,9 +8,10 @@ const MAX_PLAYER_ACCEL = 0.03;
 const MAX_PLAYER_SPEED = 0.3;
 const DECEL_STEPS = MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
 const MIN_MOVEMENT = 0.04;
-const HANDLE_HEIGHT = 3;
 const ARM_LENGTH = 1;
 const HANDLE_SPEED = 0.5;
+
+export const ARM_HEIGHT = 3;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
@@ -50,7 +51,7 @@ export class Player {
   desiredHandlePosition() {
     // TODO: Make variable based on throw (hold to left or right)
     return add3d(
-        this.position.concat(HANDLE_HEIGHT),
+        this.position.concat(ARM_HEIGHT),
         mul3d(getVector(this.direction).concat(0), ARM_LENGTH));
   }
 
@@ -65,12 +66,11 @@ export class Player {
     this.position = add2d(this.position, this.velocity);
   }
 
-  move(vector) {
+  // Move with deceleration to avoid overshoot
+  moveExactly(vector) {
     check2d(vector);
-    // TODO: Add interactions between players (e.g. must cut around defender, pick call?)
-    // TODO: Use max accel instead of max speed
 
-    if (mag2d(vector) === 0.0) {
+    if (mag2d(vector) === 0) {
       this.rest();
       return;
     }
@@ -78,6 +78,22 @@ export class Player {
     const desiredVelocity = mag2d(vector) > DECEL_STEPS * MAX_PLAYER_SPEED
         ? mul2d(norm2d(vector), MAX_PLAYER_SPEED)
         : mul2d(norm2d(vector), 1 / DECEL_STEPS);
+    this.approachVelocity(desiredVelocity);
+  }
+
+  // TODO: Add interactions between players (e.g. must cut around defender, pick call?)
+  move(vector) {
+    check2d(vector);
+
+    if (mag2d(vector) === 0) {
+      this.rest();
+      return;
+    }
+
+    this.approachVelocity(mul2d(norm2d(vector), MAX_PLAYER_SPEED));
+  }
+
+  approachVelocity(desiredVelocity) {
     const desiredAcceleration = sub2d(desiredVelocity, this.velocity);
 
     const currentSpeed = Math.max(0, magnitudeAlong2d(this.velocity, desiredAcceleration));

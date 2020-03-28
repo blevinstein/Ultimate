@@ -1,9 +1,9 @@
 
 import { add3d, check1d, check3d, cross3d, dist2d, dist3d, dot3d, mag3d, mul3d, norm3d, sub3d, linearInterpolate, magnitudeAlong3d, project2d, project3d } from './math_utils.js';
 import { Game, STATES, FIELD_BOUNDS_NO_ENDZONES } from './game.js';
+import { ARM_HEIGHT } from './player.js';
 
 const GROUND_FRICTION = 0.2;
-const HAND_HEIGHT = 3;
 const GRAVITY = 0.05;
 
 const OPTIMAL_DRAG_ANGLE = 0;
@@ -176,7 +176,7 @@ export class Disc {
           for (let player of team.players) {
             if (this.game.lastThrower == player) { continue; }
             if (this.game.state == STATES.Pickup && !team.onOffense) { continue; }
-            let d = dist3d(player.position.concat(HAND_HEIGHT), this.position);
+            let d = dist3d(player.position.concat(ARM_HEIGHT), this.position);
             if (d < (catchDist || MAX_CATCH_DIST)) {
               catchCandidate = player;
               catchDist = d;
