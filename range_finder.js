@@ -4,8 +4,10 @@ import { Disc } from './disc.js';
 
 const VELOCITY_STEP = 0.1;
 const MAX_LAUNCH_ANGLE = Math.PI / 4;
-const MIN_ANGLE = -Math.PI / 6;
-const MAX_ANGLE = Math.PI / 6;
+const MIN_ANGLE_OF_ATTACK = -Math.PI / 6;
+const MAX_ANGLE_OF_ATTACK = Math.PI / 6;
+const MIN_TILT = -Math.PI / 4;
+const MAX_TILT = Math.PI / 4;
 const ANGLE_STEP = Math.PI / 24;
 
 export class RangeFinderFactory {
@@ -33,15 +35,17 @@ export class RangeFinder {
           Math.sqrt(Math.pow(maxSpeed, 2) - Math.pow(xVelocity, 2)),
           xVelocity * Math.sin(MAX_LAUNCH_ANGLE));
       for (let zVelocity = VELOCITY_STEP; zVelocity <= maxZVelocity; zVelocity += VELOCITY_STEP) {
-        for (let angleOfAttack = MIN_ANGLE; angleOfAttack <= MAX_ANGLE; angleOfAttack += ANGLE_STEP) {
-          let velocity = [xVelocity, 0, zVelocity];
-          this.samples.push({
-            input: [xVelocity, zVelocity, angleOfAttack],
-            output: Disc.simulateUntilGrounded(
-                [0, 0, 0.1],
-                velocity,
-                Disc.createUpVector(velocity, angleOfAttack)),
-          });
+        for (let angleOfAttack = MIN_ANGLE_OF_ATTACK; angleOfAttack <= MAX_ANGLE_OF_ATTACK; angleOfAttack += ANGLE_STEP) {
+          for (let tiltAngle = MIN_TILT; tiltAngle <= MAX_TILT; tiltAngle += ANGLE_STEP) {
+            let velocity = [xVelocity, 0, zVelocity];
+            this.samples.push({
+              input: [xVelocity, zVelocity, angleOfAttack, tiltAngle],
+              output: Disc.simulateUntilGrounded(
+                  [0, 0, 0.1],
+                  velocity,
+                  Disc.createUpVector(velocity, angleOfAttack, tiltAngle)),
+            });
+          }
         }
       }
     }
@@ -73,19 +77,19 @@ export class RangeFinder {
     return filteredSamples[max];
   }
 
-  // returns [velocity, angleOfAttack]
+  // returns [velocity, angleOfAttack, tiltAngle]
   getThrowParams(vector2d, minTime) {
     const sample = this.getBestSample(mag2d(vector2d), minTime);
     if (!sample) { return null; }
-    const [forward, upward, angleOfAttack] = sample.input;
+    const [forward, upward, angleOfAttack, tiltAngle] = sample.input;
     const velocity = mul2d(vector2d, forward / mag2d(vector2d)).concat(upward);
-    return [velocity, angleOfAttack];
+    return [velocity, angleOfAttack, tiltAngle];
   }
 
-  // returns [velocity, angleOfAttack]
+  // returns [velocity, angleOfAttack, tiltAngle]
   getLongestThrowParams(vector2d) {
-    const [forward, upward, angleOfAttack] = this.samples[this.samples.length - 1].input;
+    const [forward, upward, angleOfAttack, tiltAngle] = this.samples[this.samples.length - 1].input;
     const velocity = mul2d(vector2d, forward / mag2d(vector2d)).concat(upward);
-    return [velocity, angleOfAttack];
+    return [velocity, angleOfAttack, tiltAngle];
   }
 }

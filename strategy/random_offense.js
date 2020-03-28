@@ -56,7 +56,7 @@ export class RandomOffenseStrategy extends Strategy {
           let interceptor = Disc.simulateInterceptions(
               this.game.disc.position,
               params[0],
-              Disc.createUpVector(params[0], params[1]),
+              Disc.createUpVector(...params),
               this.game.defensiveTeam().players)[0];
           if (interceptor) { continue; }
           let forwardProgress = magnitudeAlong2d(sub2d(destination, player.position), getVector(this.team.goalDirection));

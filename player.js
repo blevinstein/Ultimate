@@ -116,10 +116,9 @@ export class Player {
     }
   }
 
-  throw(velocity, angleOfAttack) {
-    // TODO: Add noise for high velocity throws
-    // console.log('angleOfAttack = ' + angleOfAttack);
-    // DEBUG: console.log('angleToGround = ' + Math.acos(dot3d(norm3d(velocity), [0, 0, 1])));
+  // TODO: Add noise for high velocity throws
+  throw(velocity, angleOfAttack, tiltAngle) {
+    // DEBUG: console.log('Throw: velocity=' + velocity + ' angleOfAttack=' + angleOfAttack + ' tiltAngle=' + tiltAngle);
     check3d(velocity);
     if (mag3d(velocity) > MAX_THROW_SPEED) {
         throw new Error(
@@ -128,7 +127,7 @@ export class Player {
     if (!this.hasDisc) { console.log('Attempted to throw without the disc!'); return; }
     this.team.game.disc
         .setVelocity(velocity)
-        .setUpVector(Disc.createUpVector(velocity, angleOfAttack))
+        .setUpVector(Disc.createUpVector(velocity, angleOfAttack, tiltAngle))
         .setPlayer(null);
     this.team.game.discThrownBy(this);
   }
