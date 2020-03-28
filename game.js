@@ -1,4 +1,5 @@
 
+import { loadImage, splitSprite, mirrorImages } from './image_utils.js';
 import { dist2d, mag2d, sub2d } from './math_utils.js';
 import { Disc } from './disc.js';
 import { FrameBuffer } from './frame_buffer.js';
@@ -10,6 +11,8 @@ import { KickoffStrategy } from './strategy/kickoff.js';
 import { LineupStrategy } from './strategy/lineup.js';
 import { ManToManDefenseStrategy } from './strategy/man_defense.js';
 import { RandomOffenseStrategy } from './strategy/random_offense.js';
+
+const FRAME_TIME = 30;
 
 const SHIRT = [224, 80, 0, 255];
 const PANTS = [72, 88, 0, 255];
@@ -106,6 +109,11 @@ export class Game {
   constructor(resources, canvas) {
     this.canvas = canvas;
     this.resources = resources;
+    this.setupCanvas();
+    this.reset();
+  }
+
+  reset() {
     this.teams = [
         new Team(this, RED_COLORS, 'W').addPlayers(false),
         new Team(this, BLUE_COLORS, 'E').addPlayers(true).setOnOffense(true)];
@@ -116,8 +124,27 @@ export class Game {
         .setPosition(player.position.concat(HAND_HEIGHT));
     this.toastService = new ToastService();
     this.setState(STATES.Kickoff);
+  }
 
-    this.setupCanvas();
+  start() {
+    if (this.isRunning()) { throw new Error('Game is already running!'); }
+    this.tickCallback = window.setTimeout(this.tick.bind(this), FRAME_TIME);
+  }
+
+  stop() {
+    if (!this.isRunning()) { throw new Error('Game is not running!'); }
+    window.clearTimeout(frameCallback);
+  }
+
+  isRunning() {
+    return !!this.tickCallback;
+  }
+
+  tick() {
+    const context = canvas.getContext('2d');
+    this.update();
+    this.draw(context);
+    this.tickCallback = setTimeout(this.tick.bind(this), FRAME_TIME);
   }
 
   setupCanvas() {
@@ -352,5 +379,48 @@ export class Game {
       }
     }
     return [closestPlayer, closestPlayerDistance];
+  }
+
+  // returns Promise<resources>
+  static loadResources() {
+    return Promise.all([
+          loadImage('images/field.png'),
+          loadImage('images/player_sprite_grid.png'),
+          loadImage('images/disc.png'),
+          loadImage('images/disc_shadow.png'),
+        ]).then((results) => {
+          let [fieldSprite, playerSpriteSet, discSprite, discShadowSprite] = results;
+          return splitSprite(playerSpriteSet, 16, 32).then((splitSprites) => {
+            return mirrorImages(splitSprites).then((mirroredSprites) => {
+              let playerSprites = [ ...splitSprites ].concat([ ...mirroredSprites ])
+              console.log('After mirroring, loaded ' + playerSprites.length + ' sprites.');
+              let runningSprites = {
+                'E': playerSprites.slice(0, 3),
+                'SE': playerSprites.slice(3, 6),
+                'NE': playerSprites.slice(6, 9),
+                'N': playerSprites.slice(9, 12),
+                'S': playerSprites.slice(12, 15),
+                'W': playerSprites.slice(21, 24),
+                'SW': playerSprites.slice(24, 27),
+                'NW': playerSprites.slice(27, 30),
+              };
+              let standingSprites = {
+                'S': playerSprites[15],
+                'SE': playerSprites[16],
+                'NE': playerSprites[17],
+                'N': playerSprites[18],
+                'E': playerSprites[19],
+                'SW': playerSprites[37],
+                'NW': playerSprites[38],
+                'W': playerSprites[40],
+              };
+              const resources = {fieldSprite, discSprite, playerSprites, discShadowSprite, runningSprites, standingSprites};
+              return resources;
+            });
+          });
+        }, (error) => {
+          console.log('Failed to initialize.');
+          console.log(error);
+        });
   }
 }
