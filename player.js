@@ -133,7 +133,7 @@ export class Player {
 
   throw(velocity, angleOfAttack) {
     // TODO: Add noise for high velocity throws
-    console.log('angleOfAttack = ' + angleOfAttack);
+    // DEBUG: console.log('angleOfAttack = ' + angleOfAttack);
     check3d(velocity);
     if (mag3d(velocity) > MAX_THROW_SPEED) {
         throw new Error(
