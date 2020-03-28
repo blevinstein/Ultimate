@@ -1,6 +1,6 @@
 
 import { loadImage, splitSprite, mirrorImages } from './image_utils.js';
-import { dist2d, mag2d, sub2d } from './math_utils.js';
+import { dist2d, mag2d, mul2d, norm2d, sub2d } from './math_utils.js';
 import { Disc } from './disc.js';
 import { FrameBuffer } from './frame_buffer.js';
 import { Team, NUM_PLAYERS } from './team.js';
@@ -27,6 +27,9 @@ const EYES = [7, 11, 90, 255];
 const WIN_SCORE = 11;
 
 const FIELD_SPRITE_SIZE = [992, 408];
+
+const COLLISION_DIST = 1.5;
+const MAX_COLLISION_IMPULSE = 2;
 
 export const FIELD_BOUNDS = [[0, 110], [0, 40]]
 export const FIELD_BOUNDS_NO_ENDZONES = [[20, 90], [0, 40]];
@@ -221,6 +224,37 @@ export class Game {
         }
       } else {
         throw new Error('Failed to pick a strategy.');
+      }
+    }
+    // Collisions between players. Using a sliding window based on x coordinates, find all pairs
+    // of players that are too close.
+    let allPlayers = this.allPlayers().sort((a, b) => a.position[0] - b.position[0]);
+    let windowMin = 0;
+    let windowMax = 0;
+    for (let i = 0; i < allPlayers.length; i++) {
+      // Update window.
+      // windowMin = first player within collisionDist by x coord.
+      while (allPlayers[windowMin].position[0] < allPlayers[i].position[0] - COLLISION_DIST) {
+        windowMin++;
+      }
+      // windowMax = first player not within collisionDist by x coord.
+      while (windowMax < allPlayers.length
+          && allPlayers[windowMax].position[0] < allPlayers[i].position[0] + COLLISION_DIST) {
+        windowMax++;
+      }
+      for (let j = windowMin; j < windowMax; j++) {
+        if (i <= j) continue;
+        let distance = dist2d(allPlayers[i].position, allPlayers[j].position);
+        if (distance < COLLISION_DIST) {
+          const collisionImpulse = Math.pow(1 - distance / COLLISION_DIST, 2) * MAX_COLLISION_IMPULSE;
+          const collisionDirection = norm2d(sub2d(allPlayers[i].position, allPlayers[j].position));
+          if (allPlayers[i].moving) {
+            allPlayers[i].accelerate(mul2d(collisionDirection, collisionImpulse));
+          }
+          if (allPlayers[j].moving) {
+            allPlayers[j].accelerate(mul2d(collisionDirection, -collisionImpulse));
+          }
+        }
       }
     }
     // Players and physics update
