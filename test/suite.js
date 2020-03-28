@@ -26,19 +26,19 @@ export const expect = {
   true: value => {
     if (!value) { throw new Error('Expected true but was ' + value); }
   },
-  equalsWithin: (a, b, tolerance) => {
+  equalsWithin: (a, b, tolerance = 0.0001) => {
     if (Math.abs(a - b) > tolerance) {
       throw new Error('Expected ' + a + ' equalsWithin[' + tolerance  + '] ' + b);
     }
   },
-  equals2d: (a, b, tolerance) => {
-    if (dist2d(a, b) > tolerance) {
-      throw new Error('Expected ' + a + ' equals2d[' + tolerance + '] ' + b);
+  equals2d: (a, b, tolerance = 0.0001) => {
+    if (!(dist2d(a, b) <= tolerance)) {
+      throw new Error('Expected ' + a + ' equals2d[' + tolerance + '] ' + b + '; diff is ' + dist2d(a, b));
     }
   },
-  equals3d: (a, b, tolerance) => {
-    if (dist3d(a, b) > tolerance) {
-      throw new Error('Expected ' + a + ' equals3d[' + tolerance + '] ' + b);
+  equals3d: (a, b, tolerance = 0.0001) => {
+    if (!(dist3d(a, b) <= tolerance)) {
+      throw new Error('Expected ' + a + ' equals3d[' + tolerance + '] ' + b + '; diff is ' + dist3d(a, b));
     }
   },
 };

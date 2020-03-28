@@ -170,7 +170,7 @@ export function mag2d(vector) {
   return Math.sqrt(Math.pow(vector[0], 2) + Math.pow(vector[1], 2));
 }
 
-// Project from rect 110x40 to trapezoid 410/890x344 offset 50x60
+// Project from rect 110x40 to trapezoid 830/890x344 offset 50x60
 export function project2d(position) {
   let xShrinkFactor = linearInterpolate(830/890, 1, position[1] / 40);
   let xPosition = (xShrinkFactor * (position[0] - 55) + 55) * 890/110 + 50;
@@ -180,7 +180,7 @@ export function project2d(position) {
 
 // Inverse of project2d
 export function inverseProject2d(screenPosition) {
-  let yPosition = screenPosition[1] * 40/344 - 60;
+  let yPosition = (screenPosition[1] - 60) * 40/344;
   let xShrinkFactor = linearInterpolate(830/890, 1, yPosition / 40);
   let xPosition = (((screenPosition[0] - 50) * 110/890) - 55) / xShrinkFactor + 55;
   return [xPosition, yPosition];
@@ -221,7 +221,10 @@ export function installMathUtils(window) {
       'magnitudeAlong2d',
       'mul2d',
       'mag2d',
-      'project2d']) {
+      'project2d',
+      'project3d',
+      'inverseProject2d'
+    ]) {
     window[name] = eval(name);
   }
 }

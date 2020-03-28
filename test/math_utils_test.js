@@ -2,8 +2,6 @@
 import { project2d, inverseProject2d } from '../math_utils.js';
 import { TestSuite, expect } from './suite.js';
 
-const TOL = 0.001;
-
 export class MathUtilsTest extends TestSuite {
   constructor() {
     super();
@@ -13,6 +11,9 @@ export class MathUtilsTest extends TestSuite {
           expect.equals2d(
               [i, j],
               inverseProject2d(project2d([i, j])));
+          expect.equals2d(
+              [i, j],
+              project2d(inverseProject2d([i, j])));
         }
       }
     });
