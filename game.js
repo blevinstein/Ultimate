@@ -51,7 +51,7 @@ const BLUE_COLORS = [
   [HAIR],
 ];
 
-const STATES = {
+export const STATES = {
   Kickoff: 'kickoff', // Waiting for defense to pull
   Receiving: 'receiving', // Waiting for offense to receive pull
   Pickup: 'pickup', // Waiting for offense to pickup grounded disc
@@ -149,16 +149,18 @@ export class Game {
   }
 
   setupCanvas() {
-    // Add some extra margin on the bottom of the screen so that we can see out-of-bounds catches.
+    // Add some extra margin on the top and bottom of the screen so that we can
+    // see out-of-bounds catches.
     const effectiveWidth = this.canvas.parentElement.clientWidth;
-    const effectiveHeight = this.canvas.parentElement.clientHeight * 0.85;
+    const effectiveHeight = this.canvas.parentElement.clientHeight * 0.80;
+    const topMargin = this.canvas.parentElement.clientHeight * 0.05;
 
     const wRatio = effectiveWidth / FIELD_SPRITE_SIZE[0];
     const hRatio = effectiveHeight / FIELD_SPRITE_SIZE[1];
     const fieldScale = Math.min(wRatio, hRatio);
     const fieldOffset = wRatio < hRatio
-        ? [0, (effectiveHeight - FIELD_SPRITE_SIZE[1] * fieldScale) / 2]
-        : [(effectiveWidth - FIELD_SPRITE_SIZE[0] * fieldScale) / 2, 0];
+        ? [0, (effectiveHeight - FIELD_SPRITE_SIZE[1] * fieldScale) / 2 + topMargin]
+        : [(effectiveWidth - FIELD_SPRITE_SIZE[0] * fieldScale) / 2, topMargin];
     // DEBUG: console.log('Field scale ' + fieldScale + ' offset ' + fieldOffset);
     this.canvas.width = this.canvas.parentElement.clientWidth / fieldScale;
     this.canvas.height = this.canvas.parentElement.clientHeight / fieldScale;
@@ -194,7 +196,7 @@ export class Game {
       // Pick a strategy if we don't have one active
       if (!team.strategy) {
         team.strategy = pickStrategy(this, team);
-        console.log('New strategy (team ' + team.id + '): ' + team.strategy.constructor.name);
+        // DEBUG: console.log('New strategy (team ' + team.id + '): ' + team.strategy.constructor.name);
       }
       if (team.strategy) {
         if (team.strategy.update()) {
@@ -236,7 +238,7 @@ export class Game {
   }
 
   setState(state) {
-    if (this.state !== state) { console.log('New state: ' + state); }
+    // DEBUG: if (this.state !== state) { console.log('New state: ' + state); }
     this.state = state;
     for (let team of this.teams) {
       team.strategy = null;
@@ -272,7 +274,7 @@ export class Game {
   }
 
   discThrownBy(player) {
-    // DEBUG: console.log('discThrown');
+    // DEBUG: console.log('discThrown by player ' + player.id);
     this.lastThrower = player;
     if (this.state === STATES.Kickoff) {
       this.setState(STATES.Receiving);
@@ -284,9 +286,11 @@ export class Game {
     if (this.state === STATES.Receiving) {
       this.setState(STATES.Pickup);
       return;
+    } else if (this.state === STATES.Pickup) {
+      return;
+    } else if (this.state !== STATES.Normal) {
+      throw new Error('Disc grounded in unexpected state: ' + this.state);
     }
-
-    if (this.state !== STATES.Normal) { throw new Error('Disc grounded in unexpected state: ' + this.state); }
 
     this.setOffensiveTeam(this.defensiveTeam());
     this.setState(STATES.Pickup);
@@ -298,8 +302,12 @@ export class Game {
         100);
   }
 
+  discDroppedBy(player) {
+    // DEBUG: console.log('discDropped by player ' + player.id);
+  }
+
   discCaughtBy(player) {
-    // DEBUG: console.log('discCaught');
+    // DEBUG: console.log('discCaught by player ' + player.id);
 
     // Special case: receiving the pull
     if (this.state === STATES.Receiving) {
@@ -352,14 +360,16 @@ export class Game {
           [0, 0, 0.1],
           '#00ff00',
           100);
-      player.drop();
       this.setState(STATES.Pickup);
       this.setOffensiveTeam(this.defensiveTeam());
+      if (!player.team.onOffense) {
+        player.drop();
+      }
     }
   }
 
   discPickedUpBy(player) {
-    console.log('discPickedUp');
+    // DEBUG: console.log('discPickedUp by player ' + player.id);
   }
 
   static endzone(goalDirection) {

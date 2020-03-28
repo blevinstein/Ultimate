@@ -129,8 +129,8 @@ export class Player {
   }
 
   drop() {
+    this.team.game.discDroppedBy(this);
     if (!this.hasDisc) { console.log('Attempted to drop without the disc!'); return; }
-    console.log('Player dropped disc');
     this.team.game.disc.setPlayer(null);
   }
 
