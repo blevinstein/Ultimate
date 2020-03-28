@@ -1,4 +1,5 @@
 
+import { Cutter } from './cutter.js';
 import { dist2d, mag2d, sub2d, getVector, magnitudeAlong2d, inverseProject2d } from '../math_utils.js';
 import { Disc } from '../disc.js';
 import { Game } from '../game.js';
@@ -6,7 +7,6 @@ import { Player, ARM_HEIGHT, MAX_THROW_SPEED } from '../player.js';
 import { RangeFinderFactory } from '../range_finder.js';
 import { Strategy } from './strategy.js';
 
-const NUM_CANDIDATE_ROUTES = 10;
 const GOAL_RADIUS = 2;
 
 const MAX_HANDLE_OFFSET = 0.1;
@@ -25,28 +25,6 @@ export class ManualOffenseStrategy extends Strategy {
       this.throwTarget = inverseProject2d(mul2d(
           sub2d([event.offsetX, event.offsetY], game.fieldOffset), 1 / game.fieldScale));
     };
-  }
-
-  chooseDestination() {
-    const thrower = this.game.playerWithDisc();
-    if (!thrower) { return null; }
-    const defensivePlayers = this.game.defensiveTeam().players;
-    const [minX, maxX] = this.team.goalDirection === 'E'
-        ? [thrower.position[0] - 5, 110]
-        : [0, thrower.position[0] + 5];
-    let bestDestination;
-    let bestClosestDefenderDistance;
-    for (let i = 0; i < NUM_CANDIDATE_ROUTES; i++) {
-      // Choose a random location no more than 5 yards behind the thrower
-      let newDestination =
-          [minX + Math.random() * (maxX - minX), Math.random() * 40];
-      let closestDefenderDistance = Game.getClosestPlayer(this.game.defensiveTeam().players, newDestination)[1];
-      if (!bestDestination || closestDefenderDistance > bestClosestDefenderDistance) {
-        bestDestination = newDestination;
-        bestClosestDefenderDistance = closestDefenderDistance;
-      }
-    }
-    return bestDestination;
   }
 
   update() {
@@ -84,7 +62,8 @@ export class ManualOffenseStrategy extends Strategy {
         this.throwTarget = null;
       } else {
         // Cutter behavior
-        let destination = this.destinationMap.get(player) || this.chooseDestination();
+        let destination = this.destinationMap.get(player)
+            || Cutter.chooseBestRandomDestination(this.game, this.team);
         if (!destination) { continue; }
         if (dist2d(destination, player.position) < GOAL_RADIUS) {
           destination = null;
