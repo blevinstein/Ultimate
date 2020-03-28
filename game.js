@@ -306,9 +306,11 @@ export class Game {
         this.setState(STATES.Pickup);
       }
       return;
+    } else if (this.state === STATES.Pickup) {
+      return;
+    } else if (this.state !== STATES.Normal) {
+      throw new Error('Disc caught in unexpected state:' + this.state);
     }
-
-    if (this.state !== STATES.Normal) { throw new Error('Disc caught in unexpected state:' + this.state); }
 
     let interception = !player.team.onOffense;
     if (Game.isInBounds(player.position)) {
