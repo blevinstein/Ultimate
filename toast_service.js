@@ -6,8 +6,8 @@ export class ToastService {
     this.toasts = [];
   }
 
-  addToast(text, position, velocity, color, lifetime) {
-    this.toasts.push({text, position, velocity, color, lifetime});
+  addToast(text, position, velocity, color, lifetime, accentColor = 'white') {
+    this.toasts.push({text, position, velocity, color, lifetime, accentColor});
   }
 
   update() {
@@ -22,11 +22,19 @@ export class ToastService {
   draw(frameBuffer) {
     for (let toast of this.toasts) {
       frameBuffer.drawOperation(toast.position[1], context => {
-        context.fillStyle = toast.color;
         context.font = '8px retroFont';
         const textMetrics = context.measureText(toast.text);
         const screenPosition = project3d(toast.position);
         window.textMetrics = textMetrics;
+        context.lineWidth = 2;
+        if (toast.accentColor) {
+          context.strokeStyle = toast.accentColor;
+          context.strokeText(
+              toast.text,
+              screenPosition[0] - textMetrics.width / 2,
+              screenPosition[1] - textMetrics.actualBoundingBoxAscent);
+        }
+        context.fillStyle = toast.color;
         context.fillText(
             toast.text,
             screenPosition[0] - textMetrics.width / 2,
