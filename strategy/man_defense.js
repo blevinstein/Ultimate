@@ -1,12 +1,13 @@
 
-import { getVector, add2d, mul2d, sub2d, sub3d } from '../math_utils.js';
+import { getVector, add2d, mul2d, norm2d, sub2d, sub3d } from '../math_utils.js';
 import { Disc } from '../disc.js';
 import { Game, FIELD_BOUNDS } from '../game.js';
 import { ARM_HEIGHT } from '../player.js';
 import { Matchup } from './matchup.js';
 import { Strategy } from './strategy.js';
 
-const MARK_RADIUS = 1;
+const MARK_RADIUS = 0.5;
+const MIN_DISC_SPACE = 2.5;
 
 export class ManToManDefenseStrategy extends Strategy {
   constructor(game, team) {
@@ -14,7 +15,7 @@ export class ManToManDefenseStrategy extends Strategy {
     this.matchup = Matchup.minMeanSquaredDistance(game.teams);
     this.forceDirection = Math.random() < 0.5 ? getVector('N') : getVector('S');
     this.offset = add2d(
-      mul2d(getVector(team.goalDirection), -5),
+      mul2d(getVector(team.goalDirection), -8),
       mul2d(this.forceDirection, 5));
     this.markOffset = add2d(
       mul2d(getVector(team.goalDirection), -3),
@@ -40,9 +41,13 @@ export class ManToManDefenseStrategy extends Strategy {
       } else {
         const match = this.matchup.get(player);
         if (!match) { console.log('Player has no matchup!'); continue; }
-        const target = Game.snapToBounds(
+        let target = Game.snapToBounds(
             add2d(match.position, match.hasDisc ? this.markOffset : this.offset),
             FIELD_BOUNDS);
+        // Give disc space if necessary
+        if (dist2d(target, match.position) < MIN_DISC_SPACE) {
+          target = mul2d(norm2d(sub2d(target, match.position)), MIN_DISC_SPACE);
+        }
         if (dist2d(target, player.position) > MARK_RADIUS) {
           player.move(sub2d(target, player.position));
         } else {
