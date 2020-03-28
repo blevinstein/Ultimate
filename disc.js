@@ -107,18 +107,6 @@ export class Disc {
           0,
           Math.PI * 2);
       context.fill();
-      context.lineWidth = 1;
-      context.strokeStyle = 'white';
-      context.beginPath();
-      context.ellipse(
-          screenPosition[0],
-          screenPosition[1],
-          mag2d(screenMajorAxis) * DISC_SIZE,
-          mag2d(screenMinorAxis) * DISC_SIZE,
-          Math.atan2(screenMajorAxis[1], screenMajorAxis[0]),
-          0,
-          Math.PI * 2);
-      context.stroke();
 
       if (!this.grounded) {
         context.globalAlpha = 0.2;
