@@ -184,6 +184,16 @@ export class Game {
     for (let team of this.teams) {
       team.draw(frameBuffer);
     }
+    if (this.state === STATES.Normal && !this.disc.isLoose() && this.stallCount >= 1) {
+      this.toastService.addToast(
+        '' + Math.trunc(this.stallCount),
+        this.playerWithDisc().position.concat(3),
+        [0, 0, 0],
+        this.stallCount < 4 ? '#00ff00' : (this.stallCount < 7 ? 'yellow' : 'red'),
+        1,
+        this.stallCount < 7 ? '#000000' : 'white',
+);
+    }
     this.disc.draw(frameBuffer);
     this.toastService.draw(frameBuffer);
 
@@ -221,8 +231,10 @@ export class Game {
     }
     this.disc.update();
     this.toastService.update();
-    // Special transition if we are waiting for reset
+
+    // Special transitions if we are waiting for a condition to be satisfied
     if (this.state === STATES.Reset) {
+      // Waiting for players to return to their endzone
       let ready = true;
       for (let team of this.teams) {
         let homeEndzone = Game.endzone(team.goalDirection === 'W' ? 'E' : 'W');
@@ -236,16 +248,31 @@ export class Game {
         this.setState(STATES.Kickoff);
       }
     } else if (this.state === STATES.Pickup) {
-      // Special transition if we are waiting for a player to inbound the disc
+      // Waiting for a player to bring the disc back in bounds
       let playerWithDisc = this.playerWithDisc();
       if (playerWithDisc && Game.boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
         this.setState(STATES.Normal);
       }
     } else if (this.state === STATES.Normal) {
-      // Special transition if a player steps out of bounds
+      // Waiting for a player to step out of bounds
       let playerWithDisc = this.playerWithDisc();
       if(playerWithDisc && !Game.boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
         this.setState(STATES.Pickup);
+      }
+      // Waiting for stall count to hit ten
+      if (playerWithDisc) {
+        this.stallCount += FRAME_TIME / 1000;
+        if (this.stallCount >= 10) {
+          playerWithDisc.drop();
+          this.setOffensiveTeam(this.defensiveTeam());
+          this.setState(STATES.Pickup);
+          this.toastService.addToast(
+              'Stall!',
+              this.disc.position,
+              [0, 0, 0.1],
+              this.offensiveTeam().textColor,
+              100);
+        }
       }
     }
   }
@@ -256,6 +283,7 @@ export class Game {
     for (let team of this.teams) {
       team.strategy = null;
     }
+    this.stallCount = 0;
   }
 
   offensiveTeam() { return this.teams.find(t => t.onOffense); }
@@ -340,6 +368,7 @@ export class Game {
       throw new Error('Disc caught in unexpected state:' + this.state);
     }
 
+    this.stallCount = 0;
     let interception = !player.team.onOffense;
     if (Game.isInBounds(player.position)) {
       if ((player.team.goalDirection === 'E' && player.position[0] > 90)
@@ -385,6 +414,7 @@ export class Game {
 
   discPickedUpBy(player) {
     // DEBUG: console.log('discPickedUp by player ' + player.id);
+    this.stallCount = 0;
   }
 
   static endzone(goalDirection) {
