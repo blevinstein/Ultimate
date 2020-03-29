@@ -132,6 +132,17 @@ export class Game {
     // DEBUG: console.log('Canvas size: ' + canvas.width + ', ' + canvas.height);
 
     window.onresize = () => this.setupCanvas();
+
+    window.onkeypress = (event) => {
+      if (event.key.toUpperCase() === 'R') {
+        this.reset();
+        if (!this.isRunning()) { this.start(); }
+      } else if (event.key.toUpperCase() === 'Q') {
+        if (this.isRunning()) { this.stop(); }
+      } else if (event.key.toUpperCase() === 'W') {
+        if (!this.isRunning()) { this.start(); }
+      }
+    };
   }
 
   draw(context) {
