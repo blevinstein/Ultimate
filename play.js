@@ -43,10 +43,8 @@ function start(resources) {
   window.game = new Game(resources,
       document.getElementById('canvas'),
       [
-        new Coach(
-            (game, team) => new ManualOffenseStrategy(game, team),
-            (game, team) => new ZoneDefenseStrategy(game, team)),
-        new Coach(),
+        new Coach((game, team) => new ManualOffenseStrategy(game, team)),
+        new Coach(undefined, (game, team) => new ZoneDefenseStrategy(game, team)),
       ]);
   window.game.start();
 }
