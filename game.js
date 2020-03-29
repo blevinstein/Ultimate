@@ -111,8 +111,8 @@ export class Game {
     // Add some extra margin on the top and bottom of the screen so that we can
     // see out-of-bounds catches.
     const effectiveWidth = this.canvas.parentElement.clientWidth;
-    const effectiveHeight = this.canvas.parentElement.clientHeight * 0.80;
-    const topMargin = this.canvas.parentElement.clientHeight * 0.05;
+    const effectiveHeight = this.canvas.parentElement.clientHeight * 0.9;
+    const topMargin = this.canvas.parentElement.clientHeight * 0.0;
 
     const wRatio = effectiveWidth / FIELD_SPRITE_SIZE[0];
     const hRatio = effectiveHeight / FIELD_SPRITE_SIZE[1];
