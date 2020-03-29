@@ -65,12 +65,7 @@ export class ManualOffenseStrategy extends Strategy {
         let destination = this.destinationMap.get(player)
             || Cutter.chooseBestRandomDestination(this.game, this.team);
         if (!destination) { continue; }
-        if (dist2d(destination, player.position) < GOAL_RADIUS) {
-          destination = null;
-          player.rest();
-        } else {
-          this.move(player, destination);
-        }
+        this.moveWithin(player, destination, GOAL_RADIUS);
         this.destinationMap.set(player, destination);
       }
     }

@@ -44,15 +44,11 @@ export class ManToManDefenseStrategy extends Strategy {
         let target = Game.snapToBounds(
             add2d(match.position, match.hasDisc ? this.markOffset : this.offset),
             FIELD_BOUNDS);
-        // Give disc space if necessary
+        // Adjust target to give disc space if necessary
         if (dist2d(target, match.position) < MIN_DISC_SPACE) {
           target = mul2d(norm2d(sub2d(target, match.position)), MIN_DISC_SPACE);
         }
-        if (dist2d(target, player.position) > MARK_RADIUS) {
-          this.move(player, target);
-        } else {
-          player.rest(sub2d(match.position, player.position));
-        }
+        this.moveWithin(player, target, MARK_RADIUS, sub2d(match.position, player.position));
       }
     }
   }

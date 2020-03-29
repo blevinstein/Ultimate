@@ -13,11 +13,11 @@ export class LineupStrategy extends Strategy {
       let target = this.team.goalDirection === 'E'
           ? [19, (index+0.5) / NUM_PLAYERS * 40]
           : [91, (index+0.5) / NUM_PLAYERS * 40];
-      if (dist2d(target, player.position) > LINEUP_RADIUS) {
-        this.move(player, target);
-      } else {
-        player.rest(getVector(this.team.goalDirection));
-      }
+      this.moveWithin(
+          player,
+          target,
+          LINEUP_RADIUS,
+          getVector(this.team.goalDirection));
     }
   }
 }

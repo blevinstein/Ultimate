@@ -1,5 +1,5 @@
 
-import { project2d } from '../math_utils.js';
+import { project2d, dist2d } from '../math_utils.js';
 import { FrameBuffer } from '../frame_buffer.js';
 
 export class Strategy {
@@ -15,7 +15,7 @@ export class Strategy {
   // Move player to within 'within' of 'destination', then face in the
   // direction indicated by 'faceVector'
   moveWithin(player, destination, within = 0.1, restVector) {
-    if (dist2d(player, destination) > within) {
+    if (dist2d(player.position, destination) > within) {
       this.move(player, destination);
     } else {
       player.rest(restVector);

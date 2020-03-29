@@ -56,11 +56,11 @@ export class ZoneDefenseStrategy extends Strategy {
       // Cup
       if (i < 4) {
         const targetPosition = add2d(discTarget, this.cupOffsets[i]);
-        if (dist2d(targetPosition, this.team.players[i].position) > MARK_RADIUS) {
-          this.move(this.team.players[i], targetPosition);
-        } else {
-          this.team.players[i].rest(sub2d(discTarget, this.team.players[i].position));
-        }
+        this.moveWithin(
+            this.team.players[i],
+            targetPosition,
+            MARK_RADIUS,
+            sub2d(discTarget, this.team.players[i].position));
         continue;
       }
 
