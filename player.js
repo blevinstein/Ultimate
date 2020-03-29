@@ -68,7 +68,10 @@ export class Player {
   }
 
   // Move with deceleration to avoid overshoot
-  // TODO: Add interactions between players (e.g. must cut around defender, pick call?)
+  moveTo(target) {
+    this.move(sub2d(target, this.position));
+  }
+
   move(vector) {
     check2d(vector);
 

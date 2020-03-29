@@ -80,7 +80,7 @@ export class RandomOffenseStrategy extends Strategy {
           destination = null;
           player.rest();
         } else {
-          player.move(sub2d(destination, player.position));
+          player.moveTo(destination);
         }
         this.destinationMap.set(player, destination);
       }
