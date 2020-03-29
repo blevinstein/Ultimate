@@ -49,7 +49,7 @@ export class ZoneDefenseStrategy extends Strategy {
 
     for (let i = 0; i < this.team.players.length; i++) {
       if (this.team.players[i] == interceptor) {
-        interceptor.moveTo(discTarget);
+        this.move(interceptor, discTarget);
         continue;
       }
 
@@ -57,7 +57,7 @@ export class ZoneDefenseStrategy extends Strategy {
       if (i < 4) {
         const targetPosition = add2d(discTarget, this.cupOffsets[i]);
         if (dist2d(targetPosition, this.team.players[i].position) > MARK_RADIUS) {
-          this.team.players[i].moveTo(targetPosition);
+          this.move(this.team.players[i], targetPosition);
         } else {
           this.team.players[i].rest(sub2d(discTarget, this.team.players[i].position));
         }
@@ -76,11 +76,11 @@ export class ZoneDefenseStrategy extends Strategy {
 
         if (myCutters.length === 0) {
           const myTarget = [(xRange[0] + xRange[1]) / 2, (yRange[0] + yRange[1]) / 2];
-          this.team.players[i].moveTo(myTarget);
+          this.move(this.team.players[i], myTarget);
         } else {
           myCutters.sort((a, b) => this.wingThreatLevel(a, discTarget) - this.wingThreatLevel(b, discTarget));
           const myTarget = add2d(myCutters[myCutters.length - 1].position, this.offset);
-          this.team.players[i].moveTo(myTarget);
+          this.move(this.team.players[i], myTarget);
         }
         continue;
       }
@@ -90,7 +90,7 @@ export class ZoneDefenseStrategy extends Strategy {
         const myCutters = this.game.offensiveTeam().players.filter(p => p != playerWithDisc);
         myCutters.sort((a, b) => this.deepThreatLevel(a) - this.deepThreatLevel(b));
         const myTarget = add2d(myCutters[myCutters.length - 1].position, this.offset);
-        this.team.players[i].moveTo(myTarget);
+        this.move(this.team.players[i], myTarget);
       }
     }
   }

@@ -28,8 +28,8 @@ export class Strategy {
     const destinationScreenPosition = project2d(destination);
     this.frameBuffer.drawOperation(0, context => {
       context.strokeStyle = player.team.textColor;
-      context.lineWidth = 2;
-      context.globalAlpha = 0.5;
+      context.lineWidth = 3;
+      context.globalAlpha = 0.1;
       context.beginPath();
       context.moveTo(playerScreenPosition[0], playerScreenPosition[1]);
       context.lineTo(destinationScreenPosition[0], destinationScreenPosition[1]);

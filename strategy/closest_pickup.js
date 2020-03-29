@@ -22,21 +22,25 @@ export class ClosestPickupStrategy extends Strategy {
 
       for (let player of this.team.players) {
         if (player == closestPlayer) {
-          player.moveTo(discTarget);
+          this.move(player, discTarget);
         } else {
+          // Charge forwards blindly!
+          // TODO: replace with something smarter?
           const moveTarget = Game.snapToBounds(
               add2d(player.position, mul2d(getVector(this.team.goalDirection), 10)),
               FIELD_BOUNDS);
-          player.moveTo(moveTarget);
+          this.move(player, moveTarget);
         }
       }
     } else {
+      // Either we caught the disc in-bounds (success! strategy expires) or we
+      // need to bring it back into bounds.
       const playerWithDisc = this.game.playerWithDisc();
       if (Game.boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
         return true;
       } else {
         const moveTarget = Game.snapToBounds(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES);
-        playerWithDisc.moveTo(moveTarget);
+        this.move(playerWithDisc, moveTarget);
       }
     }
   }

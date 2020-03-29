@@ -14,7 +14,7 @@ export class LineupStrategy extends Strategy {
           ? [19, (index+0.5) / NUM_PLAYERS * 40]
           : [91, (index+0.5) / NUM_PLAYERS * 40];
       if (dist2d(target, player.position) > LINEUP_RADIUS) {
-        player.moveTo(target);
+        this.move(player, target);
       } else {
         player.rest(getVector(this.team.goalDirection));
       }

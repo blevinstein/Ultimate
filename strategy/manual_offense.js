@@ -69,7 +69,7 @@ export class ManualOffenseStrategy extends Strategy {
           destination = null;
           player.rest();
         } else {
-          player.moveTo(destination);
+          this.move(player, destination);
         }
         this.destinationMap.set(player, destination);
       }
