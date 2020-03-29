@@ -3,12 +3,16 @@ import { mag2d, mul2d } from './math_utils.js';
 import { Disc } from './disc.js';
 
 const VELOCITY_STEP = 0.1;
-const MAX_LAUNCH_ANGLE = Math.PI / 6;
-const MIN_ANGLE_OF_ATTACK = -Math.PI / 6;
-const MAX_ANGLE_OF_ATTACK = Math.PI / 6;
-const MIN_TILT = -Math.PI / 4;
-const MAX_TILT = Math.PI / 4;
-const ANGLE_STEP = Math.PI / 24;
+const ANGLE_STEP = 0.1;
+
+const MAX_LAUNCH_ANGLE = 0.5;
+const MIN_LAUNCH_ANGLE = -0.2;
+
+const MIN_ANGLE_OF_ATTACK = -0.5;
+const MAX_ANGLE_OF_ATTACK = 0.4;
+
+const MIN_TILT = 0.0;
+const MAX_TILT = 0.0;
 
 export class RangeFinderFactory {
   static create(maxSpeed) {
@@ -29,24 +33,20 @@ export class RangeFinder {
     this.maxSpeed = maxSpeed;
     this.samples = [];
 
-    for (let xVelocity = VELOCITY_STEP; xVelocity <= maxSpeed; xVelocity += VELOCITY_STEP) {
-      // Calculate max y component which keeps |velocity| < maxSpeed and respect MAX_LAUNCH_ANGLE
-      let maxZVelocity = Math.min(
-          Math.sqrt(Math.pow(maxSpeed, 2) - Math.pow(xVelocity, 2)),
-          xVelocity * Math.sin(MAX_LAUNCH_ANGLE));
-      for (let zVelocity = VELOCITY_STEP; zVelocity <= maxZVelocity; zVelocity += VELOCITY_STEP) {
+    for (let launchAngle = MIN_LAUNCH_ANGLE; launchAngle <= MAX_LAUNCH_ANGLE; launchAngle += ANGLE_STEP) {
+      for (let speed = VELOCITY_STEP; speed <= maxSpeed; speed += VELOCITY_STEP) {
         for (let angleOfAttack = MIN_ANGLE_OF_ATTACK; angleOfAttack <= MAX_ANGLE_OF_ATTACK; angleOfAttack += ANGLE_STEP) {
-          //for (let tiltAngle = MIN_TILT; tiltAngle <= MAX_TILT; tiltAngle += ANGLE_STEP) {
-            let tiltAngle = 0;
-            let velocity = [xVelocity, 0, zVelocity];
+          for (let tiltAngle = MIN_TILT; tiltAngle <= MAX_TILT; tiltAngle += ANGLE_STEP) {
+            let velocity = [speed * Math.cos(launchAngle), 0, speed * Math.sin(launchAngle)];
+            console.log(velocity);
             this.samples.push({
-              input: [xVelocity, zVelocity, angleOfAttack, tiltAngle],
+              input: [velocity[0], velocity[2], angleOfAttack, tiltAngle],
               output: Disc.simulateUntilGrounded(
                   [0, 0, 0.1],
                   velocity,
                   Disc.createUpVector(velocity, angleOfAttack, tiltAngle)),
             });
-          //}
+          }
         }
       }
     }
