@@ -8,7 +8,7 @@ import { Team, NUM_PLAYERS } from './team.js';
 import { ARM_HEIGHT } from './player.js';
 import { ToastService } from './toast_service.js';
 
-const FRAME_TIME = 30;
+let FRAME_TIME = 30;
 
 const SHIRT = [224, 80, 0, 255];
 const PANTS = [72, 88, 0, 255];
@@ -141,6 +141,12 @@ export class Game {
         if (this.isRunning()) { this.stop(); }
       } else if (event.key.toUpperCase() === 'W') {
         if (!this.isRunning()) { this.start(); }
+      } else if (event.key.toUpperCase() === 'S') {
+        // Slow-mo
+        FRAME_TIME = FRAME_TIME === 500 ? 30 : 500;
+      } else if (event.key.toUpperCase() === 'F') {
+        // Fast-forward
+        FRAME_TIME = FRAME_TIME === 0 ? 30 : 0;
       }
     };
   }
