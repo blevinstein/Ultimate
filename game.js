@@ -22,7 +22,7 @@ const WIN_SCORE = 11;
 
 const FIELD_SPRITE_SIZE = [992, 408];
 
-const COLLISION_DIST = 1.25;
+const COLLISION_DIST = 1;
 const MAX_COLLISION_IMPULSE = 2;
 
 export const FIELD_BOUNDS = [[0, 110], [0, 40]]
