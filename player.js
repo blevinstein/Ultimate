@@ -42,11 +42,11 @@ export class Player {
     const sprite = this.moving
       ? this.runningSprites[this.direction][STEP[Math.trunc(this.frame++ / SUBFRAMES) % 4]]
       : this.standingSprites[this.direction];
-    frameBuffer.drawImage(
-        sprite,
-        screenPosition[0] - sprite.width / 2,
-        screenPosition[1] - sprite.height,
-        this.position[1]);
+    frameBuffer.drawOperation(this.position[1], context =>
+        context.drawImage(
+            sprite,
+            screenPosition[0] - sprite.width / 2,
+            screenPosition[1] - sprite.height));
   }
 
   desiredHandlePosition() {
@@ -69,11 +69,8 @@ export class Player {
 
   // Move with deceleration to avoid overshoot
   moveTo(target) {
-    this.move(sub2d(target, this.position));
-  }
-
-  move(vector) {
-    check2d(vector);
+    check2d(target);
+    let vector = sub2d(target, this.position);
 
     if (mag2d(vector) === 0) {
       this.rest();
@@ -152,11 +149,10 @@ export class Player {
     let time = 0;
     let target;
     do {
-      target = sub2d(location, player.position);
       player.update();
-      player.move(target);
+      player.moveTo(location);
       time++;
-    } while (mag2d(target) > goalRadius);
+    } while (dist2d(player.position, location) > goalRadius);
     return time;
   }
 }

@@ -9,17 +9,14 @@ export class FrameBuffer {
     this.drawOperations.push({depth, draw});
   }
 
-  drawImage(image, screenX, screenY, depth) {
-    this.drawOperations.push({
-        depth,
-        draw: context => context.drawImage(image, screenX, screenY),
-    });
-  }
-
   drawScene(context) {
     this.drawOperations.sort((a, b) => a.depth - b.depth);
     for (let drawOperation of this.drawOperations) {
       drawOperation.draw(context);
     }
+  }
+
+  clear() {
+    this.drawOperations = [];
   }
 }

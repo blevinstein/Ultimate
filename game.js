@@ -158,6 +158,11 @@ export class Game {
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.restore();
     context.drawImage(this.resources.fieldSprite, 0, 0);
+    for (let team of this.teams) {
+      if (team.strategy) {
+        team.strategy.draw(context);
+      }
+    }
     frameBuffer.drawScene(context);
   }
 
