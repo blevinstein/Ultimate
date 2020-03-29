@@ -38,7 +38,6 @@ export class RangeFinder {
         for (let angleOfAttack = MIN_ANGLE_OF_ATTACK; angleOfAttack <= MAX_ANGLE_OF_ATTACK; angleOfAttack += ANGLE_STEP) {
           for (let tiltAngle = MIN_TILT; tiltAngle <= MAX_TILT; tiltAngle += ANGLE_STEP) {
             let velocity = [speed * Math.cos(launchAngle), 0, speed * Math.sin(launchAngle)];
-            console.log(velocity);
             this.samples.push({
               input: [velocity[0], velocity[2], angleOfAttack, tiltAngle],
               output: Disc.simulateUntilGrounded(
