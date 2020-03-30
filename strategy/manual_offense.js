@@ -20,8 +20,12 @@ export class ManualOffenseStrategy extends Strategy {
     super(game, team);
     this.destinationMap = new Map;
     this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED);
+    this.throwConfirmed = false;
     this.throwTarget = null;
     game.canvas.onclick = event => {
+      this.throwConfirmed = true;
+    };
+    game.canvas.onmousemove = event => {
       this.throwTarget = inverseProject2d(mul2d(
           sub2d([event.offsetX, event.offsetY], game.fieldOffset), 1 / game.fieldScale));
     };
@@ -56,10 +60,16 @@ export class ManualOffenseStrategy extends Strategy {
           throwParams = this.rangeFinder.getLongestThrowParams(
               sub2d(this.throwTarget, player.position));
         }
-
         if (!throwParams) { throw new Error('Failed to get throw params!'); }
-        player.throw(...throwParams);
-        this.throwTarget = null;
+        let path = Disc.simulateUntilGrounded(
+            this.game.disc.position,
+            throwParams[0],
+            Disc.createUpVector(...throwParams),
+            true)[2];
+        this.drawPath(path);
+        if (this.throwConfirmed) {
+          player.throw(...throwParams);
+        }
       } else {
         // Cutter behavior
         let destination = this.destinationMap.get(player)
