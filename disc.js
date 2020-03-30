@@ -6,7 +6,7 @@ import { ARM_HEIGHT, ARM_LENGTH } from './player.js';
 const GROUND_FRICTION = 0.2;
 const GRAVITY = 0.05;
 
-const OPTIMAL_DRAG_ANGLE = -0.08;
+const OPTIMAL_DRAG_ANGLE = 0.1;
 const DRAG_CONST = 0.001;
 const DRAG_QUADRATIC = 0.15;
 
