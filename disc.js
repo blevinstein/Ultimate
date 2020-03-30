@@ -327,17 +327,19 @@ export class Disc {
     return [null, time];
   }
 
-  // returns [groundedPosition, groundedTime]
-  static simulateUntilGrounded(initialPosition, initialVelocity, upVector) {
+  // returns [groundedPosition, groundedTime, (optional) path]
+  static simulateUntilGrounded(initialPosition, initialVelocity, upVector, returnPath = false) {
     const disc = new Disc()
         .setPosition(check3d(initialPosition))
         .setVelocity(check3d(initialVelocity))
         .setUpVector(upVector);
+    let path = [];
     let time = 0;
     while (!disc.grounded) {
       time++;
       disc.updatePhysics();
+      if (returnPath) { path.push(disc.position); }
     }
-    return [disc.position, time]
+    return [disc.position, time, path];
   }
 }

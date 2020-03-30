@@ -21,6 +21,7 @@ export class RandomOffenseStrategy extends Strategy {
     super(game, team);
     this.destinationMap = new Map;
     this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED);
+    this.pathsConsidered = [];
   }
 
   update() {
@@ -52,7 +53,16 @@ export class RandomOffenseStrategy extends Strategy {
           let params = this.rangeFinder.getThrowParams(
               sub2d(destination, player.position),
               runtime);
-          if (!params) { continue; }
+          if (!params) {
+            this.pathsConsidered.push([player.position.concat([0]), destination.concat([0])]);
+            continue;
+          }
+          let path = Disc.simulateUntilGrounded(
+              this.game.disc.position,
+              params[0],
+              Disc.createUpVector(...params),
+              true)[2];
+          this.pathsConsidered.push(path);
           let interceptor = Disc.simulateInterceptions(
               this.game.disc.position,
               params[0],
@@ -84,6 +94,10 @@ export class RandomOffenseStrategy extends Strategy {
         }
         this.destinationMap.set(player, destination);
       }
+    }
+
+    for (let i = 0; i < this.pathsConsidered.length; i++) {
+      this.drawPath(this.pathsConsidered[i], Math.pow(0.9, this.pathsConsidered.length - i));
     }
   }
 }

@@ -33,7 +33,22 @@ export class Strategy {
       context.beginPath();
       context.moveTo(playerScreenPosition[0], playerScreenPosition[1]);
       context.lineTo(destinationScreenPosition[0], destinationScreenPosition[1]);
-      context.closePath();
+      context.stroke();
+      context.globalAlpha = 1;
+    });
+  }
+
+  drawPath(path, alpha = 1) {
+    const screenPath = path.map(project3d);
+    this.frameBuffer.drawOperation(1, context => {
+      context.globalAlpha = alpha;
+      context.strokeStyle = 'white';
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(...screenPath[0]);
+      for (let i = 1; i < screenPath.length; i++) {
+        context.lineTo(...screenPath[i]);
+      }
       context.stroke();
       context.globalAlpha = 1;
     });
