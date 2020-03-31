@@ -188,6 +188,13 @@ export function inverseProject2d(screenPosition) {
   return [xPosition, yPosition];
 }
 
+export function rotate2d(vector, angle) {
+  check2d(vector);
+  check1d(angle);
+  return [Math.cos(angle) * vector[0] - Math.sin(angle) * vector[1],
+      Math.cos(angle) * vector[1] + Math.sin(angle) * vector[0]];
+}
+
 export function check1d(value) {
   if (isNaN(value) || !isFinite(value) || typeof value !== 'number') {
     throw new Error('Invalid 1d value: ' + value);
