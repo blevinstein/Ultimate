@@ -69,6 +69,8 @@ export class ManualOffenseStrategy extends Strategy {
         this.drawPath(path);
         if (this.throwConfirmed) {
           player.throw(...throwParams);
+        } else {
+          player.rest(getVector(this.team.goalDirection));
         }
       } else {
         // Cutter behavior
