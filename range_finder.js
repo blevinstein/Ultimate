@@ -76,7 +76,7 @@ export class RangeFinder {
         min = mid;
       }
     }
-    return filteredSamples[max];
+    return filteredSamples[min];
   }
 
   // returns [velocity, angleOfAttack, tiltAngle]

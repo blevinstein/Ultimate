@@ -68,7 +68,7 @@ export class RandomOffenseStrategy extends Strategy {
               params[0],
               Disc.createUpVector(...params),
               this.game.defensiveTeam().players)[0];
-          if (interceptor) { continue; }
+          if (interceptor) { console.log('Defender would intercept throw.'); continue; }
           let forwardProgress = magnitudeAlong2d(sub2d(destination, player.position), getVector(this.team.goalDirection));
           if (!bestDestination || forwardProgress > bestForwardProgress) {
             bestDestination = destination;
