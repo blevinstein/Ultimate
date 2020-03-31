@@ -86,11 +86,9 @@ export class RandomOffenseStrategy extends Strategy {
         let destination = this.destinationMap.get(player)
             || Cutter.chooseBestRandomDestination(this.game, this.team);
         if (!destination) { continue; }
-        if (dist2d(destination, player.position) < GOAL_RADIUS) {
+        this.moveWithin(player, destination);
+        if (dist2d(destination, player.position) <= GOAL_RADIUS) {
           destination = null;
-          player.rest();
-        } else {
-          this.move(player, destination);
         }
         this.destinationMap.set(player, destination);
       }
