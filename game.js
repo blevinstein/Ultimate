@@ -9,6 +9,7 @@ import { ARM_HEIGHT } from './player.js';
 import { ToastService } from './toast_service.js';
 
 let FRAME_TIME = 30;
+const CONST_FRAME_TIME = 30;
 
 const SHIRT = [224, 80, 0, 255];
 const PANTS = [72, 88, 0, 255];
@@ -276,7 +277,7 @@ export class Game {
       }
       // Waiting for stall count to hit ten
       if (playerWithDisc) {
-        this.stallCount += FRAME_TIME / 1000;
+        this.stallCount += CONST_FRAME_TIME / 1000;
         if (this.stallCount >= 10) {
           playerWithDisc.drop();
           this.setOffensiveTeam(this.defensiveTeam());
