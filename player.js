@@ -24,7 +24,6 @@ const DECEL_STEPS = 2 * MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
 const MIN_MOVEMENT = 0.04;
 const HANDLE_SPEED = 0.4;
 const DECEL_DISTANCE = Math.pow(DECEL_STEPS, 2) * MAX_PLAYER_ACCEL / 2;
-;
 
 export const ARM_HEIGHT = 2;
 export const ARM_LENGTH = 1.5;

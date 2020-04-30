@@ -1,14 +1,10 @@
 
-import { dist2d, dist3d } from '../math_utils.js';
+import {dist2d, dist3d} from '../math_utils.js';
 
 export class TestSuite {
-  constructor() {
-    this.tests = [];
-  }
+  constructor() { this.tests = []; }
 
-  test(name, test) {
-    this.tests.push([name, test]);
-  }
+  test(name, test) { this.tests.push([ name, test ]); }
 
   runTests(onSuccess, onFailure) {
     for (let [name, test] of this.tests) {
@@ -23,22 +19,27 @@ export class TestSuite {
 }
 
 export const expect = {
-  true: value => {
-    if (!value) { throw new Error('Expected true but was ' + value); }
+  true : value => {
+    if (!value) {
+      throw new Error('Expected true but was ' + value);
+    }
   },
-  equalsWithin: (a, b, tolerance = 0.0001) => {
+  equalsWithin : (a, b, tolerance = 0.0001) => {
     if (Math.abs(a - b) > tolerance) {
-      throw new Error('Expected ' + a + ' equalsWithin[' + tolerance  + '] ' + b);
+      throw new Error('Expected ' + a + ' equalsWithin[' + tolerance + '] ' +
+                      b);
     }
   },
-  equals2d: (a, b, tolerance = 0.0001) => {
+  equals2d : (a, b, tolerance = 0.0001) => {
     if (!(dist2d(a, b) <= tolerance)) {
-      throw new Error('Expected ' + a + ' equals2d[' + tolerance + '] ' + b + '; diff is ' + dist2d(a, b));
+      throw new Error('Expected ' + a + ' equals2d[' + tolerance + '] ' + b +
+                      '; diff is ' + dist2d(a, b));
     }
   },
-  equals3d: (a, b, tolerance = 0.0001) => {
+  equals3d : (a, b, tolerance = 0.0001) => {
     if (!(dist3d(a, b) <= tolerance)) {
-      throw new Error('Expected ' + a + ' equals3d[' + tolerance + '] ' + b + '; diff is ' + dist3d(a, b));
+      throw new Error('Expected ' + a + ' equals3d[' + tolerance + '] ' + b +
+                      '; diff is ' + dist3d(a, b));
     }
   },
 };
