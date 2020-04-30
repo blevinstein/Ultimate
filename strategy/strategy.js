@@ -39,7 +39,7 @@ export class Strategy {
   }
 
   drawPath(path, alpha = 1) {
-    const screenPath = path.map(project3d);
+    const screenPath = path.map(point => project3d(point.position));
     this.frameBuffer.drawOperation(1, context => {
       context.globalAlpha = alpha;
       context.strokeStyle = 'white';

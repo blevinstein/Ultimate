@@ -337,7 +337,7 @@ export class Disc {
     while (!untilCondition(disc)) {
       time++;
       disc.updatePhysics();
-      if (returnPath) { path.push(disc.position); }
+      if (returnPath) { path.push({time, position: disc.position}); }
     }
     return {
       finalPosition: disc.position,

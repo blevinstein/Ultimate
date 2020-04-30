@@ -54,7 +54,7 @@ export class RandomOffenseStrategy extends Strategy {
               sub2d(destination, player.position),
               runtime);
           if (!params) {
-            this.pathsConsidered.push([player.position.concat([0]), destination.concat([0])]);
+            this.pathsConsidered.push([{position: player.position.concat([0])}, {position: destination.concat([0])}]);
             continue;
           }
           let path = Disc.simulateUntilGrounded(
