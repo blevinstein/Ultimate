@@ -22,11 +22,11 @@ import {ARM_HEIGHT, ARM_LENGTH} from './player.js';
 const GROUND_FRICTION = 0.2;
 const GRAVITY = 0.05;
 
-const OPTIMAL_DRAG_ANGLE = 0.1;
+const OPTIMAL_DRAG_ANGLE = -0.2;
 const DRAG_CONST = 0.001;
-const DRAG_QUADRATIC = 0.15;
+const DRAG_QUADRATIC = 0.3;
 
-const LIFT_CONST = 0.003;
+const LIFT_CONST = 0.012;
 const LIFT_LINEAR = 0.02;
 
 const MAX_PICKUP_DIST = 1;

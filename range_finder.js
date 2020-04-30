@@ -1,18 +1,19 @@
 
 import {Disc} from './disc.js';
 import {mag2d, mul2d, rotate2d} from './math_utils.js';
+import {ARM_HEIGHT} from './player.js';
 
-const VELOCITY_STEP = 0.05;
-const ANGLE_STEP = 0.05;
+const VELOCITY_STEP = 0.03;
+const ANGLE_STEP = 0.03;
 
 const MAX_LAUNCH_ANGLE = 0.5;
-const MIN_LAUNCH_ANGLE = -0.2;
+const MIN_LAUNCH_ANGLE = -0.3;
 
-const MIN_ANGLE_OF_ATTACK = -0.5;
-const MAX_ANGLE_OF_ATTACK = 0.4;
+const MIN_ANGLE_OF_ATTACK = -0.8;
+const MAX_ANGLE_OF_ATTACK = 0.8;
 
-const MIN_TILT = -1;
-const MAX_TILT = 1;
+const MIN_TILT = 0;
+const MAX_TILT = 0;
 
 export class RangeFinderFactory {
   static create(maxSpeed) {
@@ -45,8 +46,8 @@ export class RangeFinder {
             const velocity = [
               speed * Math.cos(launchAngle), 0, speed * Math.sin(launchAngle)
             ];
-            const {finalPosition, finalTime} = Disc.simulateUntilGrounded(
-                [ 0, 0, 0.01 ], velocity,
+            const {finalPosition, finalTime} = Disc.simulateUntilCatchable(
+                [ 0, 0, ARM_HEIGHT + 0.01 ], velocity,
                 Disc.createUpVector(velocity, angleOfAttack, tiltAngle));
             const groundedAngle =
                 Math.atan2(finalPosition[1], finalPosition[0]);
