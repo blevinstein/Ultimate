@@ -47,12 +47,12 @@ export class RandomOffenseStrategy extends Strategy {
           let [closestReceiver, closestReceiverDistance] =
               Game.getClosestPlayer(this.team.players.filter(p => p != player), destination);
           if (closestReceiverDistance > closestDefenderDistance) { continue; }
-          let runtime = Player.simulateRunTime(
+          let runTime = Player.simulateRunTime(
               sub2d(destination, closestReceiver.position),
               closestReceiver.velocity);
           let params = this.rangeFinder.getThrowParams(
               sub2d(destination, player.position),
-              runtime);
+              runTime);
           if (!params) {
             this.pathsConsidered.push([{position: player.position.concat([0])}, {position: destination.concat([0])}]);
             continue;
