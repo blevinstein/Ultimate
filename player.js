@@ -20,9 +20,11 @@ const STEP = [ 0, 1, 2, 1 ];
 const SUBFRAMES = 10;
 const MAX_PLAYER_ACCEL = 0.03;
 const MAX_PLAYER_SPEED = 0.4;
-const DECEL_STEPS = MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL / 2;
+const DECEL_STEPS = 2 * MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
 const MIN_MOVEMENT = 0.04;
 const HANDLE_SPEED = 0.4;
+const DECEL_DISTANCE = Math.pow(DECEL_STEPS, 2) * MAX_PLAYER_ACCEL / 2;
+;
 
 export const ARM_HEIGHT = 2;
 export const ARM_LENGTH = 1.5;
@@ -72,11 +74,11 @@ export class Player {
 
   update() {
     if (this.hasDisc) {
-      const desiredVelocity =
+      const desiredDiscVelocity =
           sub3d(this.desiredHandlePosition(), this.team.game.disc.position);
-      const actualVelocity = mag3d(desiredVelocity) > HANDLE_SPEED
-                                 ? mul3d(norm3d(desiredVelocity), HANDLE_SPEED)
-                                 : desiredVelocity;
+      const actualVelocity = mag3d(desiredDiscVelocity) > HANDLE_SPEED
+                                 ? mul3d(norm3d(desiredDiscVelocity), HANDLE_SPEED)
+                                 : desiredDiscVelocity;
       this.team.game.disc.setVelocity(actualVelocity);
     }
     this.position = add2d(this.position, this.velocity);
@@ -92,9 +94,9 @@ export class Player {
       return;
     }
 
-    const desiredVelocity = mag2d(vector) > DECEL_STEPS * MAX_PLAYER_SPEED
+    const desiredVelocity = mag2d(vector) > DECEL_DISTANCE
                                 ? mul2d(norm2d(vector), MAX_PLAYER_SPEED)
-                                : mul2d(norm2d(vector), 1 / DECEL_STEPS);
+                                : mul2d(norm2d(vector), 2 * mag2d(vector) / DECEL_STEPS + MAX_PLAYER_ACCEL);
     const desiredAcceleration = sub2d(desiredVelocity, this.velocity);
 
     const currentSpeed =

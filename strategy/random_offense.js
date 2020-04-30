@@ -67,10 +67,12 @@ export class RandomOffenseStrategy extends Strategy {
           let params = this.rangeFinder.getThrowParams(
               sub2d(destination, player.position), runTime);
           if (!params) {
+            /*
             this.pathsConsidered.push([
               {position : player.position.concat([ 0 ])},
               {position : destination.concat([ 0 ])}
             ]);
+            */
             continue;
           }
           let path =

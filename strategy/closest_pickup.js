@@ -45,9 +45,15 @@ export class ClosestPickupStrategy extends Strategy {
       if (Game.boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
         return true;
       } else {
-        const moveTarget = Game.snapToBounds(playerWithDisc.position,
-                                             FIELD_BOUNDS_NO_ENDZONES);
-        this.move(playerWithDisc, moveTarget);
+        for (let player of this.team.players) {
+          if (player == playerWithDisc) {
+            const moveTarget = Game.snapToBounds(playerWithDisc.position,
+                                                 FIELD_BOUNDS_NO_ENDZONES);
+            this.move(playerWithDisc, moveTarget);
+          } else {
+            player.rest();
+          }
+        }
       }
     }
   }
