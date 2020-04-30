@@ -1,13 +1,9 @@
 
 // Records all draw actions, then replays them in order of increasing depth
 export class FrameBuffer {
-  constructor() {
-    this.drawOperations = [];
-  }
+  constructor() { this.drawOperations = []; }
 
-  drawOperation(depth, draw) {
-    this.drawOperations.push({depth, draw});
-  }
+  drawOperation(depth, draw) { this.drawOperations.push({depth, draw}); }
 
   drawScene(context) {
     this.drawOperations.sort((a, b) => a.depth - b.depth);
@@ -16,7 +12,5 @@ export class FrameBuffer {
     }
   }
 
-  clear() {
-    this.drawOperations = [];
-  }
+  clear() { this.drawOperations = []; }
 }

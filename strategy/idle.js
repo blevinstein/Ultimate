@@ -1,5 +1,5 @@
 
-import { Strategy } from './strategy.js';
+import {Strategy} from './strategy.js';
 
 export class IdleStrategy extends Strategy {
   update() {

@@ -1,23 +1,29 @@
 
-import { add2d, dist2d, mul2d, sub2d, sub3d, getVector } from '../math_utils.js';
-import { Disc } from '../disc.js';
-import { Game, FIELD_BOUNDS, FIELD_BOUNDS_NO_ENDZONES } from '../game.js';
-import { Strategy } from './strategy.js';
+import {Disc} from '../disc.js';
+import {FIELD_BOUNDS, FIELD_BOUNDS_NO_ENDZONES, Game} from '../game.js';
+import {add2d, dist2d, getVector, mul2d, sub2d, sub3d} from '../math_utils.js';
+
+import {Strategy} from './strategy.js';
 
 export class ClosestPickupStrategy extends Strategy {
   update() {
     // Strategy expires if the other team has possession.
-    if ((!this.game.disc.isLoose() || this.game.disc.grounded) && !this.team.onOffense) { return true; }
+    if ((!this.game.disc.isLoose() || this.game.disc.grounded) &&
+        !this.team.onOffense) {
+      return true;
+    }
 
     if (this.game.disc.isLoose()) {
-      const discTarget = this.game.disc.grounded
-          ? this.game.disc.position
-          : Disc.simulateUntilCatchable(
-                this.game.disc.position,
-                this.game.disc.velocity,
-                this.game.disc.upVector).finalPosition;
+      const discTarget =
+          this.game.disc.grounded
+              ? this.game.disc.position
+              : Disc.simulateUntilCatchable(this.game.disc.position,
+                                            this.game.disc.velocity,
+                                            this.game.disc.upVector)
+                    .finalPosition;
 
-      const [closestPlayer] = Game.getClosestPlayer(this.team.players, discTarget);
+      const [closestPlayer] =
+          Game.getClosestPlayer(this.team.players, discTarget);
 
       for (let player of this.team.players) {
         if (player == closestPlayer) {
@@ -26,7 +32,8 @@ export class ClosestPickupStrategy extends Strategy {
           // Charge forwards blindly!
           // TODO: replace with something smarter?
           const moveTarget = Game.snapToBounds(
-              add2d(player.position, mul2d(getVector(this.team.goalDirection), 10)),
+              add2d(player.position,
+                    mul2d(getVector(this.team.goalDirection), 10)),
               FIELD_BOUNDS);
           this.move(player, moveTarget);
         }
@@ -38,7 +45,8 @@ export class ClosestPickupStrategy extends Strategy {
       if (Game.boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
         return true;
       } else {
-        const moveTarget = Game.snapToBounds(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES);
+        const moveTarget = Game.snapToBounds(playerWithDisc.position,
+                                             FIELD_BOUNDS_NO_ENDZONES);
         this.move(playerWithDisc, moveTarget);
       }
     }

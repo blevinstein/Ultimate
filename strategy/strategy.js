@@ -1,6 +1,6 @@
 
-import { project2d, dist2d } from '../math_utils.js';
-import { FrameBuffer } from '../frame_buffer.js';
+import {FrameBuffer} from '../frame_buffer.js';
+import {dist2d, project2d} from '../math_utils.js';
 
 export class Strategy {
   constructor(game, team) {
@@ -32,7 +32,8 @@ export class Strategy {
       context.globalAlpha = 0.1;
       context.beginPath();
       context.moveTo(playerScreenPosition[0], playerScreenPosition[1]);
-      context.lineTo(destinationScreenPosition[0], destinationScreenPosition[1]);
+      context.lineTo(destinationScreenPosition[0],
+                     destinationScreenPosition[1]);
       context.stroke();
       context.globalAlpha = 1;
     });
