@@ -16,8 +16,11 @@ import {
   sub2d
 } from './math_utils.js';
 
+// We show 3 different sprites every 4 frames to create reciprocal movement
+const ANIMATION_FRAMES = 4;
 const STEP = [ 0, 1, 2, 1 ];
-const SUBFRAMES = 10;
+const ANIMATION_SPEED = 0.5;
+
 const MAX_PLAYER_ACCEL = 0.03;
 const MAX_PLAYER_SPEED = 0.4;
 const DECEL_STEPS = 2 * MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
@@ -44,7 +47,7 @@ export class Player {
     this.velocity = [ 0, 0 ];
     this.direction = initialDirection;
     this.moving = false;
-    this.frame = Math.trunc(Math.random() * 4 * SUBFRAMES);
+    this.frame = Math.random() * ANIMATION_FRAMES;
     this.hasDisc = false;
   }
 
@@ -54,10 +57,11 @@ export class Player {
     const screenPosition = project2d(this.position);
     const sprite =
         this.moving
-            ? this.runningSprites[this.direction][STEP[Math.trunc(this.frame++ /
-                                                                  SUBFRAMES) %
-                                                       4]]
+            ? this.runningSprites[this.direction][STEP[Math.trunc(this.frame) % ANIMATION_FRAMES]]
             : this.standingSprites[this.direction];
+    if (this.moving) {
+      this.frame += mag2d(this.velocity) * ANIMATION_SPEED;
+    }
     frameBuffer.drawOperation(this.position[1],
                               context => context.drawImage(
                                   sprite, screenPosition[0] - sprite.width / 2,
