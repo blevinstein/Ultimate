@@ -2,7 +2,6 @@
 import { getVector, add2d, mul2d, norm2d, sub2d, sub3d } from '../math_utils.js';
 import { Disc } from '../disc.js';
 import { Game, FIELD_BOUNDS } from '../game.js';
-import { ARM_HEIGHT } from '../player.js';
 import { Matchup } from './matchup.js';
 import { Strategy } from './strategy.js';
 
@@ -27,10 +26,10 @@ export class ManToManDefenseStrategy extends Strategy {
 
     const discTarget = this.game.disc.grounded
         ? add2d(this.game.disc.position, this.markOffset)
-        : Disc.simulateUntilGrounded(
-              sub3d(this.game.disc.position, [0, 0, ARM_HEIGHT]),
+        : Disc.simulateUntilCatchable(
+              this.game.disc.position,
               this.game.disc.velocity,
-              this.game.disc.upVector)[0];
+              this.game.disc.upVector).finalPosition;
 
     const interceptor = this.game.disc.isLoose()
         && Game.getClosestPlayer(this.team.players, discTarget)[0];

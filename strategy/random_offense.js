@@ -61,7 +61,7 @@ export class RandomOffenseStrategy extends Strategy {
               this.game.disc.position,
               params[0],
               Disc.createUpVector(...params),
-              true)[2];
+              true).path;
           this.pathsConsidered.push(path);
           let interceptor = Disc.simulateInterceptions(
               this.game.disc.position,

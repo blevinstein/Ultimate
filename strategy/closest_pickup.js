@@ -3,7 +3,6 @@ import { add2d, dist2d, mul2d, sub2d, sub3d, getVector } from '../math_utils.js'
 import { Disc } from '../disc.js';
 import { Game, FIELD_BOUNDS, FIELD_BOUNDS_NO_ENDZONES } from '../game.js';
 import { Strategy } from './strategy.js';
-import { ARM_HEIGHT } from '../player.js';
 
 export class ClosestPickupStrategy extends Strategy {
   update() {
@@ -13,10 +12,10 @@ export class ClosestPickupStrategy extends Strategy {
     if (this.game.disc.isLoose()) {
       const discTarget = this.game.disc.grounded
           ? this.game.disc.position
-          : Disc.simulateUntilGrounded(
-                sub3d(this.game.disc.position, [0, 0, ARM_HEIGHT]),
+          : Disc.simulateUntilCatchable(
+                this.game.disc.position,
                 this.game.disc.velocity,
-                this.game.disc.upVector)[0];
+                this.game.disc.upVector).finalPosition;
 
       const [closestPlayer] = Game.getClosestPlayer(this.team.players, discTarget);
 

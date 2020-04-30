@@ -65,7 +65,7 @@ export class ManualOffenseStrategy extends Strategy {
             this.game.disc.position,
             throwParams[0],
             Disc.createUpVector(...throwParams),
-            true)[2];
+            true).path;
         this.drawPath(path);
         if (this.throwConfirmed) {
           player.throw(...throwParams);

@@ -327,19 +327,32 @@ export class Disc {
     return [null, time];
   }
 
-  // returns [groundedPosition, groundedTime, (optional) path]
-  static simulateUntilGrounded(initialPosition, initialVelocity, upVector, returnPath = false) {
+  static simulateUntil(initialPosition, initialVelocity, upVector, untilCondition, returnPath = false) {
     const disc = new Disc()
         .setPosition(check3d(initialPosition))
         .setVelocity(check3d(initialVelocity))
-        .setUpVector(upVector);
+        .setUpVector(check3d(upVector));
     let path = [];
     let time = 0;
-    while (!disc.grounded) {
+    while (!untilCondition(disc)) {
       time++;
       disc.updatePhysics();
       if (returnPath) { path.push(disc.position); }
     }
-    return [disc.position, time, path];
+    return {
+      finalPosition: disc.position,
+      finalTime: time,
+      path: path
+    };
+  }
+
+  static simulateUntilGrounded(
+      initialPosition, initialVelocity, upVector, returnPath = false) {
+    return Disc.simulateUntil(initialPosition, initialVelocity, upVector, disc => disc.grounded, returnPath);
+  }
+
+  static simulateUntilCatchable(
+      initialPosition, initialVelocity, upVector, returnPath = false) {
+    return Disc.simulateUntil(initialPosition, initialVelocity, upVector, disc => disc.position[2] <= ARM_HEIGHT, returnPath);
   }
 }

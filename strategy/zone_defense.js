@@ -3,7 +3,6 @@ import { add2d, getVector, mul2d, sub2d, sub3d } from '../math_utils.js';
 import { Disc } from '../disc.js';
 import { Game } from '../game.js';
 import { Strategy } from './strategy.js';
-import { ARM_HEIGHT } from '../player.js';
 
 const MARK_RADIUS = 0.5;
 
@@ -36,10 +35,10 @@ export class ZoneDefenseStrategy extends Strategy {
     if (this.team.onOffense) { return true; }
 
     const discTarget = this.game.disc.isLoose()
-        ? Disc.simulateUntilGrounded(
-              sub3d(this.game.disc.position, [0, 0, ARM_HEIGHT]),
+        ? Disc.simulateUntilCatchable(
+              this.game.disc.position,
               this.game.disc.velocity,
-              this.game.disc.upVector)[0]
+              this.game.disc.upVector).finalPosition
         : this.game.disc.position.slice(0, 2);
 
     const playerWithDisc = this.game.playerWithDisc();

@@ -38,17 +38,17 @@ export class RangeFinder {
         for (let angleOfAttack = MIN_ANGLE_OF_ATTACK; angleOfAttack <= MAX_ANGLE_OF_ATTACK; angleOfAttack += ANGLE_STEP) {
           for (let tiltAngle = MIN_TILT; tiltAngle <= MAX_TILT; tiltAngle += ANGLE_STEP) {
             const velocity = [speed * Math.cos(launchAngle), 0, speed * Math.sin(launchAngle)];
-            const [groundedLocation, groundedTime] = Disc.simulateUntilGrounded(
+            const {finalPosition, finalTime} = Disc.simulateUntilGrounded(
                   [0, 0, 0.01],
                   velocity,
                   Disc.createUpVector(velocity, angleOfAttack, tiltAngle));
-            const groundedAngle = Math.atan2(groundedLocation[1], groundedLocation[0]);
-            const rotatedGrounded = rotate2d([groundedLocation[0], groundedLocation[1]], -groundedAngle).concat(0);
+            const groundedAngle = Math.atan2(finalPosition[1], finalPosition[0]);
+            const rotatedGrounded = rotate2d([finalPosition[0], finalPosition[1]], -groundedAngle).concat(0);
             const rotatedVelocity = rotate2d(velocity, -groundedAngle).concat(velocity[2]);
             if (Math.abs(rotatedGrounded[1]) > 0.001) { throw new Error('Failed to rotate point onto x-axis!'); }
             this.samples.push({
               input: {velocity: rotatedVelocity, angleOfAttack, tiltAngle},
-              output: {location: rotatedGrounded, time: groundedTime},
+              output: {location: rotatedGrounded, time: finalTime},
             });
           }
         }
