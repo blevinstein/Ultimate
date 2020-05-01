@@ -8,8 +8,12 @@ import {ARM_HEIGHT} from './player.js';
 import {NUM_PLAYERS, Team} from './team.js';
 import {ToastService} from './toast_service.js';
 
-let FRAME_TIME = 30;
-const CONST_FRAME_TIME = 30;
+// Milliseconds to wait between frames at normal speed
+const FRAME_TIME = 30;
+// Milliseconds to wait between frames when in fast forwardg
+const FAST_FORWARD = 2;
+// Milliseconds to wait between frames when in slow motion
+const SLOW_MOTION = 300;
 
 const SHIRT = [ 224, 80, 0, 255 ];
 const PANTS = [ 72, 88, 0, 255 ];
@@ -94,7 +98,8 @@ export class Game {
     if (this.isRunning()) {
       throw new Error('Game is already running!');
     }
-    this.tickCallback = window.setTimeout(this.tick.bind(this), FRAME_TIME);
+    this.frameTime = this.frameTime || FRAME_TIME;
+    this.tickCallback = window.setTimeout(this.tick.bind(this), this.frameTime);
   }
 
   stop() {
@@ -108,10 +113,15 @@ export class Game {
   isRunning() { return !!this.tickCallback; }
 
   tick() {
+    const tickStartTime = new Date().getTime();
     const context = canvas.getContext('2d');
     this.update();
     this.draw(context);
-    this.tickCallback = window.setTimeout(this.tick.bind(this), FRAME_TIME);
+    const tickDuration = new Date().getTime() - tickStartTime;
+    const desiredTickInterval =
+        this.state === STATES.Reset ? FAST_FORWARD : this.frameTime;
+    const waitDuration = Math.max(desiredTickInterval - tickDuration, 0);
+    this.tickCallback = window.setTimeout(this.tick.bind(this), waitDuration);
   }
 
   setupCanvas() {
@@ -156,11 +166,11 @@ export class Game {
           this.start();
         }
       } else if (event.key.toUpperCase() === 'S') {
-        // Slow-mo
-        FRAME_TIME = FRAME_TIME === 500 ? 30 : 500;
+        this.frameTime =
+            this.frameTime === SLOW_MOTION ? FRAME_TIME : SLOW_MOTION;
       } else if (event.key.toUpperCase() === 'F') {
-        // Fast-forward
-        FRAME_TIME = FRAME_TIME === 0 ? 30 : 0;
+        this.frameTime =
+            this.frameTime === FAST_FORWARD ? FRAME_TIME : FAST_FORWARD;
       }
     };
   }
@@ -172,6 +182,7 @@ export class Game {
     }
     if (this.state === STATES.Normal && !this.disc.isLoose() &&
         this.stallCount >= 1) {
+      // TODO: Position the stall count over the defender, not the thrower.
       this.toastService.addToast(
           '' + Math.trunc(this.stallCount),
           this.playerWithDisc().position.concat(3),
@@ -295,11 +306,14 @@ export class Game {
       let playerWithDisc = this.playerWithDisc();
       if (playerWithDisc && !Game.boundsCheck(playerWithDisc.position,
                                               FIELD_BOUNDS_NO_ENDZONES)) {
+        // A player who steps out of bounds (or in the endzone) after catching
+        // in-bounds must return the disc to the legal zone.
         this.setState(STATES.Pickup);
       }
       // Waiting for stall count to hit ten
       if (playerWithDisc) {
-        this.stallCount += CONST_FRAME_TIME / 1000;
+        // TODO: Only increment stallCount when a defender is in stall range
+        this.stallCount += FRAME_TIME / 1000;
         if (this.stallCount >= 10) {
           playerWithDisc.drop();
           this.setOffensiveTeam(this.defensiveTeam());
