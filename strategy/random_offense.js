@@ -18,8 +18,6 @@ const NUM_CANDIDATE_THROWS = 1;
 const GOAL_RADIUS = 2;
 const MIN_PROGRESS = 5;
 
-const MAX_HANDLE_OFFSET = 0.1;
-
 // Totally uncoordinated scramble. Players look for open areas of the field,
 // from 10m behind the handler to back of the endzone.
 export class RandomOffenseStrategy extends Strategy {
@@ -38,8 +36,7 @@ export class RandomOffenseStrategy extends Strategy {
     for (let player of this.team.players) {
       if (player.hasDisc) {
         // Thrower behavior
-        if (dist3d(this.game.disc.position, player.desiredHandlePosition()) >
-            MAX_HANDLE_OFFSET) {
+        if (!player.canThrow()) {
           player.rest(getVector(this.team.goalDirection));
           continue;
         }

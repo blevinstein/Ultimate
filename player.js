@@ -27,6 +27,8 @@ const DECEL_STEPS = 2 * MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
 const MIN_MOVEMENT = 0.04;
 const HANDLE_SPEED = 0.4;
 const DECEL_DISTANCE = Math.pow(DECEL_STEPS, 2) * MAX_PLAYER_ACCEL / 2;
+// Cannot throw if disc is farther than this from desiredHandlePosition()
+const MAX_HANDLE_OFFSET = 0.1;
 
 export const ARM_HEIGHT = 2;
 export const ARM_LENGTH = 1.5;
@@ -75,10 +77,17 @@ export class Player {
         mul3d(getVector(this.direction).concat(0), ARM_LENGTH * 2 / 3));
   }
 
+  canThrow() {
+    return this.hasDisc
+        && dist3d(this.team.game.disc.position, this.desiredHandlePosition()) <= MAX_HANDLE_OFFSET;
+  }
+
   update() {
     if (this.hasDisc) {
+      // Move the disc along with the player
       const desiredDiscVelocity =
           sub3d(this.desiredHandlePosition(), this.team.game.disc.position);
+      // Player cannot move the disc faster than HANDLE_SPEED
       const actualVelocity = mag3d(desiredDiscVelocity) > HANDLE_SPEED
                                  ? mul3d(norm3d(desiredDiscVelocity), HANDLE_SPEED)
                                  : desiredDiscVelocity;

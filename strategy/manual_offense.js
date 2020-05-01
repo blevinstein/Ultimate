@@ -17,8 +17,6 @@ import {Strategy} from './strategy.js';
 
 const GOAL_RADIUS = 2;
 
-const MAX_HANDLE_OFFSET = 0.1;
-
 // Totally uncoordinated scramble. Players look for open areas of the field,
 // from 10m behind the handler to back of the endzone. Handler throws when and
 // where the user clicks.
@@ -45,9 +43,7 @@ export class ManualOffenseStrategy extends Strategy {
     for (let player of this.team.players) {
       if (player.hasDisc) {
         // Thrower behavior
-        if (!this.throwTarget ||
-            dist3d(this.game.disc.position, player.desiredHandlePosition()) >
-                MAX_HANDLE_OFFSET) {
+        if (!this.throwTarget || !player.canThrow()) {
           player.rest(getVector(this.team.goalDirection));
           continue;
         }
