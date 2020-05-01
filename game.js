@@ -9,11 +9,14 @@ import {NUM_PLAYERS, Team} from './team.js';
 import {ToastService} from './toast_service.js';
 
 // Milliseconds to wait between frames at normal speed
-const FRAME_TIME = 30;
+const FRAME_TIME_MS = 30;
 // Milliseconds to wait between frames when in fast forwardg
-const FAST_FORWARD = 2;
+const FAST_FORWARD_MS = 7;
 // Milliseconds to wait between frames when in slow motion
-const SLOW_MOTION = 300;
+const SLOW_MOTION_MS = 300;
+
+// Seconds to wait before fast-forwarding when in reset state
+const RESET_FF_DELAY = 0.5;
 
 const SHIRT = [ 224, 80, 0, 255 ];
 const PANTS = [ 72, 88, 0, 255 ];
@@ -98,7 +101,7 @@ export class Game {
     if (this.isRunning()) {
       throw new Error('Game is already running!');
     }
-    this.frameTime = this.frameTime || FRAME_TIME;
+    this.frameTime = this.frameTime || FRAME_TIME_MS;
     this.tickCallback = window.setTimeout(this.tick.bind(this), this.frameTime);
   }
 
@@ -119,7 +122,13 @@ export class Game {
     this.draw(context);
     const tickDuration = new Date().getTime() - tickStartTime;
     const desiredTickInterval =
-        this.state === STATES.Reset ? FAST_FORWARD : this.frameTime;
+        this.state === STATES.Reset && this.stateTime > RESET_FF_DELAY
+            ? FAST_FORWARD_MS
+            : this.frameTime;
+    if (tickDuration > desiredTickInterval) {
+      console.log('Tick was too slow for desiredTickInterval: ' + tickDuration +
+                  ' > ' + desiredTickInterval);
+    }
     const waitDuration = Math.max(desiredTickInterval - tickDuration, 0);
     this.tickCallback = window.setTimeout(this.tick.bind(this), waitDuration);
   }
@@ -167,10 +176,10 @@ export class Game {
         }
       } else if (event.key.toUpperCase() === 'S') {
         this.frameTime =
-            this.frameTime === SLOW_MOTION ? FRAME_TIME : SLOW_MOTION;
+            this.frameTime === SLOW_MOTION_MS ? FRAME_TIME_MS : SLOW_MOTION_MS;
       } else if (event.key.toUpperCase() === 'F') {
-        this.frameTime =
-            this.frameTime === FAST_FORWARD ? FRAME_TIME : FAST_FORWARD;
+        this.frameTime = this.frameTime === FAST_FORWARD_MS ? FRAME_TIME_MS
+                                                            : FAST_FORWARD_MS;
       }
     };
   }
@@ -211,6 +220,7 @@ export class Game {
   }
 
   update() {
+    this.stateTime += FRAME_TIME_MS / 1000.0;
     // Each team executes its strategy
     for (let team of this.teams) {
       // Pick a strategy if we don't have one active
@@ -313,7 +323,7 @@ export class Game {
       // Waiting for stall count to hit ten
       if (playerWithDisc) {
         // TODO: Only increment stallCount when a defender is in stall range
-        this.stallCount += FRAME_TIME / 1000;
+        this.stallCount += FRAME_TIME_MS / 1000;
         if (this.stallCount >= 10) {
           playerWithDisc.drop();
           this.setOffensiveTeam(this.defensiveTeam());
@@ -329,6 +339,7 @@ export class Game {
   setState(state) {
     // DEBUG: if (this.state !== state) { console.log('New state: ' + state); }
     this.state = state;
+    this.stateTime = 0;
     for (let team of this.teams) {
       team.strategy = null;
     }
