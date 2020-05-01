@@ -18,17 +18,28 @@ import {
 
 // We show 3 different sprites every 4 frames to create reciprocal movement
 const ANIMATION_FRAMES = 4;
-const STEP = [ 0, 1, 2, 1 ];
+const ANIMATION_STEP = [ 0, 1, 2, 1 ];
 const ANIMATION_SPEED = 0.5;
-
-const MAX_PLAYER_ACCEL = 0.03;
-const MAX_PLAYER_SPEED = 0.4;
-const DECEL_STEPS = 2 * MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
+// Minimum movement speed which should use the 'moving' sprites
 const MIN_MOVEMENT = 0.04;
-const HANDLE_SPEED = 0.4;
-const DECEL_DISTANCE = Math.pow(DECEL_STEPS, 2) * MAX_PLAYER_ACCEL / 2;
-// Cannot throw if disc is farther than this from desiredHandlePosition()
+
+// Maximum speed a player can move the disc
+const MAX_HANDLE_SPEED = 0.4;
+// Maximum speed a player can accelerate themselves from a stationary start
+const MAX_PLAYER_ACCEL = 0.03;
+// Maximum speed a player can sprint
+const MAX_PLAYER_SPEED = 0.4;
+// Player cannot throw if held disc is farther than this from
+// desiredHandlePosition()
 const MAX_HANDLE_OFFSET = 0.1;
+
+// NB: These are *approximate* values, based on a constant acceleration model
+//   A = MAX_PLAYER_ACCEL / 2
+//   V = MAX_PLAYER_SPEED
+//   X = DECEL_DISTANCE = AT^2 / 2
+//   T = DECEL_STEPS = V / A
+const DECEL_STEPS = 2 * MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
+const DECEL_DISTANCE = Math.pow(DECEL_STEPS, 2) * MAX_PLAYER_ACCEL / 4;
 
 export const ARM_HEIGHT = 2;
 export const ARM_LENGTH = 1.5;
@@ -59,7 +70,9 @@ export class Player {
     const screenPosition = project2d(this.position);
     const sprite =
         this.moving
-            ? this.runningSprites[this.direction][STEP[Math.trunc(this.frame) % ANIMATION_FRAMES]]
+            ? this.runningSprites[this.direction][ANIMATION_STEP
+                                                      [Math.trunc(this.frame) %
+                                                       ANIMATION_FRAMES]]
             : this.standingSprites[this.direction];
     if (this.moving) {
       this.frame += mag2d(this.velocity) * ANIMATION_SPEED;
@@ -78,8 +91,9 @@ export class Player {
   }
 
   canThrow() {
-    return this.hasDisc
-        && dist3d(this.team.game.disc.position, this.desiredHandlePosition()) <= MAX_HANDLE_OFFSET;
+    return this.hasDisc &&
+           dist3d(this.team.game.disc.position, this.desiredHandlePosition()) <=
+               MAX_HANDLE_OFFSET;
   }
 
   update() {
@@ -87,13 +101,27 @@ export class Player {
       // Move the disc along with the player
       const desiredDiscVelocity =
           sub3d(this.desiredHandlePosition(), this.team.game.disc.position);
-      // Player cannot move the disc faster than HANDLE_SPEED
-      const actualVelocity = mag3d(desiredDiscVelocity) > HANDLE_SPEED
-                                 ? mul3d(norm3d(desiredDiscVelocity), HANDLE_SPEED)
-                                 : desiredDiscVelocity;
+      // Player cannot move the disc faster than MAX_HANDLE_SPEED
+      const actualVelocity =
+          mag3d(desiredDiscVelocity) > MAX_HANDLE_SPEED
+              ? mul3d(norm3d(desiredDiscVelocity), MAX_HANDLE_SPEED)
+              : desiredDiscVelocity;
       this.team.game.disc.setVelocity(actualVelocity);
     }
     this.position = add2d(this.position, this.velocity);
+  }
+
+  // Returns a scalar indicating the maximum amount of acceleration that is
+  // allowed in a particular direction.
+  maxAllowedAcceleration(direction) {
+    // Calculate the player's current speed in the direction indicated.
+    const currentSpeed =
+        Math.max(0, magnitudeAlong2d(this.velocity, direction));
+    // Simple linear model, such that:
+    // * At currentSpeed = 0, maxAllowedAcceleration = MAX_PLAYER_ACCEL
+    // * At currentSpeed = MAX_PLAYER_SPEED, maxAllowedAcceleration = 0
+    // * NB: if currentSpeed < 0, maxAllowedAcceleration > MAX_PLAYER_ACCEL
+    return MAX_PLAYER_ACCEL * (1 - currentSpeed / MAX_PLAYER_SPEED);
   }
 
   // Move with deceleration to avoid overshoot
@@ -106,15 +134,24 @@ export class Player {
       return;
     }
 
-    const desiredVelocity = mag2d(vector) > DECEL_DISTANCE
-                                ? mul2d(norm2d(vector), MAX_PLAYER_SPEED)
-                                : mul2d(norm2d(vector), 2 * mag2d(vector) / DECEL_STEPS + MAX_PLAYER_ACCEL);
+    // Attempt to decelerate smoothly as we approach our destination.
+    const desiredVelocity =
+        mag2d(vector) > DECEL_DISTANCE
+            ? mul2d(norm2d(vector), MAX_PLAYER_SPEED)
+            // We approximate using our constant acceleration model with
+            // A = MAX_PLAYER_ACCEL / 2
+            // x = distance from destination a.k.a. mag2d(vector)
+            // t = time from destination
+            // v = ideal velocity
+            // Solve for v in terms of x
+            // x = At^2 / 2
+            //   -> t = sqrt(2x / A)
+            // v = At
+            //   -> v = 2A sqrt(2x / A) = 2 sqrt(2xA)
+            : mul2d(norm2d(vector),
+                    2 * Math.sqrt(mag2d(vector) * MAX_PLAYER_ACCEL));
     const desiredAcceleration = sub2d(desiredVelocity, this.velocity);
-
-    const currentSpeed =
-        Math.max(0, magnitudeAlong2d(this.velocity, desiredAcceleration));
-    const maxAcceleration =
-        MAX_PLAYER_ACCEL * (1 - currentSpeed / MAX_PLAYER_SPEED);
+    const maxAcceleration = this.maxAllowedAcceleration(desiredAcceleration);
 
     this.accelerate(mag2d(desiredAcceleration) <= maxAcceleration
                         ? desiredAcceleration
@@ -124,11 +161,7 @@ export class Player {
 
   rest(faceVector) {
     const desiredAcceleration = mul2d(this.velocity, -1);
-
-    const currentSpeed =
-        Math.max(0, magnitudeAlong2d(this.velocity, desiredAcceleration));
-    const maxAcceleration =
-        MAX_PLAYER_ACCEL * (1 - currentSpeed / MAX_PLAYER_SPEED);
+    const maxAcceleration = this.maxAllowedAcceleration(desiredAcceleration);
 
     this.accelerate(mag2d(desiredAcceleration) <= maxAcceleration
                         ? desiredAcceleration
