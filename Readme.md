@@ -7,8 +7,6 @@ Backlog
 -------
 
 - Stack (vert, ho)
-- Zone D
-- Organize random constants everywhere
 - Pick/foul/injury/double-team
 - Visual improvements
   - Add permanent scoreboard, game over message
@@ -26,12 +24,12 @@ Backlog
   - Better field sprite
   - Add stands, cheerleaders, etc
 - Thrower behavior
-  - React to stall count
+  - React to stall count?
   - Different throw types, incl. release positions offset
   - Pump fake?
   - Is there a good way to show pivot foot movement? Look at basketball games?
 - Cutter behavior
   - React to stall count
   - Dump cut
-  - Rest
-  - Clear the lane
+  - Rest?
+  - Clear the lane?
