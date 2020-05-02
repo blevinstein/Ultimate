@@ -48,11 +48,11 @@ export class Strategy {
     this.move(player, moveTarget);
   }
 
-  drawPath(path, alpha = 1) {
+  drawPath(path, alpha = 1, color = 'white') {
     const screenPath = path.map(point => project3d(point.position));
     this.frameBuffer.drawOperation(1, context => {
       context.globalAlpha = alpha;
-      context.strokeStyle = 'white';
+      context.strokeStyle = color;
       context.lineWidth = 1;
       context.beginPath();
       context.moveTo(...screenPath[0]);

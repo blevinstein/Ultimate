@@ -53,8 +53,8 @@ export class ManualOffenseStrategy extends Strategy {
             closestReceiver.velocity);
         let throwParams = player.rangeFinder.getThrowParams(
             sub2d(this.throwTarget, player.position), runtime);
+        let catchable = !!throwParams;
         if (!throwParams) {
-          console.log('Fallback to any throw');
           throwParams = player.rangeFinder.getThrowParams(
               sub2d(this.throwTarget, player.position));
         }
@@ -70,7 +70,7 @@ export class ManualOffenseStrategy extends Strategy {
                            this.game.disc.position, throwParams[0],
                            Disc.createUpVector(...throwParams), true)
                        .path;
-        this.drawPath(path);
+        this.drawPath(path, 1, catchable ? '#49ff29' : 'red');
         if (this.throwConfirmed) {
           player.throw(...throwParams);
         } else {
