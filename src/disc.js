@@ -174,9 +174,7 @@ export class Disc {
     }
   }
 
-  updatePosition() {
-    this.position = add3d(this.position, this.velocity);
-  }
+  updatePosition() { this.position = add3d(this.position, this.velocity); }
 
   updatePhysics() {
     if (!this.position) {

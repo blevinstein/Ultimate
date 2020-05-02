@@ -3,14 +3,12 @@ import {Disc} from './disc.js';
 import {drawPath} from './draw_utils.js';
 import {FrameBuffer} from './frame_buffer.js';
 import {BG, EYES, Game, HAIR, PANTS, SHIRT, SKIN, SOCKS} from './game.js';
+import {zRotate3d} from './math_utils.js';
 import {ARM_HEIGHT} from './player.js';
 import {Team} from './team.js';
 import {ToastService} from './toast_service.js';
 
-// Milliseconds to wait between frames at normal speed
-const FRAME_TIME_MS = 30;
-
-const THROW_EVERY_N_STEPS = 100;
+const THROW_EVERY_N_STEPS = 25;
 
 const GREEN_COLORS = [
   [ BG ],
@@ -23,7 +21,10 @@ const GREEN_COLORS = [
 ];
 
 export class Practice extends Game {
-  constructor(resources, canvas) { super(resources, canvas); }
+  constructor(resources, canvas) {
+    super(resources, canvas);
+    this.reset();
+  }
 
   reset() {
     this.teams = [
@@ -40,8 +41,8 @@ export class Practice extends Game {
     this.toastService = new ToastService();
     this.throwCount = 0;
     this.step = 0;
-    //this.allPaths = [];
-    //for (let sample of this.rangeFinder.samples) {
+    // this.allPaths = [];
+    // for (let sample of this.rangeFinder.samples) {
     //  let throwParams = sample.input;
     //  this.allPaths.push(
     //      Disc.simulateUntilGrounded(this.thrower.position.concat(ARM_HEIGHT),
@@ -59,11 +60,6 @@ export class Practice extends Game {
     this.discs.push(this.disc);
   }
 
-  start() {
-    this.tickCallback = window.setTimeout(this.tick.bind(this), FRAME_TIME_MS);
-    this.reset();
-  }
-
   draw(context) {
     const frameBuffer = new FrameBuffer();
     for (let team of this.teams) {
@@ -75,7 +71,7 @@ export class Practice extends Game {
     this.toastService.draw(frameBuffer);
 
     // TODO: Draw all possible throws
-    //for (let path of this.allPaths) {
+    // for (let path of this.allPaths) {
     //  drawPath(frameBuffer, path, 0.2, 'white');
     //}
 
@@ -95,8 +91,14 @@ export class Practice extends Game {
 
   update() {
     if (++this.step % THROW_EVERY_N_STEPS === 0) {
-      const throwParams = this.rangeFinder.samples[++this.throwCount].input;
-      this.thrower.throw(throwParams.velocity, throwParams.angleOfAttack, throwParams.tiltAngle);
+      const sprinklerAngle =
+          0.5 * Math.sin(++this.throwCount * 2 * Math.PI / 30);
+      const throwParams =
+          this.rangeFinder
+              .samples[this.rangeFinder.samples.length - this.throwCount]
+              .input;
+      this.thrower.throw(zRotate3d(throwParams.velocity, sprinklerAngle),
+                         throwParams.angleOfAttack, throwParams.tiltAngle);
     }
     // Players and physics update
     for (let team of this.teams) {

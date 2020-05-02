@@ -54,7 +54,7 @@ export class RangeFinder {
                     [ 0, 0, ARM_HEIGHT + 0.01 ], velocity,
                     Disc.createUpVector({velocity, angleOfAttack, tiltAngle}));
             const {finalPosition : groundedPosition, finalTime : groundedTime} =
-                Disc.simulateUntilCatchable(
+                Disc.simulateUntilGrounded(
                     [ 0, 0, ARM_HEIGHT + 0.01 ], velocity,
                     Disc.createUpVector({velocity, angleOfAttack, tiltAngle}));
 

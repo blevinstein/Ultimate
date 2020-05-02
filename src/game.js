@@ -11,7 +11,7 @@ import {ToastService} from './toast_service.js';
 // Milliseconds to wait between frames at normal speed
 const FRAME_TIME_MS = 30;
 // Milliseconds to wait between frames when in fast forwardg
-const FAST_FORWARD_MS = 7;
+const FAST_FORWARD_MS = 3;
 // Milliseconds to wait between frames when in slow motion
 const SLOW_MOTION_MS = 300;
 
