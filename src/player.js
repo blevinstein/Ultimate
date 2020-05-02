@@ -34,8 +34,6 @@ const MAX_PLAYER_SPEED = 0.4;
 // desiredHandlePosition()
 const MAX_HANDLE_OFFSET = 0.1;
 
-const STEP_SIZE = 0.03;
-
 // NB: These are *approximate* values, based on a constant acceleration model
 //   A = MAX_PLAYER_ACCEL / 2
 //   V = MAX_PLAYER_SPEED
@@ -47,6 +45,7 @@ const DECEL_DISTANCE = Math.pow(DECEL_STEPS, 2) * MAX_PLAYER_ACCEL / 2;
 export const ARM_HEIGHT = 2;
 export const ARM_LENGTH = 1.5;
 export const MAX_THROW_SPEED = 1.8;
+export const STEP_SIZE = 0.03;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {

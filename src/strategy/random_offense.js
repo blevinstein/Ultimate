@@ -1,5 +1,6 @@
 
 import {Disc} from '../disc.js';
+import {drawPath} from '../draw_utils.js';
 import {Game} from '../game.js';
 import {
   dist2d,
@@ -109,8 +110,8 @@ export class RandomOffenseStrategy extends Strategy {
     }
 
     for (let i = 0; i < this.pathsConsidered.length; i++) {
-      this.drawPath(this.pathsConsidered[i],
-                    Math.pow(0.9, this.pathsConsidered.length - i));
+      drawPath(this.frameBuffer, this.pathsConsidered[i],
+               Math.pow(0.9, this.pathsConsidered.length - i));
     }
   }
 }

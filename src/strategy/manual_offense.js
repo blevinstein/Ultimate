@@ -1,5 +1,6 @@
 
 import {Disc} from '../disc.js';
+import {drawPath} from '../draw_utils.js';
 import {Game} from '../game.js';
 import {
   dist2d,
@@ -70,7 +71,7 @@ export class ManualOffenseStrategy extends Strategy {
                            this.game.disc.position, throwParams.velocity,
                            Disc.createUpVector(throwParams), true)
                        .path;
-        this.drawPath(path, 1, catchable ? '#49ff29' : 'red');
+        drawPath(this.frameBuffer, path, 1, catchable ? '#49ff29' : 'red');
         if (this.throwConfirmed) {
           player.throw(throwParams.velocity, throwParams.angleOfAttack,
                        throwParams.tiltAngle);

@@ -1,5 +1,6 @@
 
 import {Disc} from './disc.js';
+import {drawPath} from './draw_utils.js';
 import {FrameBuffer} from './frame_buffer.js';
 import {BG, EYES, Game, HAIR, PANTS, SHIRT, SKIN, SOCKS} from './game.js';
 import {ARM_HEIGHT} from './player.js';
@@ -8,6 +9,8 @@ import {ToastService} from './toast_service.js';
 
 // Milliseconds to wait between frames at normal speed
 const FRAME_TIME_MS = 30;
+
+const THROW_EVERY_N_STEPS = 100;
 
 const GREEN_COLORS = [
   [ BG ],
@@ -30,9 +33,22 @@ export class Practice extends Game {
     ];
     this.teams[0].setOnOffense(true);
     this.thrower = this.teams[0].players[0];
+    this.lastThrower = this.thrower;
+    this.rangeFinder = this.thrower.rangeFinder;
     this.discs = [];
     this.createDisc();
     this.toastService = new ToastService();
+    this.throwCount = 0;
+    this.step = 0;
+    //this.allPaths = [];
+    //for (let sample of this.rangeFinder.samples) {
+    //  let throwParams = sample.input;
+    //  this.allPaths.push(
+    //      Disc.simulateUntilGrounded(this.thrower.position.concat(ARM_HEIGHT),
+    //                                 throwParams.velocity,
+    //                                 Disc.createUpVector(throwParams), true)
+    //          .path);
+    //}
   }
 
   createDisc() {
@@ -59,6 +75,9 @@ export class Practice extends Game {
     this.toastService.draw(frameBuffer);
 
     // TODO: Draw all possible throws
+    //for (let path of this.allPaths) {
+    //  drawPath(frameBuffer, path, 0.2, 'white');
+    //}
 
     context.save();
     context.setTransform(1, 0, 0, 1, 0, 0);
@@ -75,17 +94,29 @@ export class Practice extends Game {
   }
 
   update() {
+    if (++this.step % THROW_EVERY_N_STEPS === 0) {
+      const throwParams = this.rangeFinder.samples[++this.throwCount].input;
+      this.thrower.throw(throwParams.velocity, throwParams.angleOfAttack, throwParams.tiltAngle);
+    }
     // Players and physics update
     for (let team of this.teams) {
       for (let player of team.players) {
         player.update();
       }
     }
-    for (let disc of this.discs) {
-      disc.update();
+    for (let i = 0; i < this.discs.length; ++i) {
+      if (!this.discs[i].grounded) {
+        this.discs[i].update();
+      }
     }
     this.toastService.update();
   }
 
   discThrownBy(player) { this.createDisc(); }
+
+  discCaughtBy(player) {}
+
+  discGrounded() {}
+
+  setState(state) {}
 }

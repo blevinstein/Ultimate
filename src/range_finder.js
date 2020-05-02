@@ -13,6 +13,8 @@ const MIN_TILT = 0;
 const MAX_TILT = 0;
 
 const RANGE_TOLERANCE = 2;
+// Minimum distance a throw must travel to be considered.
+const MIN_RANGE = 2;
 
 export class RangeFinderFactory {
   static create(maxSpeed, stepSize) {
@@ -70,13 +72,15 @@ export class RangeFinder {
             if (Math.abs(rotatedCatchablePosition[1]) > 0.001) {
               throw new Error('Failed to rotate point onto x-axis!');
             }
-            this.samples.push({
-              input : {velocity : rotatedVelocity, angleOfAttack, tiltAngle},
-              catchable :
-                  {position : rotatedCatchablePosition, time : catchableTime},
-              grounded :
-                  {position : rotatedGroundedPosition, time : groundedTime},
-            });
+            if (rotatedGroundedPosition[0] > MIN_RANGE) {
+              this.samples.push({
+                input : {velocity : rotatedVelocity, angleOfAttack, tiltAngle},
+                catchable :
+                    {position : rotatedCatchablePosition, time : catchableTime},
+                grounded :
+                    {position : rotatedGroundedPosition, time : groundedTime},
+              });
+            }
           }
         }
       }

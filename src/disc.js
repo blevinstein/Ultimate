@@ -35,6 +35,9 @@ const DISC_SIZE = 3;
 
 export class Disc {
   constructor(game) {
+    Disc.maxId = Disc.maxId || 0;
+    this.id = Disc.maxId++;
+
     this.game = game;
     this.velocity = [ 0, 0, 0 ];
     this.upVector = [ 0, 0, 1 ];
@@ -171,7 +174,9 @@ export class Disc {
     }
   }
 
-  updatePosition() { this.position = add3d(this.position, this.velocity); }
+  updatePosition() {
+    this.position = add3d(this.position, this.velocity);
+  }
 
   updatePhysics() {
     if (!this.position) {
@@ -390,4 +395,6 @@ export class Disc {
                               disc => disc.position[2] <= ARM_HEIGHT,
                               returnPath);
   }
+
+  toString() { return 'Disc[' + this.id + ']'; }
 }
