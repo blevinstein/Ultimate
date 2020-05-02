@@ -3,9 +3,6 @@ import {Disc} from './disc.js';
 import {mag2d, mul2d, zRotate3d} from './math_utils.js';
 import {ARM_HEIGHT} from './player.js';
 
-const VELOCITY_STEP = 0.03;
-const ANGLE_STEP = 0.03;
-
 const MAX_LAUNCH_ANGLE = 0.5;
 const MIN_LAUNCH_ANGLE = -0.3;
 
@@ -18,14 +15,14 @@ const MAX_TILT = 0;
 const RANGE_TOLERANCE = 2;
 
 export class RangeFinderFactory {
-  static create(maxSpeed) {
+  static create(maxSpeed, stepSize) {
     RangeFinderFactory.registry = RangeFinderFactory.registry || new Map;
-    let key = `maxSpeed=${maxSpeed}`;
+    let key = `maxSpeed=${maxSpeed},stepSize=${stepSize}`;
     let existing = RangeFinderFactory.registry.get(key);
     if (existing) {
       return existing;
     } else {
-      let rangeFinder = new RangeFinder(maxSpeed);
+      let rangeFinder = new RangeFinder(maxSpeed, stepSize);
       RangeFinderFactory.registry.set(key, rangeFinder);
       return rangeFinder;
     }
@@ -33,19 +30,17 @@ export class RangeFinderFactory {
 }
 
 export class RangeFinder {
-  constructor(maxSpeed) {
+  constructor(maxSpeed, stepSize) {
     this.maxSpeed = maxSpeed;
     this.samples = [];
 
     for (let launchAngle = MIN_LAUNCH_ANGLE; launchAngle <= MAX_LAUNCH_ANGLE;
-         launchAngle += ANGLE_STEP) {
-      for (let speed = VELOCITY_STEP; speed <= maxSpeed;
-           speed += VELOCITY_STEP) {
+         launchAngle += stepSize) {
+      for (let speed = stepSize; speed <= maxSpeed; speed += stepSize) {
         for (let angleOfAttack = MIN_ANGLE_OF_ATTACK;
-             angleOfAttack <= MAX_ANGLE_OF_ATTACK;
-             angleOfAttack += ANGLE_STEP) {
+             angleOfAttack <= MAX_ANGLE_OF_ATTACK; angleOfAttack += stepSize) {
           for (let tiltAngle = MIN_TILT; tiltAngle <= MAX_TILT;
-               tiltAngle += ANGLE_STEP) {
+               tiltAngle += stepSize) {
             const velocity = [
               speed * Math.cos(launchAngle), 0, speed * Math.sin(launchAngle)
             ];

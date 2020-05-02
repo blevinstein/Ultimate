@@ -34,6 +34,8 @@ const MAX_PLAYER_SPEED = 0.4;
 // desiredHandlePosition()
 const MAX_HANDLE_OFFSET = 0.1;
 
+const STEP_SIZE = 0.03;
+
 // NB: These are *approximate* values, based on a constant acceleration model
 //   A = MAX_PLAYER_ACCEL / 2
 //   V = MAX_PLAYER_SPEED
@@ -63,7 +65,7 @@ export class Player {
     this.moving = false;
     this.frame = Math.random() * ANIMATION_FRAMES;
     this.hasDisc = false;
-    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED);
+    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED, STEP_SIZE);
   }
 
   toString() { return 'Player[' + this.id + ']'; }
