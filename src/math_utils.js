@@ -128,6 +128,10 @@ export function project3d(position) {
   return [ xPosition, yPosition ];
 }
 
+export function zRotate3d(position, angle) {
+  return rotate2d(position, angle).concat(position[2]);
+}
+
 export function angle2d(vector) { return Math.atan2(vector[1], vector[0]); }
 
 export function norm2d(vector) {

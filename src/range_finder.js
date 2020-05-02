@@ -1,6 +1,6 @@
 
 import {Disc} from './disc.js';
-import {mag2d, mul2d, rotate2d} from './math_utils.js';
+import {mag2d, mul2d, zRotate3d} from './math_utils.js';
 import {ARM_HEIGHT} from './player.js';
 
 const VELOCITY_STEP = 0.03;
@@ -47,40 +47,51 @@ export class RangeFinder {
             const velocity = [
               speed * Math.cos(launchAngle), 0, speed * Math.sin(launchAngle)
             ];
-            const {finalPosition, finalTime} = Disc.simulateUntilCatchable(
-                [ 0, 0, ARM_HEIGHT + 0.01 ], velocity,
-                Disc.createUpVector(velocity, angleOfAttack, tiltAngle));
-            const groundedAngle =
-                Math.atan2(finalPosition[1], finalPosition[0]);
-            const rotatedGrounded =
-                rotate2d([ finalPosition[0], finalPosition[1] ], -groundedAngle)
-                    .concat(0);
-            const rotatedVelocity =
-                rotate2d(velocity, -groundedAngle).concat(velocity[2]);
-            if (Math.abs(rotatedGrounded[1]) > 0.001) {
+            const {
+              finalPosition : catchablePosition,
+              finalTime : catchableTime
+            } =
+                Disc.simulateUntilCatchable(
+                    [ 0, 0, ARM_HEIGHT + 0.01 ], velocity,
+                    Disc.createUpVector(velocity, angleOfAttack, tiltAngle));
+            const {finalPosition : groundedPosition, finalTime : groundedTime} =
+                Disc.simulateUntilCatchable(
+                    [ 0, 0, ARM_HEIGHT + 0.01 ], velocity,
+                    Disc.createUpVector(velocity, angleOfAttack, tiltAngle));
+
+            // Rotate everything by catchableAngle such that
+            // rotatedCatchablePosition[1] ~ 0
+            const catchableAngle =
+                Math.atan2(catchablePosition[1], catchablePosition[0]);
+            const rotatedCatchablePosition =
+                zRotate3d(catchablePosition, -catchableAngle);
+
+            const rotatedVelocity = zRotate3d(velocity, -catchableAngle);
+
+            const rotatedGroundedPosition =
+                zRotate3d(groundedPosition, -catchableAngle);
+            if (Math.abs(rotatedCatchablePosition[1]) > 0.001) {
               throw new Error('Failed to rotate point onto x-axis!');
             }
             this.samples.push({
               input : {velocity : rotatedVelocity, angleOfAttack, tiltAngle},
-              output : {location : rotatedGrounded, time : finalTime},
+              catchable :
+                  {location : rotatedCatchablePosition, time : catchableTime},
+              grounded :
+                  {location : rotatedGroundedPosition, time : groundedTime},
             });
           }
         }
       }
     }
-    this.samples.sort((a, b) => a.output.location[0] - b.output.location[0]);
+    this.samples.sort((a, b) =>
+                          a.catchable.location[0] - b.catchable.location[0]);
     console.log('Range finder ready. maxDistance = ' + this.getMaxDistance());
   }
 
-  getMaxDistance() {
-    return this.samples[this.samples.length - 1].output.location[0];
-  }
-
-  // TODO: Fix this code. It currently assumes that all output values are
-  // [x, 0, 0], which is NOT true due to tiltAngle.
   getBestSample(distance, minTime) {
     let filteredSamples =
-        minTime ? this.samples.filter(s => s.output.time > minTime)
+        minTime ? this.samples.filter(s => s.catchable.time > minTime)
                 : this.samples;
     if (filteredSamples.length === 0) {
       return null;
@@ -88,19 +99,23 @@ export class RangeFinder {
     // Binary search over filteredSamples to find the nearest sample throw
     let min = 0;
     let max = filteredSamples.length - 1;
-    if (filteredSamples[min].output.location[0] > distance ||
-        filteredSamples[max].output.location[0] < distance) {
+    if (filteredSamples[min].catchable.location[0] > distance ||
+        filteredSamples[max].catchable.location[0] < distance) {
       return null;
     }
     while (max - min > 1) {
       let mid = Math.trunc((min + max) / 2);
-      if (filteredSamples[mid].output.location[0] > distance) {
+      if (filteredSamples[mid].catchable.location[0] > distance) {
         max = mid;
       } else {
         min = mid;
       }
     }
     return filteredSamples[min];
+  }
+
+  getMaxDistance() {
+    return this.samples[this.samples.length - 1].catchable.location[0];
   }
 
   // returns [velocity, angleOfAttack, tiltAngle]
@@ -111,7 +126,7 @@ export class RangeFinder {
     }
     const {velocity, angleOfAttack, tiltAngle} = sample.input;
     const vectorAngle = Math.atan2(vector2d[1], vector2d[0]);
-    const rotatedVelocity = rotate2d(velocity, vectorAngle).concat(velocity[2]);
+    const rotatedVelocity = zRotate3d(velocity, vectorAngle);
     return [ rotatedVelocity, angleOfAttack, tiltAngle ];
   }
 
@@ -120,7 +135,7 @@ export class RangeFinder {
     const {velocity, angleOfAttack, tiltAngle} =
         this.samples[this.samples.length - 1].input;
     const vectorAngle = Math.atan2(vector2d[1], vector2d[0]);
-    const rotatedVelocity = rotate2d(velocity, vectorAngle).concat(velocity[2]);
+    const rotatedVelocity = zRotate3d(velocity, vectorAngle);
     return [ rotatedVelocity, angleOfAttack, tiltAngle ];
   }
 }
