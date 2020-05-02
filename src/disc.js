@@ -2,6 +2,7 @@
 import {FIELD_BOUNDS_NO_ENDZONES, Game, STATES} from './game.js';
 import {
   add3d,
+  angle2d,
   check1d,
   check3d,
   cross3d,
@@ -128,14 +129,14 @@ export class Disc {
       context.ellipse(screenPosition[0], screenPosition[1],
                       mag2d(screenMajorAxis) * DISC_SIZE,
                       mag2d(screenMinorAxis) * DISC_SIZE,
-                      Math.atan2(screenMajorAxis[1], screenMajorAxis[0]), 0,
+                      angle2d(screenMajorAxis), 0,
                       Math.PI * 2);
       context.fill();
       context.beginPath();
       context.ellipse(screenPosition[0], screenPosition[1],
                       mag2d(screenMajorAxis) * DISC_SIZE,
                       mag2d(screenMinorAxis) * DISC_SIZE,
-                      Math.atan2(screenMajorAxis[1], screenMajorAxis[0]), 0,
+                      angle2d(screenMajorAxis), 0,
                       Math.PI * 2);
       context.stroke();
 
@@ -148,7 +149,7 @@ export class Disc {
         context.ellipse(shadowPosition[0], shadowPosition[1],
                         mag2d(shadowMajorAxis) * DISC_SIZE,
                         mag2d(shadowMinorAxis) * DISC_SIZE,
-                        Math.atan2(shadowMajorAxis[1], shadowMajorAxis[0]), 0,
+                        angle2d(shadowMajorAxis), 0,
                         Math.PI * 2);
         context.fill();
         context.globalAlpha = 0.1;
@@ -156,7 +157,7 @@ export class Disc {
         context.ellipse(shadowPosition[0], shadowPosition[1],
                         mag2d(shadowMajorAxis) * DISC_SIZE,
                         mag2d(shadowMinorAxis) * DISC_SIZE,
-                        Math.atan2(shadowMajorAxis[1], shadowMajorAxis[0]), 0,
+                        angle2d(shadowMajorAxis), 0,
                         Math.PI * 2);
         context.stroke();
         context.globalAlpha = 1;
@@ -261,7 +262,8 @@ export class Disc {
     let catchCandidate;
     let catchDist;
     for (let player of players) {
-      let d = dist3d(player.position.concat(ARM_HEIGHT), this.position);
+      let h = Math.min(ARM_HEIGHT, this.position[2]);
+      let d = dist3d(player.position.concat(h), this.position);
       if (d < (catchDist || ARM_LENGTH)) {
         catchCandidate = player;
         catchDist = d;

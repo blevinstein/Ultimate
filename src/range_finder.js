@@ -1,12 +1,12 @@
 
 import {Disc} from './disc.js';
-import {mag2d, mul2d, zRotate3d} from './math_utils.js';
+import {angle2d, mag2d, mul2d, zRotate3d} from './math_utils.js';
 import {ARM_HEIGHT} from './player.js';
 
 const MAX_LAUNCH_ANGLE = 1.5;
 const MIN_LAUNCH_ANGLE = -1.0;
 
-const MIN_ANGLE_OF_ATTACK = -1.0;
+const MIN_ANGLE_OF_ATTACK = -0.5;
 const MAX_ANGLE_OF_ATTACK = 1.5;
 
 const MIN_TILT = 0.0;
@@ -62,17 +62,16 @@ export class RangeFinder {
                     [ 0, 0, ARM_HEIGHT + 0.01 ], velocity,
                     Disc.createUpVector({velocity, angleOfAttack, tiltAngle}));
 
-            // Rotate everything by catchableAngle such that
-            // rotatedCatchablePosition[1] ~ 0
-            const catchableAngle =
-                Math.atan2(catchablePosition[1], catchablePosition[0]);
+            // Rotate everything by groundedAngle such that
+            // rotatedGroundedPosition[1] ~ 0
+            const groundedAngle = angle2d(groundedPosition);
             const rotatedCatchablePosition =
-                zRotate3d(catchablePosition, -catchableAngle);
+                zRotate3d(catchablePosition, -groundedAngle);
 
-            const rotatedVelocity = zRotate3d(velocity, -catchableAngle);
+            const rotatedVelocity = zRotate3d(velocity, -groundedAngle);
 
             const rotatedGroundedPosition =
-                zRotate3d(groundedPosition, -catchableAngle);
+                zRotate3d(groundedPosition, -groundedAngle);
             if (Math.abs(rotatedCatchablePosition[1]) > 0.001) {
               throw new Error('Failed to rotate point onto x-axis!');
             }
@@ -92,20 +91,20 @@ export class RangeFinder {
       }
     }
     this.samples.sort((a, b) =>
-                          a.catchable.position[0] - b.catchable.position[0]);
+                          a.grounded.position[0] - b.grounded.position[0]);
     console.log(
         `Range finder ready. samples = ${this.samples.length}, omitted = ${
             this.samplesOmitted}, maxDistance = ${this.getMaxDistance()}`);
   }
 
-  // Return the index of the closest sample with catchable distance at least
+  // Return the index of the closest sample with grounded distance at least
   // 'distance'
   binarySearch(samples, distance) {
     let min = 0;
     let max = samples.length - 1;
     while (max - min > 1) {
       let mid = Math.trunc((min + max) / 2);
-      if (samples[mid].catchable.position[0] > distance) {
+      if (samples[mid].grounded.position[0] > distance) {
         max = mid;
       } else {
         min = mid;
@@ -120,8 +119,8 @@ export class RangeFinder {
       throw new Error(`distanceRange is in the wrong order: ${distanceRange}`);
     }
     // Ensure our desired distance is in the range covered by our samples.
-    if (this.samples[0].catchable.position[0] > distanceRange[1] ||
-        this.samples[this.samples.length - 1].catchable.position[0] <
+    if (this.samples[0].grounded.position[0] > distanceRange[1] ||
+        this.samples[this.samples.length - 1].grounded.position[0] <
             distanceRange[0]) {
       return null;
     }
@@ -140,7 +139,7 @@ export class RangeFinder {
     let bestFloatTime;
     for (let i = 0; i < filteredSamples.length; ++i) {
       const floatTime =
-          filteredSamples[i].groundedTime - filteredSamples[i].catchableTime;
+          filteredSamples[i].grounded.time - filteredSamples[i].catchable.time;
       if (bestFloat === null || floatTime > bestFloat) {
         bestFloat = i;
         bestFloatTime = floatTime;
@@ -150,7 +149,7 @@ export class RangeFinder {
   }
 
   getMaxDistance() {
-    return this.samples[this.samples.length - 1].catchable.position[0];
+    return this.samples[this.samples.length - 1].grounded.position[0];
   }
 
   getThrowParams(vector2d, minRunTime) {
@@ -163,7 +162,7 @@ export class RangeFinder {
       return null;
     }
     const {velocity, angleOfAttack, tiltAngle} = sample.input;
-    const vectorAngle = Math.atan2(vector2d[1], vector2d[0]);
+    const vectorAngle = angle2d(vector2d);
     const rotatedVelocity = zRotate3d(velocity, vectorAngle);
     return {velocity : rotatedVelocity, angleOfAttack, tiltAngle};
   }
@@ -172,7 +171,7 @@ export class RangeFinder {
   getLongestThrowParams(vector2d) {
     const {velocity, angleOfAttack, tiltAngle} =
         this.samples[this.samples.length - 1].input;
-    const vectorAngle = Math.atan2(vector2d[1], vector2d[0]);
+    const vectorAngle = angle2d(vector2d);
     const rotatedVelocity = zRotate3d(velocity, vectorAngle);
     return {velocity : rotatedVelocity, angleOfAttack, tiltAngle};
   }
