@@ -48,11 +48,11 @@ export class ManualOffenseStrategy extends Strategy {
 
         let [closestReceiver, closestReceiverDistance] = Game.getClosestPlayer(
             this.team.players.filter(p => p != player), this.throwTarget);
-        let runtime = Player.simulateRunTime(
+        let runTime = Player.simulateRunTime(
             sub2d(this.throwTarget, closestReceiver.position),
             closestReceiver.velocity);
         let throwParams = player.rangeFinder.getThrowParams(
-            sub2d(this.throwTarget, player.position), runtime);
+            sub2d(this.throwTarget, player.position), runTime);
         let catchable = !!throwParams;
         if (!throwParams) {
           throwParams = player.rangeFinder.getThrowParams(
