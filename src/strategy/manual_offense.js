@@ -1,13 +1,34 @@
-
-const {Disc} = require('../disc.js');
-const {drawPath} = require('../draw_utils.js');
-const {Game} = require('../game.js');
-const {dist2d, getVector, inverseProject2d, mag2d, magnitudeAlong2d, sub2d} =
-    require('../math_utils.js');
-const {ARM_HEIGHT, MAX_THROW_SPEED} = require('../player_params.js');
-const {Player} = require('../player.js');
-const {Cutter} = require('./cutter.js');
-const {Strategy} = require('./strategy.js');
+const {
+    Disc
+} = require('../disc.js');
+const {
+    drawPath
+} = require('../draw_utils.js');
+const {
+    Game
+} = require('../game.js');
+const {
+    dist2d,
+    getVector,
+    inverseProject2d,
+    mag2d,
+    magnitudeAlong2d,
+    sub2d
+} =
+require('../math_utils.js');
+const {
+    ARM_HEIGHT,
+    MAX_THROW_SPEED
+} = require('../player_params.js');
+const {
+    Player
+} = require('../player.js');
+const {
+    Cutter
+} = require('./cutter.js');
+const {
+    Strategy
+} = require('./strategy.js');
 
 const GOAL_RADIUS = 2;
 
@@ -16,77 +37,79 @@ const GOAL_RADIUS = 2;
 // where the user clicks.
 module.exports.ManualOffenseStrategy =
     class ManualOffenseStrategy extends Strategy {
-  constructor(game, team) {
-    super(game, team);
-    this.destinationMap = new Map;
-    this.throwConfirmed = false;
-    this.throwTarget = null;
-    game.canvas.onclick = event => { this.throwConfirmed = true; };
-    game.canvas.onmousemove = event => {
-      this.throwTarget = inverseProject2d(
-          mul2d(sub2d([ event.offsetX, event.offsetY ], game.fieldOffset),
-                1 / game.fieldScale));
-    };
-  }
+        constructor(game, team) {
+            super(game, team);
+            this.destinationMap = new Map;
+            this.throwConfirmed = false;
+            this.throwTarget = null;
+            game.canvas.onclick = event => {
+                this.throwConfirmed = true;
+            };
+            game.canvas.onmousemove = event => {
+                this.throwTarget = inverseProject2d(
+                    mul2d(sub2d([event.offsetX, event.offsetY], game.fieldOffset),
+                        1 / game.fieldScale));
+            };
+        }
 
-  update() {
-    if (!this.team.onOffense || this.game.disc.isLoose()) {
-      return true;
+        update() {
+            if (!this.team.onOffense || this.game.disc.isLoose()) {
+                return true;
+            }
+
+            for (let player of this.team.players) {
+                if (player.hasDisc) {
+                    // Thrower behavior
+                    if (!this.throwTarget || !player.canThrow()) {
+                        player.rest(getVector(this.team.goalDirection));
+                        continue;
+                    }
+
+                    let [closestReceiver, closestReceiverDistance] = Game.getClosestPlayer(
+                        this.team.players.filter(p => p != player), this.throwTarget);
+                    let runTime = Player.simulateRunTime(
+                        sub2d(this.throwTarget, closestReceiver.position),
+                        closestReceiver.velocity);
+                    let throwParams = player.rangeFinder.getThrowParams(
+                        sub2d(this.throwTarget, player.position), runTime);
+                    let catchable = !!throwParams;
+                    if (!throwParams) {
+                        throwParams = player.rangeFinder.getThrowParams(
+                            sub2d(this.throwTarget, player.position));
+                    }
+                    if (!throwParams) {
+                        console.log('Fallback to longest throw');
+                        throwParams = player.rangeFinder.getLongestThrowParams(
+                            sub2d(this.throwTarget, player.position));
+                    }
+                    if (!throwParams) {
+                        throw new Error('Failed to get throw params!');
+                    }
+                    let path = Disc.simulateUntilGrounded(
+                            this.game.disc.position, throwParams.velocity,
+                            Disc.createUpVector(throwParams), true)
+                        .path;
+                    drawPath(this.frameBuffer, path, 1, catchable ? '#49ff29' : 'red');
+                    if (this.throwConfirmed) {
+                        player.throw(throwParams.velocity, throwParams.angleOfAttack,
+                            throwParams.tiltAngle);
+                    } else {
+                        player.rest(getVector(this.team.goalDirection));
+                    }
+                } else {
+                    // Cutter behavior
+                    let destination =
+                        this.destinationMap.get(player) ||
+                        Cutter.chooseBestRandomDestination(this.game, this.team);
+                    if (!destination) {
+                        continue;
+                    }
+                    this.moveWithin(player, destination);
+                    if (dist2d(destination, player.position) <= GOAL_RADIUS) {
+                        destination = null;
+                    }
+                    this.destinationMap.set(player, destination);
+                }
+            }
+        }
     }
-
-    for (let player of this.team.players) {
-      if (player.hasDisc) {
-        // Thrower behavior
-        if (!this.throwTarget || !player.canThrow()) {
-          player.rest(getVector(this.team.goalDirection));
-          continue;
-        }
-
-        let [closestReceiver, closestReceiverDistance] = Game.getClosestPlayer(
-            this.team.players.filter(p => p != player), this.throwTarget);
-        let runTime = Player.simulateRunTime(
-            sub2d(this.throwTarget, closestReceiver.position),
-            closestReceiver.velocity);
-        let throwParams = player.rangeFinder.getThrowParams(
-            sub2d(this.throwTarget, player.position), runTime);
-        let catchable = !!throwParams;
-        if (!throwParams) {
-          throwParams = player.rangeFinder.getThrowParams(
-              sub2d(this.throwTarget, player.position));
-        }
-        if (!throwParams) {
-          console.log('Fallback to longest throw');
-          throwParams = player.rangeFinder.getLongestThrowParams(
-              sub2d(this.throwTarget, player.position));
-        }
-        if (!throwParams) {
-          throw new Error('Failed to get throw params!');
-        }
-        let path = Disc.simulateUntilGrounded(
-                           this.game.disc.position, throwParams.velocity,
-                           Disc.createUpVector(throwParams), true)
-                       .path;
-        drawPath(this.frameBuffer, path, 1, catchable ? '#49ff29' : 'red');
-        if (this.throwConfirmed) {
-          player.throw(throwParams.velocity, throwParams.angleOfAttack,
-                       throwParams.tiltAngle);
-        } else {
-          player.rest(getVector(this.team.goalDirection));
-        }
-      } else {
-        // Cutter behavior
-        let destination =
-            this.destinationMap.get(player) ||
-            Cutter.chooseBestRandomDestination(this.game, this.team);
-        if (!destination) {
-          continue;
-        }
-        this.moveWithin(player, destination);
-        if (dist2d(destination, player.position) <= GOAL_RADIUS) {
-          destination = null;
-        }
-        this.destinationMap.set(player, destination);
-      }
-    }
-  }
-}
