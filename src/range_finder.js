@@ -4,7 +4,7 @@ import {mag2d, mul2d, zRotate3d} from './math_utils.js';
 import {ARM_HEIGHT} from './player.js';
 
 const MAX_LAUNCH_ANGLE = 1.5;
-const MIN_LAUNCH_ANGLE = -0.5;
+const MIN_LAUNCH_ANGLE = -1.0;
 
 const MIN_ANGLE_OF_ATTACK = -1.5;
 const MAX_ANGLE_OF_ATTACK = 1.5;

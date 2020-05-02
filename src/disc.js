@@ -23,15 +23,15 @@ const GROUND_FRICTION = 0.2;
 const GRAVITY = 0.05;
 
 const OPTIMAL_DRAG_ANGLE = -0.2;
-const DRAG_CONST = 0.001;
-const DRAG_QUADRATIC = 0.3;
+const DRAG_CONST = 0.000;
+const DRAG_QUADRATIC = 0.2;
 
-const LIFT_CONST = 0.012;
-const LIFT_LINEAR = 0.03;
+const LIFT_CONST = 0.015;
+const LIFT_LINEAR = 0.08;
 
 const MAX_PICKUP_DIST = 1;
 
-const DISC_SIZE = 3;
+const DISC_SIZE = 4;
 
 export class Disc {
   constructor(game) {
