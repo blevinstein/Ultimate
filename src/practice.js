@@ -42,15 +42,6 @@ export class Practice extends Game {
     this.toastService = new ToastService();
     this.throwCount = 0;
     this.step = 0;
-    // this.allPaths = [];
-    // for (let sample of this.rangeFinder.samples) {
-    //  let throwParams = sample.input;
-    //  this.allPaths.push(
-    //      Disc.simulateUntilGrounded(this.thrower.position.concat(ARM_HEIGHT),
-    //                                 throwParams.velocity,
-    //                                 Disc.createUpVector(throwParams), true)
-    //          .path);
-    //}
   }
 
   createDisc() {
@@ -70,11 +61,6 @@ export class Practice extends Game {
       disc.draw(frameBuffer);
     }
     this.toastService.draw(frameBuffer);
-
-    // TODO: Draw all possible throws
-    // for (let path of this.allPaths) {
-    //  drawPath(frameBuffer, path, 0.2, 'white');
-    //}
 
     context.save();
     context.setTransform(1, 0, 0, 1, 0, 0);
