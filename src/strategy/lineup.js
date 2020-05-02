@@ -1,12 +1,11 @@
 
-import {dist2d, getVector, sub2d} from '../math_utils.js';
-import {NUM_PLAYERS} from '../team.js';
-
-import {Strategy} from './strategy.js';
+const {dist2d, getVector, sub2d} = require('../math_utils.js');
+const {NUM_PLAYERS} = require('../team.js');
+const {Strategy} = require('./strategy.js');
 
 const LINEUP_RADIUS = 0.5;
 
-export class LineupStrategy extends Strategy {
+module.exports.LineupStrategy = class LineupStrategy extends Strategy {
   update() {
     const playersCopy = this.team.players.slice();
     playersCopy.sort((a, b) => a.position[1] - b.position[1]);

@@ -1,15 +1,17 @@
 
-import {Disc} from '../disc.js';
-import {FIELD_BOUNDS, Game} from '../game.js';
-import {add2d, getVector, mul2d, norm2d, sub2d, sub3d} from '../math_utils.js';
-
-import {Matchup} from './matchup.js';
-import {Strategy} from './strategy.js';
+const {Disc} = require('../disc.js');
+const {FIELD_BOUNDS} = require('../game_params.js');
+const {Game} = require('../game.js');
+const {add2d, getVector, mul2d, norm2d, sub2d, sub3d} =
+    require('../math_utils.js');
+const {Matchup} = require('./matchup.js');
+const {Strategy} = require('./strategy.js');
 
 const MARK_RADIUS = 0.5;
 const MIN_DISC_SPACE = 2.5;
 
-export class ManToManDefenseStrategy extends Strategy {
+module.exports.ManToManDefenseStrategy =
+    class ManToManDefenseStrategy extends Strategy {
   constructor(game, team) {
     super(game, team);
     this.matchup = Matchup.minMeanSquaredDistance(game.teams);

@@ -1,7 +1,7 @@
 
-import {Game} from '../game.js';
+const {Game} = require('../game.js');
 
-export class Cutter {
+module.exports.Cutter = class Cutter {
 
   // Choose the best from a sample of random locations no more than 5 yards
   // behind the thrower. This is potentially an appropriate location for a

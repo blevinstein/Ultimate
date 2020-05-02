@@ -1,9 +1,10 @@
 
-import {FrameBuffer} from '../frame_buffer.js';
-import {FIELD_BOUNDS, Game} from '../game.js';
-import {dist2d, getVector, project2d, project3d} from '../math_utils.js';
+const {FrameBuffer} = require('../frame_buffer.js');
+const {FIELD_BOUNDS} = require('../game_params.js');
+const {Game} = require('../game.js');
+const {dist2d, getVector, project2d, project3d} = require('../math_utils.js');
 
-export class Strategy {
+module.exports.Strategy = class Strategy {
   constructor(game, team) {
     this.game = game;
     this.team = team;

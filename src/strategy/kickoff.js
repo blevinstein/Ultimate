@@ -1,12 +1,11 @@
 
-import {getVector, mag2d, mul2d, sub2d} from '../math_utils.js';
-import {MAX_THROW_SPEED} from '../player.js';
-
-import {Strategy} from './strategy.js';
+const {getVector, mag2d, mul2d, sub2d} = require('../math_utils.js');
+const {MAX_THROW_SPEED} = require('../player_params.js');
+const {Strategy} = require('./strategy.js');
 
 const DELAY_TIME = 1.0;
 
-export class KickoffStrategy extends Strategy {
+module.exports.KickoffStrategy = class KickoffStrategy extends Strategy {
   constructor(game, team) { super(game, team); }
 
   update() {

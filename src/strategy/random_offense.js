@@ -1,18 +1,13 @@
 
-import {Disc} from '../disc.js';
-import {drawPath} from '../draw_utils.js';
-import {Game} from '../game.js';
-import {
-  dist2d,
-  getVector,
-  mag2d,
-  magnitudeAlong2d,
-  sub2d
-} from '../math_utils.js';
-import {ARM_HEIGHT, MAX_THROW_SPEED, Player} from '../player.js';
-
-import {Cutter} from './cutter.js';
-import {Strategy} from './strategy.js';
+const {Disc} = require('../disc.js');
+const {drawPath} = require('../draw_utils.js');
+const {Game} = require('../game.js');
+const {dist2d, getVector, mag2d, magnitudeAlong2d, sub2d} =
+    require('../math_utils.js');
+const {ARM_HEIGHT, MAX_THROW_SPEED} = require('../player_params.js');
+const {Player} = require('../player.js');
+const {Cutter} = require('./cutter.js');
+const {Strategy} = require('./strategy.js');
 
 const NUM_CANDIDATE_THROWS = 1;
 const GOAL_RADIUS = 2;
@@ -20,7 +15,8 @@ const MIN_PROGRESS = 5;
 
 // Totally uncoordinated scramble. Players look for open areas of the field,
 // from 10m behind the handler to back of the endzone.
-export class RandomOffenseStrategy extends Strategy {
+module.exports.RandomOffenseStrategy =
+    class RandomOffenseStrategy extends Strategy {
   constructor(game, team) {
     super(game, team);
     this.destinationMap = new Map;

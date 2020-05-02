@@ -1,10 +1,11 @@
 
-import {recolorImages} from './image_utils.js';
-import {Player} from './player.js';
+const {recolorImages} = require('./image_utils.js');
+const {Player} = require('./player.js');
 
-export const NUM_PLAYERS = 7;
+const NUM_PLAYERS = 7;
+module.exports = {NUM_PLAYERS};
 
-export class Team {
+module.exports.Team = class Team {
   constructor(game, coach, textColor, colorMapping, goalDirection) {
     Team.maxId = Team.maxId || 0;
     this.id = Team.maxId++;

@@ -1,7 +1,7 @@
 
-import {project3d} from './math_utils.js';
+const {project3d} = require('./math_utils.js');
 
-export function drawPath(frameBuffer, path, alpha = 1, color = 'white') {
+module.exports.drawPath = (frameBuffer, path, alpha = 1, color = 'white') => {
   const screenPath = path.map(point => project3d(point.position));
   frameBuffer.drawOperation(1, context => {
     context.globalAlpha = alpha;
@@ -15,4 +15,4 @@ export function drawPath(frameBuffer, path, alpha = 1, color = 'white') {
     context.stroke();
     context.globalAlpha = 1;
   });
-}
+};

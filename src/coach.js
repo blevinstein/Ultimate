@@ -1,14 +1,14 @@
 
-import {STATES} from './game.js';
-import {ClosestPickupStrategy} from './strategy/closest_pickup.js';
-import {IdleStrategy} from './strategy/idle.js';
-import {KickoffStrategy} from './strategy/kickoff.js';
-import {LineupStrategy} from './strategy/lineup.js';
-import {ManToManDefenseStrategy} from './strategy/man_defense.js';
-import {ManualOffenseStrategy} from './strategy/manual_offense.js';
-import {RandomOffenseStrategy} from './strategy/random_offense.js';
+const {STATES} = require('./game_params.js');
+const {ClosestPickupStrategy} = require('./strategy/closest_pickup.js');
+const {IdleStrategy} = require('./strategy/idle.js');
+const {KickoffStrategy} = require('./strategy/kickoff.js');
+const {LineupStrategy} = require('./strategy/lineup.js');
+const {ManToManDefenseStrategy} = require('./strategy/man_defense.js');
+const {ManualOffenseStrategy} = require('./strategy/manual_offense.js');
+const {RandomOffenseStrategy} = require('./strategy/random_offense.js');
 
-export class Coach {
+module.exports.Coach = class Coach {
   constructor(offensiveStrategy, defensiveStrategy, aerialStrategy) {
     this.offensiveStrategy =
         offensiveStrategy ||

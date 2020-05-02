@@ -1,12 +1,32 @@
 
-import {Coach} from './coach.js';
-import {Disc} from './disc.js';
-import {FrameBuffer} from './frame_buffer.js';
-import {loadImage, mirrorImages, splitSprite} from './image_utils.js';
-import {dist2d, mag2d, mul2d, norm2d, sub2d} from './math_utils.js';
-import {ARM_HEIGHT} from './player.js';
-import {NUM_PLAYERS, Team} from './team.js';
-import {ToastService} from './toast_service.js';
+const {Coach} = require('./coach.js');
+const {Disc} = require('./disc.js');
+const {FrameBuffer} = require('./frame_buffer.js');
+const {loadImage, mirrorImages, splitSprite} = require('./image_utils.js');
+const {dist2d, mag2d, mul2d, norm2d, sub2d} = require('./math_utils.js');
+const {ARM_HEIGHT} = require('./player_params.js');
+const {NUM_PLAYERS, Team} = require('./team.js');
+const {ToastService} = require('./toast_service.js');
+const {STATES, FIELD_BOUNDS, FIELD_BOUNDS_NO_ENDZONES} =
+    require('./game_params.js');
+
+const SHIRT = [ 224, 80, 0, 255 ];
+const PANTS = [ 72, 88, 0, 255 ];
+const HAIR = [ 0, 0, 0, 255 ];
+const SKIN = [ 255, 200, 184, 255 ];
+const SOCKS = [ 255, 255, 255, 255 ];
+const BG = [ 0, 0, 0, 0 ];
+const EYES = [ 7, 11, 90, 255 ];
+
+module.exports = {
+  SHIRT,
+  PANTS,
+  HAIR,
+  SKIN,
+  SOCKS,
+  BG,
+  EYES,
+};
 
 // Milliseconds to wait between frames at normal speed
 const FRAME_TIME_MS = 30;
@@ -18,23 +38,12 @@ const SLOW_MOTION_MS = 300;
 // Seconds to wait before fast-forwarding when in reset state
 const RESET_FF_DELAY = 1.0;
 
-export const SHIRT = [ 224, 80, 0, 255 ];
-export const PANTS = [ 72, 88, 0, 255 ];
-export const HAIR = [ 0, 0, 0, 255 ];
-export const SKIN = [ 255, 200, 184, 255 ];
-export const SOCKS = [ 255, 255, 255, 255 ];
-export const BG = [ 0, 0, 0, 0 ];
-export const EYES = [ 7, 11, 90, 255 ];
-
 const WIN_SCORE = 11;
 
 const FIELD_SPRITE_SIZE = [ 992, 408 ];
 
 const COLLISION_DIST = 1.5;
 const MAX_COLLISION_IMPULSE = 1.0;
-
-export const FIELD_BOUNDS = [ [ 0, 110 ], [ 0, 40 ] ];
-export const FIELD_BOUNDS_NO_ENDZONES = [ [ 20, 90 ], [ 0, 40 ] ];
 
 const WARNING_COLOR = '#fc8b28';
 
@@ -58,16 +67,7 @@ const BLUE_COLORS = [
   [ HAIR ],
 ];
 
-export const STATES = {
-  Kickoff : 'kickoff',     // Waiting for defense to pull
-  Receiving : 'receiving', // Waiting for offense to receive pull
-  Pickup : 'pickup',       // Waiting for offense to pickup grounded disc
-  Normal : 'normal',       // Normal play; posession changes on grounded disc
-  Reset : 'reset', // Waiting for players to return to the line after a score
-  GameOver : 'gameover', // Game is over because one team has scored 11 points
-};
-
-export class Game {
+module.exports.Game = class Game {
   constructor(resources, canvas, coaches = [ new Coach(), new Coach() ]) {
     this.canvas = canvas;
     this.resources = resources;

@@ -1,6 +1,6 @@
 
-import {Disc} from './disc.js';
-import {
+const {Disc} = require('./disc.js');
+const {
   add2d,
   check2d,
   check3d,
@@ -14,8 +14,10 @@ import {
   project2d,
   project3d,
   sub2d
-} from './math_utils.js';
-import {RangeFinderFactory} from './range_finder.js';
+} = require('./math_utils.js');
+const {RangeFinderFactory} = require('./range_finder.js');
+const {ARM_HEIGHT, ARM_LENGTH, MAX_THROW_SPEED, STEP_SIZE} =
+    require('./player_params.js');
 
 // We show 3 different sprites every 4 frames to create reciprocal movement
 const ANIMATION_FRAMES = 4;
@@ -42,12 +44,7 @@ const MAX_HANDLE_OFFSET = 0.1;
 const DECEL_STEPS = 2 * MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
 const DECEL_DISTANCE = Math.pow(DECEL_STEPS, 2) * MAX_PLAYER_ACCEL / 2;
 
-export const ARM_HEIGHT = 2;
-export const ARM_LENGTH = 1.5;
-export const MAX_THROW_SPEED = 1.8;
-export const STEP_SIZE = 0.15;
-
-export class Player {
+module.exports.Player = class Player {
   constructor(team, initialPosition, initialDirection = 'E') {
     Player.maxId = Player.maxId || 0;
     this.id = Player.maxId++;
@@ -73,9 +70,9 @@ export class Player {
     const screenPosition = project2d(this.position);
     const sprite =
         this.moving
-            ? this.runningSprites[this.direction][ANIMATION_STEP
-                                                      [Math.trunc(this.frame) %
-                                                       ANIMATION_FRAMES]]
+            ? this.runningSprites[this.direction]
+                                 [ANIMATION_STEP[Math.trunc(this.frame) %
+                                                 ANIMATION_FRAMES]]
             : this.standingSprites[this.direction];
     if (this.moving) {
       this.frame += mag2d(this.velocity) * ANIMATION_SPEED;

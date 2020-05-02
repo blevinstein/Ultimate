@@ -1,13 +1,13 @@
 
-import {Disc} from '../disc.js';
-import {Game} from '../game.js';
-import {add2d, getVector, mul2d, sub2d, sub3d} from '../math_utils.js';
-
-import {Strategy} from './strategy.js';
+const {Disc} = require('../disc.js');
+const {Game} = require('../game.js');
+const {add2d, getVector, mul2d, sub2d, sub3d} = require('../math_utils.js');
+const {Strategy} = require('./strategy.js');
 
 const MARK_RADIUS = 0.5;
 
-export class ZoneDefenseStrategy extends Strategy {
+module.exports.ZoneDefenseStrategy =
+    class ZoneDefenseStrategy extends Strategy {
   constructor(game, team) {
     super(game, team);
     this.forceDirection = Math.random() < 0.5 ? getVector('N') : getVector('S');

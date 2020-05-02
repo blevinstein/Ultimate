@@ -1,12 +1,12 @@
 
-import {Coach} from './coach.js';
-import {Disc} from './disc.js';
-import {Game} from './game.js';
-import {installMathUtils} from './math_utils.js';
-import {MAX_THROW_SPEED} from './player.js';
-import {ManualOffenseStrategy} from './strategy/manual_offense.js';
-import {ZoneDefenseStrategy} from './strategy/zone_defense.js';
-import {Team} from './team.js';
+const {Coach} = require('./coach.js');
+const {Disc} = require('./disc.js');
+const {Game} = require('./game.js');
+const {installMathUtils} = require('./math_utils.js');
+const {MAX_THROW_SPEED} = require('./player.js');
+const {ManualOffenseStrategy} = require('./strategy/manual_offense.js');
+const {ZoneDefenseStrategy} = require('./strategy/zone_defense.js');
+const {Team} = require('./team.js');
 
 let initialized = false;
 

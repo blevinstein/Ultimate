@@ -1,8 +1,8 @@
 
-import {Disc} from './disc.js';
-import {Game} from './game.js';
-import {installMathUtils} from './math_utils.js';
-import {Practice} from './practice.js';
+const {Disc} = require('./disc.js');
+const {Game} = require('./game.js');
+const {installMathUtils} = require('./math_utils.js');
+const {Practice} = require('./practice.js');
 
 let initialized = false;
 

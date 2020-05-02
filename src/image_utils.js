@@ -1,6 +1,6 @@
 
 // returns ImageData
-export function toImageData(image) {
+function toImageData(image) {
   const canvas = document.createElement('canvas');
   canvas.width = image.width;
   canvas.height = image.height;
@@ -9,7 +9,7 @@ export function toImageData(image) {
 }
 
 // returns Promise<Image>
-export function fromImageData(imageData) {
+function fromImageData(imageData) {
   const canvas = document.createElement('canvas');
   canvas.width = imageData.width;
   canvas.height = imageData.height;
@@ -24,7 +24,7 @@ export function fromImageData(imageData) {
   return promise;
 }
 
-export function loadImage(path) {
+function loadImage(path) {
   const image = new Image();
   const promise = new Promise((resolve, reject) => {
     image.onload = () => { resolve(image); };
@@ -34,7 +34,7 @@ export function loadImage(path) {
   return promise;
 }
 
-export function sliceImage(sourceImage, startX, startY, width, height) {
+function sliceImage(sourceImage, startX, startY, width, height) {
   const canvas = document.createElement('canvas');
   canvas.width = sourceImage.width;
   canvas.height = sourceImage.height;
@@ -43,12 +43,12 @@ export function sliceImage(sourceImage, startX, startY, width, height) {
 }
 
 // returns [R, G, B, A]
-export function getPixel(imageData, x, y) {
+function getPixel(imageData, x, y) {
   const index = (x + y * imageData.width) * 4;
   return imageData.data.slice(index, index + 4);
 }
 
-export function writePixel(imageData, x, y, pixel) {
+function writePixel(imageData, x, y, pixel) {
   const index = (x + y * imageData.width) * 4;
   for (let i = 0; i < 4; i++) {
     imageData.data[index + 0] = pixel[0];
@@ -59,7 +59,7 @@ export function writePixel(imageData, x, y, pixel) {
 }
 
 // returns ImageData
-export function mirrorImage(image) {
+function mirrorImage(image) {
   const canvas = document.createElement('canvas');
   canvas.width = image.width;
   canvas.height = image.height;
@@ -73,7 +73,7 @@ export function mirrorImage(image) {
 
 // Splits a single image into a grid of images sized gridX x gridY
 // returns Promise<Iterable<Image>>
-export function splitSprite(spriteImage, gridX, gridY) {
+function splitSprite(spriteImage, gridX, gridY) {
   // Copy into separate images
   const spritePromises = [];
   for (let i = 0; i < spriteImage.width; i += gridX) {
@@ -86,7 +86,7 @@ export function splitSprite(spriteImage, gridX, gridY) {
 }
 
 // returns Promise<Iterable<Image>>
-export function mirrorImages(images) {
+function mirrorImages(images) {
   const spritePromises = [];
   for (let image of images) {
     spritePromises.push(fromImageData(mirrorImage(image)));
@@ -95,12 +95,12 @@ export function mirrorImages(images) {
 }
 
 // returns true iff a equals b; a and b are colors
-export function colorEquals(a, b) {
+function colorEquals(a, b) {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
 }
 
 // Update imageData in place according to mappings defined in colorMapping
-export function rewriteColors(imageData, colorMapping) {
+function rewriteColors(imageData, colorMapping) {
   for (let x = 0; x < imageData.width; x++) {
     for (let y = 0; y < imageData.height; y++) {
       const color = getPixel(imageData, x, y);
@@ -123,7 +123,7 @@ export function rewriteColors(imageData, colorMapping) {
 }
 
 // returns Promise<Iterable<Image>>
-export function recolorImages(images, colorMapping) {
+function recolorImages(images, colorMapping) {
   const canvas = document.createElement('canvas');
   const imagePromises = [];
   for (let image of images) {
@@ -137,3 +137,18 @@ export function recolorImages(images, colorMapping) {
   }
   return Promise.all(imagePromises);
 }
+
+module.exports = {
+  toImageData,
+  fromImageData,
+  loadImage,
+  sliceImage,
+  getPixel,
+  writePixel,
+  mirrorImage,
+  splitSprite,
+  mirrorImages,
+  colorEquals,
+  rewriteColors,
+  recolorImages
+};

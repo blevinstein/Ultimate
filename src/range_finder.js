@@ -1,7 +1,7 @@
 
-import {Disc} from './disc.js';
-import {angle2d, mag2d, mul2d, zRotate3d} from './math_utils.js';
-import {ARM_HEIGHT} from './player.js';
+const {Disc} = require('./disc.js');
+const {angle2d, mag2d, mul2d, zRotate3d} = require('./math_utils.js');
+const {ARM_HEIGHT} = require('./player_params.js');
 
 const MAX_LAUNCH_ANGLE = 1.5;
 const MIN_LAUNCH_ANGLE = -1.0;
@@ -19,22 +19,7 @@ const MIN_RANGE = 3;
 
 const RANGE_TOLERANCE = 1;
 
-export class RangeFinderFactory {
-  static create(maxSpeed, stepSize) {
-    RangeFinderFactory.registry = RangeFinderFactory.registry || new Map;
-    let key = `maxSpeed=${maxSpeed},stepSize=${stepSize}`;
-    let existing = RangeFinderFactory.registry.get(key);
-    if (existing) {
-      return existing;
-    } else {
-      let rangeFinder = new RangeFinder(maxSpeed, stepSize);
-      RangeFinderFactory.registry.set(key, rangeFinder);
-      return rangeFinder;
-    }
-  }
-}
-
-export class RangeFinder {
+class RangeFinder {
   constructor(maxSpeed, stepSize) {
     this.maxSpeed = maxSpeed;
     this.samples = [];
@@ -176,3 +161,23 @@ export class RangeFinder {
     return {velocity : rotatedVelocity, angleOfAttack, tiltAngle};
   }
 }
+
+class RangeFinderFactory {
+  static create(maxSpeed, stepSize) {
+    RangeFinderFactory.registry = RangeFinderFactory.registry || new Map;
+    let key = `maxSpeed=${maxSpeed},stepSize=${stepSize}`;
+    let existing = RangeFinderFactory.registry.get(key);
+    if (existing) {
+      return existing;
+    } else {
+      let rangeFinder = new RangeFinder(maxSpeed, stepSize);
+      RangeFinderFactory.registry.set(key, rangeFinder);
+      return rangeFinder;
+    }
+  }
+}
+
+module.exports = {
+  RangeFinder,
+  RangeFinderFactory
+};

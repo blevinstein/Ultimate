@@ -1,7 +1,7 @@
 
-import {dist2d} from '../math_utils.js';
+const {dist2d} = require('../math_utils.js');
 
-export class Matchup {
+module.exports.Matchup = class Matchup {
   constructor() { this.map = new Map; }
 
   match(a, b) {

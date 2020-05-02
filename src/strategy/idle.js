@@ -1,7 +1,7 @@
 
-import {Strategy} from './strategy.js';
+const {Strategy} = require('./strategy.js');
 
-export class IdleStrategy extends Strategy {
+module.exports.IdleStrategy = class IdleStrategy extends Strategy {
   update() {
     for (let player of this.team.players) {
       player.rest();

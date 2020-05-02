@@ -1,12 +1,12 @@
 
-import {Disc} from './disc.js';
-import {drawPath} from './draw_utils.js';
-import {FrameBuffer} from './frame_buffer.js';
-import {BG, EYES, Game, HAIR, PANTS, SHIRT, SKIN, SOCKS} from './game.js';
-import {zRotate3d} from './math_utils.js';
-import {ARM_HEIGHT} from './player.js';
-import {Team} from './team.js';
-import {ToastService} from './toast_service.js';
+const {Disc} = require('./disc.js');
+const {drawPath} = require('./draw_utils.js');
+const {FrameBuffer} = require('./frame_buffer.js');
+const {BG, EYES, Game, HAIR, PANTS, SHIRT, SKIN, SOCKS} = require('./game.js');
+const {zRotate3d} = require('./math_utils.js');
+const {ARM_HEIGHT} = require('./player_params.js');
+const {Team} = require('./team.js');
+const {ToastService} = require('./toast_service.js');
 
 const MAX_DISCS = 100;
 const THROW_EVERY_N_STEPS = 15;
@@ -21,7 +21,7 @@ const GREEN_COLORS = [
   [ HAIR ],
 ];
 
-export class Practice extends Game {
+class Practice extends Game {
   constructor(resources, canvas) {
     super(resources, canvas);
     this.reset();
@@ -29,9 +29,9 @@ export class Practice extends Game {
 
   reset() {
     this.teams = [
-      new Team(this, /*coach=*/ null, '#00ff00', GREEN_COLORS, 'E')
+      new Team(this, /*coach=*/null, '#00ff00', GREEN_COLORS, 'E')
           .addPlayer([ 20, 20 ], 'E'),
-      new Team(this, /*coach=*/ null, '#000000', [], 'W')
+      new Team(this, /*coach=*/null, '#000000', [], 'W')
     ];
     this.teams[0].setOnOffense(true);
     this.thrower = this.teams[0].players[0];
@@ -113,3 +113,5 @@ export class Practice extends Game {
 
   setState(state) {}
 }
+
+module.exports.Practice = Practice;

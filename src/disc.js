@@ -1,6 +1,7 @@
 
-import {FIELD_BOUNDS_NO_ENDZONES, Game, STATES} from './game.js';
-import {
+const {FIELD_BOUNDS_NO_ENDZONES, STATES} = require('./game_params.js');
+const {
+  acos,
   add3d,
   angle2d,
   check1d,
@@ -17,8 +18,8 @@ import {
   project2d,
   project3d,
   sub3d
-} from './math_utils.js';
-import {ARM_HEIGHT, ARM_LENGTH} from './player.js';
+} = require('./math_utils.js');
+const {ARM_HEIGHT, ARM_LENGTH} = require('./player_params.js');
 
 const GROUND_FRICTION = 0.2;
 const GRAVITY = 0.05;
@@ -34,7 +35,7 @@ const MAX_PICKUP_DIST = 1;
 
 const DISC_SIZE = 3;
 
-export class Disc {
+class Disc {
   constructor(game) {
     Disc.maxId = Disc.maxId || 0;
     this.id = Disc.maxId++;
@@ -129,15 +130,13 @@ export class Disc {
       context.ellipse(screenPosition[0], screenPosition[1],
                       mag2d(screenMajorAxis) * DISC_SIZE,
                       mag2d(screenMinorAxis) * DISC_SIZE,
-                      angle2d(screenMajorAxis), 0,
-                      Math.PI * 2);
+                      angle2d(screenMajorAxis), 0, Math.PI * 2);
       context.fill();
       context.beginPath();
       context.ellipse(screenPosition[0], screenPosition[1],
                       mag2d(screenMajorAxis) * DISC_SIZE,
                       mag2d(screenMinorAxis) * DISC_SIZE,
-                      angle2d(screenMajorAxis), 0,
-                      Math.PI * 2);
+                      angle2d(screenMajorAxis), 0, Math.PI * 2);
       context.stroke();
 
       if (!this.grounded) {
@@ -149,16 +148,14 @@ export class Disc {
         context.ellipse(shadowPosition[0], shadowPosition[1],
                         mag2d(shadowMajorAxis) * DISC_SIZE,
                         mag2d(shadowMinorAxis) * DISC_SIZE,
-                        angle2d(shadowMajorAxis), 0,
-                        Math.PI * 2);
+                        angle2d(shadowMajorAxis), 0, Math.PI * 2);
         context.fill();
         context.globalAlpha = 0.1;
         context.beginPath();
         context.ellipse(shadowPosition[0], shadowPosition[1],
                         mag2d(shadowMajorAxis) * DISC_SIZE,
                         mag2d(shadowMinorAxis) * DISC_SIZE,
-                        angle2d(shadowMajorAxis), 0,
-                        Math.PI * 2);
+                        angle2d(shadowMajorAxis), 0, Math.PI * 2);
         context.stroke();
         context.globalAlpha = 1;
       }
@@ -238,17 +235,19 @@ export class Disc {
     }
     // Get a side unit vector perpendicular to velocityDirection and upVector
     const sideDirection = norm3d(cross3d(velocityDirection, this.upVector));
+
     // Get a forward unit vector in the plane of velocityDirection/upVector
-    let forwardDirection = cross3d(this.upVector, sideDirection);
+    let forwardDirection = norm3d(cross3d(this.upVector, sideDirection));
     if (magnitudeAlong3d(forwardDirection, velocityDirection) < 0) {
       forwardDirection = mul3d(forwardDirection, -1);
     }
 
     // Calculate angle of attack using dot product identity
-    let angleOfAttack = Math.acos(dot3d(forwardDirection, velocityDirection));
+    let angleOfAttack = acos(dot3d(forwardDirection, velocityDirection));
     if (angleOfAttack > Math.PI / 2) {
       angleOfAttack = angleOfAttack - Math.PI;
     }
+
     // Convention: if forwardDirection is more +z than velocityDirection,
     // angleOfAttack is positive
     return magnitudeAlong3d(sub3d(forwardDirection, velocityDirection),
@@ -398,3 +397,4 @@ export class Disc {
 
   toString() { return 'Disc[' + this.id + ']'; }
 }
+module.exports = {Disc};

@@ -1,6 +1,6 @@
 
 // Records all draw actions, then replays them in order of increasing depth
-export class FrameBuffer {
+module.exports.FrameBuffer = class FrameBuffer {
   constructor() { this.drawOperations = []; }
 
   drawOperation(depth, draw) { this.drawOperations.push({depth, draw}); }

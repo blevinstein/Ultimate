@@ -1,7 +1,7 @@
 
-import {add3d, project3d} from './math_utils.js';
+const {add3d, project3d} = require('./math_utils.js');
 
-export class ToastService {
+module.exports.ToastService = class ToastService {
   constructor() { this.toasts = []; }
 
   addToast(text, position, velocity, color, lifetime, accentColor = 'white') {
@@ -39,4 +39,4 @@ export class ToastService {
       });
     }
   }
-}
+};
