@@ -1,0 +1,22 @@
+{
+  "name": "ultimate",
+  "version": "1.0.0",
+  "description": "Ultimate ========",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blevinstein/Ultimate.git"
+  },
+  "author": "blevinstein@gmail.com",
+  "license": "TBD",
+  "bugs": {
+    "url": "https://github.com/blevinstein/Ultimate/issues"
+  },
+  "homepage": "https://github.com/blevinstein/Ultimate#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
