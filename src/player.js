@@ -25,7 +25,7 @@ const ANIMATION_SPEED = 0.5;
 const MIN_MOVEMENT = 0.2;
 
 // Maximum speed a player can move the disc
-const MAX_HANDLE_SPEED = 0.8;
+const MAX_HANDLE_SPEED = 0.4;
 // Maximum speed a player can accelerate themselves from a stationary start
 const MAX_PLAYER_ACCEL = 0.03;
 // Maximum speed a player can sprint
@@ -101,9 +101,12 @@ export class Player {
 
   update() {
     if (this.hasDisc) {
-      // Move the disc along with the player
+      // Player moves the disc relative to their body.
       const desiredDiscVelocity =
           sub3d(this.desiredHandlePosition(), this.team.game.disc.position);
+      // Disc moves along with player as they move.
+      this.team.game.disc.position =
+          add3d(this.team.game.disc.position, this.velocity.concat(0));
       // Player cannot move the disc faster than MAX_HANDLE_SPEED
       const actualVelocity =
           mag3d(desiredDiscVelocity) > MAX_HANDLE_SPEED

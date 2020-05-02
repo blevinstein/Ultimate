@@ -50,7 +50,8 @@ export class RandomOffenseStrategy extends Strategy {
           let destination =
               [ minX + Math.random() * (maxX - minX), Math.random() * 40 ];
           let closestDefenderDistance = Game.getClosestPlayer(
-              this.game.defensiveTeam().players.filter(p => p != player), destination)[1];
+              this.game.defensiveTeam().players.filter(p => p != player),
+              destination)[1];
           let [closestReceiver, closestReceiverDistance] =
               Game.getClosestPlayer(this.team.players.filter(p => p != player),
                                     destination);
