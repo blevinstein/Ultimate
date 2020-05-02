@@ -9,8 +9,8 @@ const MIN_LAUNCH_ANGLE = -1.0;
 const MIN_ANGLE_OF_ATTACK = -0.5;
 const MAX_ANGLE_OF_ATTACK = 1.5;
 
-const MIN_TILT = 0.0;
-const MAX_TILT = 0.0;
+const MIN_TILT = -0.5;
+const MAX_TILT = 0.5;
 
 const MIN_SPEED = 0.3;
 
@@ -72,7 +72,7 @@ export class RangeFinder {
 
             const rotatedGroundedPosition =
                 zRotate3d(groundedPosition, -groundedAngle);
-            if (Math.abs(rotatedCatchablePosition[1]) > 0.001) {
+            if (Math.abs(rotatedGroundedPosition[1]) > 0.001) {
               throw new Error('Failed to rotate point onto x-axis!');
             }
             if (rotatedGroundedPosition[0] > MIN_RANGE) {
