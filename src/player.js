@@ -25,7 +25,7 @@ const ANIMATION_SPEED = 0.5;
 const MIN_MOVEMENT = 0.2;
 
 // Maximum speed a player can move the disc
-const MAX_HANDLE_SPEED = 0.4;
+const MAX_HANDLE_SPEED = 0.8;
 // Maximum speed a player can accelerate themselves from a stationary start
 const MAX_PLAYER_ACCEL = 0.03;
 // Maximum speed a player can sprint
@@ -40,7 +40,7 @@ const MAX_HANDLE_OFFSET = 0.1;
 //   X = DECEL_DISTANCE = AT^2 / 2
 //   T = DECEL_STEPS = V / A
 const DECEL_STEPS = 2 * MAX_PLAYER_SPEED / MAX_PLAYER_ACCEL;
-const DECEL_DISTANCE = Math.pow(DECEL_STEPS, 2) * MAX_PLAYER_ACCEL / 4;
+const DECEL_DISTANCE = Math.pow(DECEL_STEPS, 2) * MAX_PLAYER_ACCEL / 2;
 
 export const ARM_HEIGHT = 2;
 export const ARM_LENGTH = 1.5;
