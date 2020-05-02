@@ -204,7 +204,7 @@ export class Player {
       return;
     }
     this.team.game.disc.setVelocity(velocity)
-        .setUpVector(Disc.createUpVector(velocity, angleOfAttack, tiltAngle))
+        .setUpVector(Disc.createUpVector({velocity, angleOfAttack, tiltAngle}))
         .setPlayer(null);
     this.team.game.discThrownBy(this);
   }

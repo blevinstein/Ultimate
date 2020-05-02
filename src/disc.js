@@ -315,9 +315,11 @@ export class Disc {
 
   // returns a unit upVector which results in the given angleOfAttack for the
   // given velocity
-  static createUpVector(velocity, angleOfAttack, tiltAngle = 0) {
+  static createUpVector(params) {
+    const {velocity, angleOfAttack, tiltAngle} = params;
     check3d(velocity);
     check1d(angleOfAttack);
+    check1d(tiltAngle);
     if (mag3d(velocity) === 0) {
       return [ 0, 0, 1 ];
     }

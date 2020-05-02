@@ -64,15 +64,15 @@ export class RandomOffenseStrategy extends Strategy {
           if (!params) {
             continue;
           }
-          let path =
-              Disc.simulateUntilGrounded(this.game.disc.position, params[0],
-                                         Disc.createUpVector(...params), true)
-                  .path;
+          let path = Disc.simulateUntilGrounded(
+                             this.game.disc.position, params.velocity,
+                             Disc.createUpVector(params), true)
+                         .path;
           this.pathsConsidered.push(path);
-          let interceptor =
-              Disc.simulateInterceptions(this.game.disc.position, params[0],
-                                         Disc.createUpVector(...params),
-                                         this.game.defensiveTeam().players)[0];
+          let interceptor = Disc.simulateInterceptions(
+              this.game.disc.position, params.velocity,
+              Disc.createUpVector(params),
+              this.game.defensiveTeam().players)[0];
           if (interceptor) {
             console.log('Defender would intercept throw.');
             continue;
@@ -87,7 +87,8 @@ export class RandomOffenseStrategy extends Strategy {
           }
         }
         if (bestDestination && bestForwardProgress > MIN_PROGRESS) {
-          player.throw(...bestParams);
+          player.throw(bestParams.velocity, bestParams.angleOfAttack,
+                       bestParams.tiltAngle);
         } else {
           player.rest(getVector(this.team.goalDirection));
         }

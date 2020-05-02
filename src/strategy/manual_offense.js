@@ -67,12 +67,13 @@ export class ManualOffenseStrategy extends Strategy {
           throw new Error('Failed to get throw params!');
         }
         let path = Disc.simulateUntilGrounded(
-                           this.game.disc.position, throwParams[0],
-                           Disc.createUpVector(...throwParams), true)
+                           this.game.disc.position, throwParams.velocity,
+                           Disc.createUpVector(throwParams), true)
                        .path;
         this.drawPath(path, 1, catchable ? '#49ff29' : 'red');
         if (this.throwConfirmed) {
-          player.throw(...throwParams);
+          player.throw(throwParams.velocity, throwParams.angleOfAttack,
+                       throwParams.tiltAngle);
         } else {
           player.rest(getVector(this.team.goalDirection));
         }

@@ -39,8 +39,8 @@ export class Practice extends Game {
     this.disc = new Disc(this)
                     .setPlayer(this.thrower)
                     .setVelocity([ 0, 0, 0 ])
-                    .setPosition(this.thrower.position.concat(
-                        ARM_HEIGHT)) this.discs.push(this.disc);
+                    .setPosition(this.thrower.position.concat(ARM_HEIGHT));
+    this.discs.push(this.disc);
   }
 
   start() {

@@ -5,7 +5,8 @@ import {expect, TestSuite} from './suite.js';
 
 export class DiscTest extends TestSuite {
   constructor() {
-    super() this.test('angleOfAttack sanity', () => {
+    super();
+    this.test('angleOfAttack sanity', () => {
       expect.equalsWithin(new Disc()
                               .setPosition([ 0, 0, 0 ])
                               .setVelocity([ 1, 0, 0 ])
@@ -44,13 +45,25 @@ export class DiscTest extends TestSuite {
 
     this.test('createUpVector sanity', () => {
       expect.equals3d([ -1 / Math.sqrt(2), 0, 1 / Math.sqrt(2) ],
-                      Disc.createUpVector([ 1, 0, 0 ], Math.PI / 4));
+                      Disc.createUpVector({
+                        velocity : [ 1, 0, 0 ],
+                        angleOfAttack : Math.PI / 4,
+                        tiltAngle : 0
+                      }));
 
       expect.equals3d([ 0, -1 / Math.sqrt(2), 1 / Math.sqrt(2) ],
-                      Disc.createUpVector([ 1, 0, 0 ], 0, Math.PI / 4));
+                      Disc.createUpVector({
+                        velocity : [ 1, 0, 0 ],
+                        angleOfAttack : 0,
+                        tiltAngle : Math.PI / 4
+                      }));
 
       expect.equals3d([ 0, 1 / Math.sqrt(2), 1 / Math.sqrt(2) ],
-                      Disc.createUpVector([ 1, 0, 0 ], 0, -Math.PI / 4));
+                      Disc.createUpVector({
+                        velocity : [ 1, 0, 0 ],
+                        angleOfAttack : 0,
+                        tiltAngle : -Math.PI / 4
+                      }));
     });
   }
 }

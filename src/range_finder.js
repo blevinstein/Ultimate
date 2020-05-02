@@ -50,11 +50,11 @@ export class RangeFinder {
             } =
                 Disc.simulateUntilCatchable(
                     [ 0, 0, ARM_HEIGHT + 0.01 ], velocity,
-                    Disc.createUpVector(velocity, angleOfAttack, tiltAngle));
+                    Disc.createUpVector({velocity, angleOfAttack, tiltAngle}));
             const {finalPosition : groundedPosition, finalTime : groundedTime} =
                 Disc.simulateUntilCatchable(
                     [ 0, 0, ARM_HEIGHT + 0.01 ], velocity,
-                    Disc.createUpVector(velocity, angleOfAttack, tiltAngle));
+                    Disc.createUpVector({velocity, angleOfAttack, tiltAngle}));
 
             // Rotate everything by catchableAngle such that
             // rotatedCatchablePosition[1] ~ 0
@@ -141,7 +141,6 @@ export class RangeFinder {
     return this.samples[this.samples.length - 1].catchable.position[0];
   }
 
-  // returns [velocity, angleOfAttack, tiltAngle]
   getThrowParams(vector2d, minRunTime) {
     const sample = this.getBestSample(
         [
@@ -154,7 +153,7 @@ export class RangeFinder {
     const {velocity, angleOfAttack, tiltAngle} = sample.input;
     const vectorAngle = Math.atan2(vector2d[1], vector2d[0]);
     const rotatedVelocity = zRotate3d(velocity, vectorAngle);
-    return [ rotatedVelocity, angleOfAttack, tiltAngle ];
+    return {velocity : rotatedVelocity, angleOfAttack, tiltAngle};
   }
 
   // returns [velocity, angleOfAttack, tiltAngle]
@@ -163,6 +162,6 @@ export class RangeFinder {
         this.samples[this.samples.length - 1].input;
     const vectorAngle = Math.atan2(vector2d[1], vector2d[0]);
     const rotatedVelocity = zRotate3d(velocity, vectorAngle);
-    return [ rotatedVelocity, angleOfAttack, tiltAngle ];
+    return {velocity : rotatedVelocity, angleOfAttack, tiltAngle};
   }
 }

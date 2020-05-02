@@ -32,7 +32,8 @@ export class KickoffStrategy extends Strategy {
                                                    : [ 90, Math.random() * 40 ];
     const params = playerWithDisc.rangeFinder.getLongestThrowParams(
         sub2d(target, playerWithDisc.position));
-    playerWithDisc.throw(...params);
+    playerWithDisc.throw(params.velocity, params.angleOfAttack,
+                         params.tiltAngle);
     return true;
   }
 }
