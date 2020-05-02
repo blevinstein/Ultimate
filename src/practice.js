@@ -8,7 +8,7 @@ import {ARM_HEIGHT} from './player.js';
 import {Team} from './team.js';
 import {ToastService} from './toast_service.js';
 
-const THROW_EVERY_N_STEPS = 25;
+const THROW_EVERY_N_STEPS = 15;
 
 const GREEN_COLORS = [
   [ BG ],
@@ -90,7 +90,8 @@ export class Practice extends Game {
   }
 
   update() {
-    if (++this.step % THROW_EVERY_N_STEPS === 0) {
+    if (++this.step % THROW_EVERY_N_STEPS === 0 &&
+        this.throwCount < this.rangeFinder.samples.length) {
       const sprinklerAngle =
           0.5 * Math.sin(++this.throwCount * 2 * Math.PI / 30);
       const throwParams =

@@ -116,7 +116,7 @@ export function rewriteColors(imageData, colorMapping) {
         }
       }
       if (!mapped) {
-        console.log('Unmapped color: ' + color);
+        // DEBUG: console.log('Unmapped color: ' + color);
       }
     }
   }

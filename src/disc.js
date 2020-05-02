@@ -27,7 +27,7 @@ const DRAG_CONST = 0.001;
 const DRAG_QUADRATIC = 0.3;
 
 const LIFT_CONST = 0.012;
-const LIFT_LINEAR = 0.02;
+const LIFT_LINEAR = 0.03;
 
 const MAX_PICKUP_DIST = 1;
 

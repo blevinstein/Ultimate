@@ -45,7 +45,7 @@ const DECEL_DISTANCE = Math.pow(DECEL_STEPS, 2) * MAX_PLAYER_ACCEL / 2;
 export const ARM_HEIGHT = 2;
 export const ARM_LENGTH = 1.5;
 export const MAX_THROW_SPEED = 1.8;
-export const STEP_SIZE = 0.05;
+export const STEP_SIZE = 0.1;
 
 export class Player {
   constructor(team, initialPosition, initialDirection = 'E') {

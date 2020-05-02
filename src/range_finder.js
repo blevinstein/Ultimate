@@ -3,18 +3,21 @@ import {Disc} from './disc.js';
 import {mag2d, mul2d, zRotate3d} from './math_utils.js';
 import {ARM_HEIGHT} from './player.js';
 
-const MAX_LAUNCH_ANGLE = 0.5;
-const MIN_LAUNCH_ANGLE = -0.3;
+const MAX_LAUNCH_ANGLE = 1.5;
+const MIN_LAUNCH_ANGLE = -0.5;
 
-const MIN_ANGLE_OF_ATTACK = -0.8;
-const MAX_ANGLE_OF_ATTACK = 0.8;
+const MIN_ANGLE_OF_ATTACK = -1.5;
+const MAX_ANGLE_OF_ATTACK = 1.5;
 
-const MIN_TILT = 0;
-const MAX_TILT = 0;
+const MIN_TILT = 0.0;
+const MAX_TILT = 0.0;
+
+const MIN_SPEED = 0.3;
+
+// Minimum distance a throw must travel
+const MIN_RANGE = 3;
 
 const RANGE_TOLERANCE = 2;
-// Minimum distance a throw must travel to be considered.
-const MIN_RANGE = 2;
 
 export class RangeFinderFactory {
   static create(maxSpeed, stepSize) {
@@ -35,10 +38,11 @@ export class RangeFinder {
   constructor(maxSpeed, stepSize) {
     this.maxSpeed = maxSpeed;
     this.samples = [];
+    this.samplesOmitted = 0;
 
     for (let launchAngle = MIN_LAUNCH_ANGLE; launchAngle <= MAX_LAUNCH_ANGLE;
          launchAngle += stepSize) {
-      for (let speed = stepSize; speed <= maxSpeed; speed += stepSize) {
+      for (let speed = MIN_SPEED; speed <= maxSpeed; speed += stepSize) {
         for (let angleOfAttack = MIN_ANGLE_OF_ATTACK;
              angleOfAttack <= MAX_ANGLE_OF_ATTACK; angleOfAttack += stepSize) {
           for (let tiltAngle = MIN_TILT; tiltAngle <= MAX_TILT;
@@ -80,6 +84,8 @@ export class RangeFinder {
                 grounded :
                     {position : rotatedGroundedPosition, time : groundedTime},
               });
+            } else {
+              ++this.samplesOmitted;
             }
           }
         }
@@ -87,7 +93,9 @@ export class RangeFinder {
     }
     this.samples.sort((a, b) =>
                           a.catchable.position[0] - b.catchable.position[0]);
-    console.log('Range finder ready. maxDistance = ' + this.getMaxDistance());
+    console.log(
+        `Range finder ready. samples = ${this.samples.length}, omitted = ${
+            this.samplesOmitted}, maxDistance = ${this.getMaxDistance()}`);
   }
 
   // Return the index of the closest sample with catchable distance at least
