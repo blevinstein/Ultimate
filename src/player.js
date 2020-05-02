@@ -1,6 +1,5 @@
 
 import {Disc} from './disc.js';
-import {RangeFinderFactory} from './range_finder.js';
 import {
   add2d,
   check2d,
@@ -16,13 +15,14 @@ import {
   project3d,
   sub2d
 } from './math_utils.js';
+import {RangeFinderFactory} from './range_finder.js';
 
 // We show 3 different sprites every 4 frames to create reciprocal movement
 const ANIMATION_FRAMES = 4;
 const ANIMATION_STEP = [ 0, 1, 2, 1 ];
 const ANIMATION_SPEED = 0.5;
 // Minimum movement speed which should use the 'moving' sprites
-const MIN_MOVEMENT = 0.04;
+const MIN_MOVEMENT = 0.2;
 
 // Maximum speed a player can move the disc
 const MAX_HANDLE_SPEED = 0.4;
@@ -159,6 +159,7 @@ export class Player {
                         ? desiredAcceleration
                         : mul2d(desiredAcceleration,
                                 maxAcceleration / mag2d(desiredAcceleration)));
+    this.direction = getDirection(this.velocity);
   }
 
   rest(faceVector) {
@@ -170,8 +171,10 @@ export class Player {
                         : mul2d(desiredAcceleration,
                                 maxAcceleration / mag2d(desiredAcceleration)));
 
-    if (faceVector && mag2d(this.velocity) <= MIN_MOVEMENT) {
+    if (faceVector) {
       this.direction = getDirection(faceVector);
+    } else {
+      this.direction = getDirection(this.velocity);
     }
   }
 
@@ -180,7 +183,6 @@ export class Player {
 
     if (mag2d(this.velocity) > MIN_MOVEMENT) {
       this.moving = true;
-      this.direction = getDirection(this.velocity);
     } else {
       this.moving = false
     }

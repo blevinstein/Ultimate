@@ -16,7 +16,7 @@ const FAST_FORWARD_MS = 7;
 const SLOW_MOTION_MS = 300;
 
 // Seconds to wait before fast-forwarding when in reset state
-const RESET_FF_DELAY = 0.5;
+const RESET_FF_DELAY = 1.0;
 
 const SHIRT = [ 224, 80, 0, 255 ];
 const PANTS = [ 72, 88, 0, 255 ];
@@ -121,10 +121,10 @@ export class Game {
     this.update();
     this.draw(context);
     const tickDuration = new Date().getTime() - tickStartTime;
-    const desiredTickInterval =
-        this.state === STATES.Reset && this.stateTime > RESET_FF_DELAY
-            ? FAST_FORWARD_MS
-            : this.frameTime;
+    const desiredTickInterval = this.state === STATES.Reset && RESET_FF_DELAY &&
+                                        this.stateTime > RESET_FF_DELAY
+                                    ? FAST_FORWARD_MS
+                                    : this.frameTime;
     if (tickDuration > desiredTickInterval) {
       console.log('Tick was too slow for desiredTickInterval: ' + tickDuration +
                   ' > ' + desiredTickInterval);

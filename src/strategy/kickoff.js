@@ -7,13 +7,14 @@ import {Strategy} from './strategy.js';
 const DELAY_TIME = 1.0;
 
 export class KickoffStrategy extends Strategy {
-  constructor(game, team) {
-    super(game, team);
-  }
+  constructor(game, team) { super(game, team); }
 
   update() {
     // Delay before kickoff
     if (this.game.stateTime < DELAY_TIME) {
+      for (let player of this.team.players) {
+        player.rest(getVector(this.team.goalDirection));
+      }
       return;
     }
 
@@ -21,6 +22,7 @@ export class KickoffStrategy extends Strategy {
       console.log('Cannot pull without the disc!');
       return true;
     }
+
     const playerWithDisc = this.game.playerWithDisc();
     if (!playerWithDisc) {
       console.log('No player has the disc!!!');

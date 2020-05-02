@@ -43,8 +43,7 @@ export class Strategy {
 
   chargeForward(player) {
     const moveTarget = Game.snapToBounds(
-        add2d(player.position,
-              mul2d(getVector(this.team.goalDirection), 10)),
+        add2d(player.position, mul2d(getVector(this.team.goalDirection), 10)),
         FIELD_BOUNDS);
     this.move(player, moveTarget);
   }
