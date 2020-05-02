@@ -15,6 +15,8 @@ const MAX_ANGLE_OF_ATTACK = 0.8;
 const MIN_TILT = 0;
 const MAX_TILT = 0;
 
+const RANGE_TOLERANCE = 2;
+
 export class RangeFinderFactory {
   static create(maxSpeed) {
     RangeFinderFactory.registry = RangeFinderFactory.registry || new Map;
@@ -76,51 +78,81 @@ export class RangeFinder {
             this.samples.push({
               input : {velocity : rotatedVelocity, angleOfAttack, tiltAngle},
               catchable :
-                  {location : rotatedCatchablePosition, time : catchableTime},
+                  {position : rotatedCatchablePosition, time : catchableTime},
               grounded :
-                  {location : rotatedGroundedPosition, time : groundedTime},
+                  {position : rotatedGroundedPosition, time : groundedTime},
             });
           }
         }
       }
     }
     this.samples.sort((a, b) =>
-                          a.catchable.location[0] - b.catchable.location[0]);
+                          a.catchable.position[0] - b.catchable.position[0]);
     console.log('Range finder ready. maxDistance = ' + this.getMaxDistance());
   }
 
-  getBestSample(distance, minTime) {
-    let filteredSamples =
-        minTime ? this.samples.filter(s => s.catchable.time > minTime)
-                : this.samples;
-    if (filteredSamples.length === 0) {
-      return null;
-    }
-    // Binary search over filteredSamples to find the nearest sample throw
+  // Return the index of the closest sample with catchable distance at least
+  // 'distance'
+  binarySearch(samples, distance) {
     let min = 0;
-    let max = filteredSamples.length - 1;
-    if (filteredSamples[min].catchable.location[0] > distance ||
-        filteredSamples[max].catchable.location[0] < distance) {
-      return null;
-    }
+    let max = samples.length - 1;
     while (max - min > 1) {
       let mid = Math.trunc((min + max) / 2);
-      if (filteredSamples[mid].catchable.location[0] > distance) {
+      if (samples[mid].catchable.position[0] > distance) {
         max = mid;
       } else {
         min = mid;
       }
     }
-    return filteredSamples[min];
+    return max;
+  }
+
+  getBestSample(distanceRange, minRunTime) {
+    check2d(distanceRange);
+    if (distanceRange[1] < distanceRange[0]) {
+      throw new Error(`distanceRange is in the wrong order: ${distanceRange}`);
+    }
+    // Ensure our desired distance is in the range covered by our samples.
+    if (this.samples[0].catchable.position[0] > distanceRange[1] ||
+        this.samples[this.samples.length - 1].catchable.position[0] <
+            distanceRange[0]) {
+      return null;
+    }
+    // Use binary search to find the min and max samples in the given range.
+    const minSample = this.binarySearch(this.samples, distanceRange[0]);
+    const maxSample = this.binarySearch(this.samples, distanceRange[1]) - 1;
+    // Filter to samples which give the runner sufficient time to reach the
+    // disc.
+    const filteredSamples = this.samples.slice(minSample, maxSample)
+                                .filter(s => s.grounded.time > minRunTime);
+    if (filteredSamples.length === 0) {
+      return null;
+    }
+    // Choose the throw that will float the longest.
+    let bestFloat = null;
+    let bestFloatTime;
+    for (let i = 0; i < filteredSamples.length; ++i) {
+      const floatTime =
+          filteredSamples[i].groundedTime - filteredSamples[i].catchableTime;
+      if (bestFloat === null || floatTime > bestFloat) {
+        bestFloat = i;
+        bestFloatTime = floatTime;
+      }
+    }
+    return filteredSamples[bestFloat];
   }
 
   getMaxDistance() {
-    return this.samples[this.samples.length - 1].catchable.location[0];
+    return this.samples[this.samples.length - 1].catchable.position[0];
   }
 
   // returns [velocity, angleOfAttack, tiltAngle]
-  getThrowParams(vector2d, minTime) {
-    const sample = this.getBestSample(mag2d(vector2d), minTime);
+  getThrowParams(vector2d, minRunTime) {
+    const sample = this.getBestSample(
+        [
+          mag2d(vector2d) - RANGE_TOLERANCE, mag2d(vector2d) + RANGE_TOLERANCE
+        ],
+        minRunTime);
     if (!sample) {
       return null;
     }
