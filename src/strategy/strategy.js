@@ -5,11 +5,13 @@ const {
     FIELD_BOUNDS
 } = require('../game_params.js');
 const {
-    Game
-} = require('../game.js');
+    snapToBounds
+} = require('../game_utils.js');
 const {
-    dist2d,
     getVector,
+    add2d,
+    dist2d,
+    mul2d,
     project2d,
     project3d
 } = require('../math_utils.js');
@@ -53,7 +55,7 @@ module.exports.Strategy = class Strategy {
     }
 
     chargeForward(player) {
-        const moveTarget = Game.snapToBounds(
+        const moveTarget = snapToBounds(
             add2d(player.position, mul2d(getVector(this.team.goalDirection), 10)),
             FIELD_BOUNDS);
         this.move(player, moveTarget);

@@ -2,8 +2,9 @@ const {
     Disc
 } = require('../disc.js');
 const {
-    Game
-} = require('../game.js');
+    getClosestPlayer,
+    boundsCheck
+} = require('../game_utils.js');
 const {
     add2d,
     getVector,
@@ -60,7 +61,7 @@ module.exports.ZoneDefenseStrategy =
             const playerWithDisc = this.game.playerWithDisc();
 
             const interceptor = this.game.disc.isLoose() &&
-                Game.getClosestPlayer(this.team.players, discTarget)[0];
+                getClosestPlayer(this.team.players, discTarget)[0];
 
             for (let i = 0; i < this.team.players.length; i++) {
                 if (this.team.players[i] == interceptor) {
@@ -83,7 +84,7 @@ module.exports.ZoneDefenseStrategy =
                     // Cover top or bottom side depending on index
                     const yRange = i === 4 ? [0, discTarget[1]] : [discTarget[1], 40];
                     const myCutters = this.game.defensiveTeam().players.filter(
-                        p => Game.boundsCheck(p.position, [xRange, yRange]) &&
+                        p => boundsCheck(p.position, [xRange, yRange]) &&
                         p != playerWithDisc);
 
                     if (myCutters.length === 0) {

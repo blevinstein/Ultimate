@@ -5,9 +5,6 @@ const {
     Game
 } = require('./game.js');
 const {
-    installMathUtils
-} = require('./math_utils.js');
-const {
     Practice
 } = require('./practice.js');
 
@@ -16,8 +13,6 @@ let initialized = false;
 window.initialize =
     () => {
         console.log('Initializing...');
-
-        installMathUtils(window);
 
         Game.loadResources().then(
             (resources) => {

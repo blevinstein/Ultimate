@@ -6,8 +6,10 @@ const {
     FIELD_BOUNDS_NO_ENDZONES
 } = require('../game_params.js');
 const {
-    Game
-} = require('../game.js');
+    getClosestPlayer,
+    boundsCheck,
+    snapToBounds,
+} = require('../game_utils.js');
 const {
     add2d,
     dist2d,
@@ -40,7 +42,7 @@ module.exports.ClosestPickupStrategy =
                     .finalPosition;
 
                 const [closestPlayer] =
-                Game.getClosestPlayer(this.team.players, discTarget);
+                getClosestPlayer(this.team.players, discTarget);
 
                 for (let player of this.team.players) {
                     if (player == closestPlayer) {
@@ -51,14 +53,14 @@ module.exports.ClosestPickupStrategy =
                 }
             } else {
                 const playerWithDisc = this.game.playerWithDisc();
-                if (Game.boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
+                if (boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
                     // We caught the disc in-bounds! Strategy expires.
                     return true;
                 } else {
                     // We need to bring the disc back into bounds.
                     for (let player of this.team.players) {
                         if (player == playerWithDisc) {
-                            const moveTarget = Game.snapToBounds(playerWithDisc.position,
+                            const moveTarget = snapToBounds(playerWithDisc.position,
                                 FIELD_BOUNDS_NO_ENDZONES);
                             this.move(playerWithDisc, moveTarget);
                         } else {

@@ -35,6 +35,9 @@ const {
     FIELD_BOUNDS_NO_ENDZONES
 } =
 require('./game_params.js');
+const {
+    boundsCheck
+} = require('./game_utils.js');
 
 const SHIRT = [224, 80, 0, 255];
 const PANTS = [72, 88, 0, 255];
@@ -98,7 +101,9 @@ module.exports.Game = class Game {
         this.canvas = canvas;
         this.resources = resources;
         this.coaches = coaches;
-        this.setupCanvas();
+        if (canvas) {
+            this.setupCanvas();
+        }
         this.reset();
     }
 
@@ -320,7 +325,7 @@ module.exports.Game = class Game {
             for (let team of this.teams) {
                 let homeEndzone = Game.endzone(team.goalDirection === 'W' ? 'E' : 'W');
                 for (let player of team.players) {
-                    if (!Game.boundsCheck(player.position, homeEndzone)) {
+                    if (!boundsCheck(player.position, homeEndzone)) {
                         ready = false;
                     }
                 }
@@ -332,7 +337,7 @@ module.exports.Game = class Game {
             // Waiting for a player to bring the disc back in bounds
             let playerWithDisc = this.playerWithDisc();
             if (playerWithDisc &&
-                Game.boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
+                boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
                 this.setState(STATES.Normal);
                 this.toastService.addToast('Disc in!',
                     playerWithDisc.position.concat(5),
@@ -341,7 +346,7 @@ module.exports.Game = class Game {
         } else if (this.state === STATES.Normal) {
             // Waiting for a player to step out of bounds
             let playerWithDisc = this.playerWithDisc();
-            if (playerWithDisc && !Game.boundsCheck(playerWithDisc.position,
+            if (playerWithDisc && !boundsCheck(playerWithDisc.position,
                     FIELD_BOUNDS_NO_ENDZONES)) {
                 // A player who steps out of bounds (or in the endzone) after catching
                 // in-bounds must return the disc to the legal zone.
@@ -461,7 +466,7 @@ module.exports.Game = class Game {
 
         this.stallCount = 0;
         let interception = !player.team.onOffense;
-        if (Game.isInBounds(player.position)) {
+        if (boundsCheck(player.position, FIELD_BOUNDS)) {
             if ((player.team.goalDirection === 'E' && player.position[0] > 90) ||
                 (player.team.goalDirection === 'W' && player.position[0] < 20)) {
                 player.team.score++;
@@ -506,46 +511,6 @@ module.exports.Game = class Game {
             [0, 20],
             [0, 40]
         ];
-    }
-
-    static isInBounds(position) {
-        return Game.boundsCheck(position, FIELD_BOUNDS);
-    }
-
-    static boundsCheck(position, bounds) {
-        return bounds[0][0] <= position[0] && position[0] <= bounds[0][1] &&
-            bounds[1][0] <= position[1] && position[1] <= bounds[1][1];
-    }
-
-    static snapToBounds(position, bounds) {
-        let result = position.slice(0, 2);
-        if (result[0] < bounds[0][0]) {
-            result[0] = bounds[0][0];
-        }
-        if (result[0] > bounds[0][1]) {
-            result[0] = bounds[0][1];
-        }
-        if (result[1] < bounds[1][0]) {
-            result[1] = bounds[1][0];
-        }
-        if (result[1] > bounds[1][1]) {
-            result[1] = bounds[1][1];
-        }
-        return result;
-    }
-
-    // returns [player, distance]
-    static getClosestPlayer(players, location) {
-        let closestPlayer;
-        let closestPlayerDistance;
-        for (let player of players) {
-            let dist = dist2d(player.position, location);
-            if (!closestPlayer || dist < closestPlayerDistance) {
-                closestPlayer = player;
-                closestPlayerDistance = dist;
-            }
-        }
-        return [closestPlayer, closestPlayerDistance];
     }
 
     // returns Promise<resources>

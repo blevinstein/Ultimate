@@ -3,6 +3,7 @@ const {
 } = require('./disc.js');
 const {
     angle2d,
+    check2d,
     mag2d,
     mul2d,
     zRotate3d

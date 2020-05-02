@@ -13,6 +13,7 @@ const {
     dist3d,
     dot3d,
     linearInterpolate,
+    mag2d,
     mag3d,
     magnitudeAlong3d,
     mul3d,

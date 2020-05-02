@@ -5,8 +5,9 @@ const {
     drawPath
 } = require('../draw_utils.js');
 const {
-    Game
-} = require('../game.js');
+    getClosestPlayer,
+    chooseBestRandomDestination
+} = require('../game_utils.js');
 const {
     dist2d,
     getVector,
@@ -23,9 +24,6 @@ const {
 const {
     Player
 } = require('../player.js');
-const {
-    Cutter
-} = require('./cutter.js');
 const {
     Strategy
 } = require('./strategy.js');
@@ -65,7 +63,7 @@ module.exports.ManualOffenseStrategy =
                         continue;
                     }
 
-                    let [closestReceiver, closestReceiverDistance] = Game.getClosestPlayer(
+                    let [closestReceiver, closestReceiverDistance] = getClosestPlayer(
                         this.team.players.filter(p => p != player), this.throwTarget);
                     let runTime = Player.simulateRunTime(
                         sub2d(this.throwTarget, closestReceiver.position),
@@ -100,7 +98,7 @@ module.exports.ManualOffenseStrategy =
                     // Cutter behavior
                     let destination =
                         this.destinationMap.get(player) ||
-                        Cutter.chooseBestRandomDestination(this.game, this.team);
+                        chooseBestRandomDestination(this.game, this.team);
                     if (!destination) {
                         continue;
                     }

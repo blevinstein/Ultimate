@@ -8,9 +8,6 @@ const {
     Game
 } = require('./game.js');
 const {
-    installMathUtils
-} = require('./math_utils.js');
-const {
     MAX_THROW_SPEED
 } = require('./player.js');
 const {
@@ -28,8 +25,6 @@ let initialized = false;
 window.initialize =
     () => {
         console.log('Initializing...');
-
-        installMathUtils(window);
 
         Game.loadResources().then(
             (resources) => {

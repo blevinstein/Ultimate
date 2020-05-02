@@ -5,10 +5,12 @@ const {
     FIELD_BOUNDS
 } = require('../game_params.js');
 const {
-    Game
-} = require('../game.js');
+    getClosestPlayer,
+    snapToBounds,
+} = require('../game_utils.js');
 const {
     add2d,
+    dist2d,
     getVector,
     mul2d,
     norm2d,
@@ -52,7 +54,7 @@ module.exports.ManToManDefenseStrategy =
                 .finalPosition;
 
             const interceptor = this.game.disc.isLoose() &&
-                Game.getClosestPlayer(this.team.players, discTarget)[0];
+                getClosestPlayer(this.team.players, discTarget)[0];
 
             for (let player of this.team.players) {
                 if (player == interceptor) {
@@ -63,7 +65,7 @@ module.exports.ManToManDefenseStrategy =
                         console.log('Player has no matchup!');
                         continue;
                     }
-                    let target = Game.snapToBounds(
+                    let target = snapToBounds(
                         add2d(match.position,
                             match.hasDisc ? this.markOffset : this.offset),
                         FIELD_BOUNDS);

@@ -24,22 +24,24 @@ module.exports.Team = class Team {
         this.goalDirection = goalDirection;
         this.onOffense = false;
 
-        // Change color of sprites based on colorMapping
-        this.resources = {
-            runningSprites: {},
-            standingSprites: {}
-        };
-        Object.keys(game.resources.runningSprites).forEach((direction) => {
-            recolorImages(game.resources.runningSprites[direction], this.colorMapping)
-                .then((coloredImages) => {
-                    this.resources.runningSprites[direction] = coloredImages;
-                });
-            const standingSprites = [game.resources.standingSprites[direction]];
-            recolorImages(standingSprites, this.colorMapping)
-                .then((coloredImages) => {
-                    this.resources.standingSprites[direction] = coloredImages[0];
-                });
-        });
+        if (game.resources) {
+            // Change color of sprites based on colorMapping
+            this.resources = {
+                runningSprites: {},
+                standingSprites: {}
+            };
+            Object.keys(game.resources.runningSprites).forEach((direction) => {
+                recolorImages(game.resources.runningSprites[direction], this.colorMapping)
+                    .then((coloredImages) => {
+                        this.resources.runningSprites[direction] = coloredImages;
+                    });
+                const standingSprites = [game.resources.standingSprites[direction]];
+                recolorImages(standingSprites, this.colorMapping)
+                    .then((coloredImages) => {
+                        this.resources.standingSprites[direction] = coloredImages[0];
+                    });
+            });
+        }
     }
     toString() {
         return 'Team[' + this.id + ']';

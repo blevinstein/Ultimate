@@ -3,18 +3,25 @@ const {
 } = require('./disc.js');
 const {
     add2d,
+    add3d,
     check2d,
     check3d,
+    dist2d,
+    dist3d,
     getDirection,
     getVector,
     linearInterpolate,
     mag2d,
+    mag3d,
     magnitudeAlong2d,
     mul2d,
+    mul3d,
     norm2d,
     project2d,
     project3d,
-    sub2d
+    sub2d,
+    sub3d,
+    norm3d,
 } = require('./math_utils.js');
 const {
     RangeFinderFactory
