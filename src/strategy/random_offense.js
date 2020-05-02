@@ -9,7 +9,6 @@ import {
   sub2d
 } from '../math_utils.js';
 import {ARM_HEIGHT, MAX_THROW_SPEED, Player} from '../player.js';
-import {RangeFinderFactory} from '../range_finder.js';
 
 import {Cutter} from './cutter.js';
 import {Strategy} from './strategy.js';
@@ -24,7 +23,6 @@ export class RandomOffenseStrategy extends Strategy {
   constructor(game, team) {
     super(game, team);
     this.destinationMap = new Map;
-    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED);
     this.pathsConsidered = [];
   }
 
@@ -61,7 +59,7 @@ export class RandomOffenseStrategy extends Strategy {
           let runTime = Player.simulateRunTime(
               sub2d(destination, closestReceiver.position),
               closestReceiver.velocity);
-          let params = this.rangeFinder.getThrowParams(
+          let params = player.rangeFinder.getThrowParams(
               sub2d(destination, player.position), runTime);
           if (!params) {
             continue;

@@ -18,12 +18,13 @@ const MAX_TILT = 0;
 export class RangeFinderFactory {
   static create(maxSpeed) {
     RangeFinderFactory.registry = RangeFinderFactory.registry || new Map;
-    let existing = RangeFinderFactory.registry.get(maxSpeed);
+    let key = `maxSpeed=${maxSpeed}`;
+    let existing = RangeFinderFactory.registry.get(key);
     if (existing) {
       return existing;
     } else {
       let rangeFinder = new RangeFinder(maxSpeed);
-      RangeFinderFactory.registry.set(maxSpeed, rangeFinder);
+      RangeFinderFactory.registry.set(key, rangeFinder);
       return rangeFinder;
     }
   }

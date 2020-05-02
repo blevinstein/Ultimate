@@ -10,7 +10,6 @@ import {
   sub2d
 } from '../math_utils.js';
 import {ARM_HEIGHT, MAX_THROW_SPEED, Player} from '../player.js';
-import {RangeFinderFactory} from '../range_finder.js';
 
 import {Cutter} from './cutter.js';
 import {Strategy} from './strategy.js';
@@ -24,7 +23,6 @@ export class ManualOffenseStrategy extends Strategy {
   constructor(game, team) {
     super(game, team);
     this.destinationMap = new Map;
-    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED);
     this.throwConfirmed = false;
     this.throwTarget = null;
     game.canvas.onclick = event => { this.throwConfirmed = true; };
@@ -53,16 +51,16 @@ export class ManualOffenseStrategy extends Strategy {
         let runtime = Player.simulateRunTime(
             sub2d(this.throwTarget, closestReceiver.position),
             closestReceiver.velocity);
-        let throwParams = this.rangeFinder.getThrowParams(
+        let throwParams = player.rangeFinder.getThrowParams(
             sub2d(this.throwTarget, player.position), runtime);
         if (!throwParams) {
           console.log('Fallback to any throw');
-          throwParams = this.rangeFinder.getThrowParams(
+          throwParams = player.rangeFinder.getThrowParams(
               sub2d(this.throwTarget, player.position));
         }
         if (!throwParams) {
           console.log('Fallback to longest throw');
-          throwParams = this.rangeFinder.getLongestThrowParams(
+          throwParams = player.rangeFinder.getLongestThrowParams(
               sub2d(this.throwTarget, player.position));
         }
         if (!throwParams) {

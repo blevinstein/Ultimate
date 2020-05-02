@@ -4,7 +4,6 @@ import {Disc} from './disc.js';
 import {Game} from './game.js';
 import {installMathUtils} from './math_utils.js';
 import {MAX_THROW_SPEED} from './player.js';
-import {RangeFinderFactory} from './range_finder.js';
 import {ManualOffenseStrategy} from './strategy/manual_offense.js';
 import {ZoneDefenseStrategy} from './strategy/zone_defense.js';
 import {Team} from './team.js';
@@ -15,7 +14,6 @@ window.initialize =
     () => {
       console.log('Initializing...');
 
-      window.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED);
       installMathUtils(window);
 
       Game.loadResources().then(

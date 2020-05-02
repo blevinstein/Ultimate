@@ -1,5 +1,6 @@
 
 import {Disc} from './disc.js';
+import {RangeFinderFactory} from './range_finder.js';
 import {
   add2d,
   check2d,
@@ -62,6 +63,7 @@ export class Player {
     this.moving = false;
     this.frame = Math.random() * ANIMATION_FRAMES;
     this.hasDisc = false;
+    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED);
   }
 
   toString() { return 'Player[' + this.id + ']'; }
@@ -190,8 +192,8 @@ export class Player {
     // angleOfAttack + ' tiltAngle=' + tiltAngle);
     check3d(velocity);
     if (mag3d(velocity) > MAX_THROW_SPEED) {
-      throw new Error('Cannot throw that fast: ' + mag3d(velocity) + ' (' +
-                      velocity + ')');
+      throw new Error('Cannot throw that fast: ' + mag3d(velocity) + ' > ' +
+                      velocity);
     }
     if (!this.hasDisc) {
       console.log('Attempted to throw without the disc!');
