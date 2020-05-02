@@ -3,9 +3,7 @@ import {Coach} from './coach.js';
 import {Disc} from './disc.js';
 import {Game} from './game.js';
 import {installMathUtils} from './math_utils.js';
-import {MAX_THROW_SPEED} from './player.js';
 import {ZoneDefenseStrategy} from './strategy/zone_defense.js';
-import {Team} from './team.js';
 
 let initialized = false;
 

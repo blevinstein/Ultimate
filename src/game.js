@@ -18,13 +18,13 @@ const SLOW_MOTION_MS = 300;
 // Seconds to wait before fast-forwarding when in reset state
 const RESET_FF_DELAY = 1.0;
 
-const SHIRT = [ 224, 80, 0, 255 ];
-const PANTS = [ 72, 88, 0, 255 ];
-const HAIR = [ 0, 0, 0, 255 ];
-const SKIN = [ 255, 200, 184, 255 ];
-const SOCKS = [ 255, 255, 255, 255 ];
-const BG = [ 0, 0, 0, 0 ];
-const EYES = [ 7, 11, 90, 255 ];
+export const SHIRT = [ 224, 80, 0, 255 ];
+export const PANTS = [ 72, 88, 0, 255 ];
+export const HAIR = [ 0, 0, 0, 255 ];
+export const SKIN = [ 255, 200, 184, 255 ];
+export const SOCKS = [ 255, 255, 255, 255 ];
+export const BG = [ 0, 0, 0, 0 ];
+export const EYES = [ 7, 11, 90, 255 ];
 
 const WIN_SCORE = 11;
 
@@ -189,6 +189,7 @@ export class Game {
     for (let team of this.teams) {
       team.draw(frameBuffer);
     }
+    // TODO: Move this into update() instead of draw()
     if (this.state === STATES.Normal && !this.disc.isLoose() &&
         this.stallCount >= 1) {
       // TODO: Position the stall count over the defender, not the thrower.
