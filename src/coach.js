@@ -29,10 +29,6 @@ export class Coach {
         if (team.hasDisc()) {
           return new KickoffStrategy(game, team);
         } else {
-          if (game.defensiveTeam().hasDisc()) {
-            console.log('The wrong team has the disc!');
-            return;
-          }
           return new ClosestPickupStrategy(game, team);
         }
       } else {

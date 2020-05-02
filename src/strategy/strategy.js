@@ -1,6 +1,7 @@
 
 import {FrameBuffer} from '../frame_buffer.js';
-import {dist2d, project2d} from '../math_utils.js';
+import {FIELD_BOUNDS, Game} from '../game.js';
+import {dist2d, getVector, project2d} from '../math_utils.js';
 
 export class Strategy {
   constructor(game, team) {
@@ -13,7 +14,7 @@ export class Strategy {
   }
 
   // Move player to within 'within' of 'destination', then face in the
-  // direction indicated by 'faceVector'
+  // direction indicated by 'restVector'
   moveWithin(player, destination, within = 0.1, restVector) {
     if (dist2d(player.position, destination) > within) {
       this.move(player, destination);
@@ -22,6 +23,7 @@ export class Strategy {
     }
   }
 
+  // Move player exactly to 'destination'
   move(player, destination) {
     player.moveTo(destination);
     const playerScreenPosition = project2d(player.position);
@@ -37,6 +39,14 @@ export class Strategy {
       context.stroke();
       context.globalAlpha = 1;
     });
+  }
+
+  chargeForward(player) {
+    const moveTarget = Game.snapToBounds(
+        add2d(player.position,
+              mul2d(getVector(this.team.goalDirection), 10)),
+        FIELD_BOUNDS);
+    this.move(player, moveTarget);
   }
 
   drawPath(path, alpha = 1) {

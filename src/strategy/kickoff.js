@@ -4,15 +4,16 @@ import {MAX_THROW_SPEED} from '../player.js';
 
 import {Strategy} from './strategy.js';
 
+const DELAY_TIME = 1.0;
+
 export class KickoffStrategy extends Strategy {
   constructor(game, team) {
     super(game, team);
-    this.delay = 30;
   }
 
   update() {
     // Delay before kickoff
-    if (this.delay-- > 0) {
+    if (this.game.stateTime < DELAY_TIME) {
       return;
     }
 
