@@ -17,7 +17,7 @@ const MIN_SPEED = 0.3;
 // Minimum distance a throw must travel
 const MIN_RANGE = 3;
 
-const RANGE_TOLERANCE = 2;
+const RANGE_TOLERANCE = 1;
 
 export class RangeFinderFactory {
   static create(maxSpeed, stepSize) {
