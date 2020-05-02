@@ -8,6 +8,7 @@ import {ARM_HEIGHT} from './player.js';
 import {Team} from './team.js';
 import {ToastService} from './toast_service.js';
 
+const MAX_DISCS = 100;
 const THROW_EVERY_N_STEPS = 15;
 
 const GREEN_COLORS = [
@@ -107,10 +108,13 @@ export class Practice extends Game {
         player.update();
       }
     }
-    for (let i = 0; i < this.discs.length; ++i) {
-      if (!this.discs[i].grounded) {
-        this.discs[i].update();
+    for (let disc of this.discs) {
+      if (!disc.grounded) {
+        disc.update();
       }
+    }
+    if (this.discs.length > MAX_DISCS) {
+      this.discs.splice(0, 1);
     }
     this.toastService.update();
   }
