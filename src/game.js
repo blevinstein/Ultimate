@@ -31,7 +31,7 @@ const WIN_SCORE = 11;
 const FIELD_SPRITE_SIZE = [ 992, 408 ];
 
 const COLLISION_DIST = 1;
-const MAX_COLLISION_IMPULSE = 0.5;
+const MAX_COLLISION_IMPULSE = 1.0;
 
 export const FIELD_BOUNDS = [ [ 0, 110 ], [ 0, 40 ] ];
 export const FIELD_BOUNDS_NO_ENDZONES = [ [ 20, 90 ], [ 0, 40 ] ];
@@ -263,7 +263,7 @@ export class Game {
           continue;
         let distance = dist2d(allPlayers[i].position, allPlayers[j].position);
         if (distance < COLLISION_DIST) {
-          const collisionImpulse = Math.pow(1 - distance / COLLISION_DIST, 2) *
+          const collisionImpulse = Math.pow(1 - distance / COLLISION_DIST, 4) *
                                    MAX_COLLISION_IMPULSE;
           const collisionDirection =
               norm2d(sub2d(allPlayers[i].position, allPlayers[j].position));

@@ -163,6 +163,27 @@ export class Player {
     this.direction = getDirection(this.velocity);
   }
 
+  // Move without deceleration
+  moveThrough(target) {
+    check2d(target);
+    let vector = sub2d(target, this.position);
+
+    if (mag2d(vector) === 0) {
+      this.rest();
+      return;
+    }
+
+    const desiredVelocity = mul2d(norm2d(vector), MAX_PLAYER_SPEED);
+    const desiredAcceleration = sub2d(desiredVelocity, this.velocity);
+    const maxAcceleration = this.maxAllowedAcceleration(desiredAcceleration);
+
+    this.accelerate(mag2d(desiredAcceleration) <= maxAcceleration
+                        ? desiredAcceleration
+                        : mul2d(desiredAcceleration,
+                                maxAcceleration / mag2d(desiredAcceleration)));
+    this.direction = getDirection(this.velocity);
+  }
+
   rest(faceVector) {
     const desiredAcceleration = mul2d(this.velocity, -1);
     const maxAcceleration = this.maxAllowedAcceleration(desiredAcceleration);
@@ -227,7 +248,7 @@ export class Player {
     let target;
     do {
       player.update();
-      player.moveTo(location);
+      player.moveThrough(location);
       time++;
     } while (dist2d(player.position, location) > goalRadius);
     return time;

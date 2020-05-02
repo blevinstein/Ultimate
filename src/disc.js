@@ -31,7 +31,7 @@ const LIFT_LINEAR = 0.08;
 
 const MAX_PICKUP_DIST = 1;
 
-const DISC_SIZE = 4;
+const DISC_SIZE = 3;
 
 export class Disc {
   constructor(game) {
