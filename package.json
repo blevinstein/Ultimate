@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/blevinstein/Ultimate#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "flags": "^0.1.3"
   }
 }
