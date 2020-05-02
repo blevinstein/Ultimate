@@ -107,6 +107,11 @@ module.exports.Game = class Game {
         this.reset();
     }
 
+    setToastService(toastService) {
+        this.toastService = toastService;
+        return this;
+    }
+
     reset() {
         this.teams = [
             new Team(this, this.coaches[0], '#ff0000', RED_COLORS, 'W')
