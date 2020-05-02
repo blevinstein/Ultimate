@@ -31,7 +31,7 @@ const WIN_SCORE = 11;
 const FIELD_SPRITE_SIZE = [ 992, 408 ];
 
 const COLLISION_DIST = 1;
-const MAX_COLLISION_IMPULSE = 2;
+const MAX_COLLISION_IMPULSE = 0.5;
 
 export const FIELD_BOUNDS = [ [ 0, 110 ], [ 0, 40 ] ];
 export const FIELD_BOUNDS_NO_ENDZONES = [ [ 20, 90 ], [ 0, 40 ] ];
