@@ -101,10 +101,10 @@ const frameData = frameTensor.getFrameCsvData();
 dumpToFile(flags.get('output_raw'), frameData);
 console.log(
   `Wrote frames (shape ${frameData[0].length} x ${frameData.length-1}) to ${flags.get('output_raw')}`
-  );
+);
 
 const agentData = frameTensor.getPermutedCsvData();
 dumpToFile(flags.get('output'), agentData);
 console.log(
   `Wrote examples (shape ${agentData[0].length} x ${agentData.length-1}) to ${flags.get('output')}`
-  );
+);
