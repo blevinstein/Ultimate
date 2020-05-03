@@ -48,11 +48,19 @@ for (let i = 0; i < flags.get('games'); ++i) {
 
   let steps = 0;
   while (game.state != STATES.GameOver) {
+    // Only save data from 'interesting' frames
+    let recordFrame =
+      (game.state == STATES.Pickup || game.state == STATES.Normal || game.state == STATES
+      .Receiving);
     ++steps;
-    frameTensor.recordInitialState(game);
+    if (recordFrame) {
+      frameTensor.recordInitialState(game);
+    }
     game.update();
-    frameTensor.recordActions(game, actionMap);
-    frameTensor.nextFrame();
+    if (recordFrame) {
+      frameTensor.recordActions(game, actionMap);
+      frameTensor.nextFrame();
+    }
     actionMap.clear();
   }
   console.log(`Game over! ${steps} steps`);

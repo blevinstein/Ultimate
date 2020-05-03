@@ -91,11 +91,7 @@ module.exports.FrameTensor = class FrameTensor {
   }
 
   nextFrame() {
-    const state = this.frameValues.get('state');
-    if (state == STATES.Pickup || state == STATES.Normal || state == STATES.Receiving) {
-      // Only save data from 'interesting' frames.
-      this.frames.push(this.frameValues);
-    }
+    this.frames.push(this.frameValues);
     this.frameValues = new Map;
   }
 
@@ -121,8 +117,8 @@ module.exports.FrameTensor = class FrameTensor {
     });
     stringifier.write(this.headers);
     for (let i = 0; i < this.frames.length; i++) {
-      stringifier.write(this.headers.map(h => this.frames[i].has(h) ? this.frames[i].get(h) :
-        ''));
+      stringifier.write(this.headers.map(h => this.frames[i].has(h) ? this.frames[i].get(h)
+        : ''));
     }
     stringifier.end();
   }
