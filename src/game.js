@@ -346,7 +346,8 @@ module.exports.Game = class Game {
             if (playerWithDisc &&
                 boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)) {
                 this.setState(STATES.Normal);
-                this.toastService.addToast('Disc in!',
+                this.toastService.addToast(
+                    'Disc in!',
                     playerWithDisc.position.concat(5),
                     [0, 0, 0.1], '#00ff00', 100, 'black');
             }
@@ -486,8 +487,9 @@ module.exports.Game = class Game {
                     const winTeam = player.team;
                     const loseTeam = interception ? this.offensiveTeam() : this.defensiveTeam();
                     this.setState(STATES.GameOver);
-                    this.toastService.addToast(`Game over! ${winTeam.score} - ${loseTeam.score}`,
-                    [55, 20, 10], [0, 0, 0], winTeam.textColor, null);
+                    this.toastService.addToast(
+                        `Game over! ${winTeam.score} - ${loseTeam.score}`,
+                        [55, 20, 10], [0, 0, 0], winTeam.textColor, null);
                 } else {
                     this.setState(STATES.Reset);
                     this.setOffensiveTeam(this.defensiveTeam());
