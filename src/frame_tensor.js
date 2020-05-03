@@ -132,49 +132,12 @@ module.exports.FrameTensor = class FrameTensor {
     this.frameValues.set(key, value);
   }
 
-  encodeState(state) {
-    switch (state) {
-      case STATES.Pickup:
-        return 0;
-      case STATES.Normal:
-        return 1;
-      case STATES.Receiving:
-        return 2;
-      default:
-        throw new Error(`Unexpected state: ${state}`);
-    }
-  }
-
-  encodeGoalDirection(goalDirection) {
-    switch (goalDirection) {
-      case 'E':
-        return 0;
-      case 'W':
-        return 1;
-      default:
-        throw new Error(`Unexpected goalDirection: ${goalDirection}`);
-    }
-  }
-
-  encodeAction(action) {
-    switch (action) {
-      case 'rest':
-        return 0;
-      case 'move':
-        return 1;
-      case 'throw':
-        return 2;
-      default:
-        throw new Error(`Unexpected action: ${action}`);
-    }
-  }
-
   recordGameState(game) {
-    this.record('state', this.encodeState(game.state));
+    this.record('state', game.state);
     this.record('offensiveTeam', game.teams[1].onOffense ? 1 : 0);
     this.record('defensiveTeam', game.teams[1].onOffense ? 0 : 1);
-    this.record('offensiveGoalDirection',
-      this.encodeGoalDirection(game.offensiveTeam().goalDirection));
+    this.record('offensiveGoalDirection', game.offensiveTeam()
+      .goalDirection);
     this.record('stallCount', game.stallCount);
     for (let t = 0; t < game.teams.length; ++t) {
       for (let p = 0; p < game.teams[t].players.length; ++p) {
@@ -195,12 +158,10 @@ module.exports.FrameTensor = class FrameTensor {
       for (let p = 0; p < game.teams[t].players.length; p++) {
         const player = game.teams[t].players[p];
         if (!actionMap.has(player)) {
-          this.record(`team_${t}_player_${p}_action`, this.encodeAction(
-            'rest'));
+          this.record(`team_${t}_player_${p}_action`, 'rest');
         } else {
           const [action, detail] = actionMap.get(player);
-          this.record(`team_${t}_player_${p}_action`, this.encodeAction(
-            action));
+          this.record(`team_${t}_player_${p}_action`, action);
           if (action === 'move') {
             this.record(`team_${t}_player_${p}_move_x`, detail[0]);
             this.record(`team_${t}_player_${p}_move_y`, detail[1]);
