@@ -51,7 +51,7 @@ for (let i = 0; i < flags.get('games'); ++i) {
     // Only save data from 'interesting' frames
     let recordFrame =
       (game.state == STATES.Pickup || game.state == STATES.Normal || game.state == STATES
-      .Receiving);
+        .Receiving);
     ++steps;
     if (recordFrame) {
       frameTensor.recordInitialState(game);

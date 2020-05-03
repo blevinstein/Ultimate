@@ -95,6 +95,10 @@ module.exports.FrameTensor = class FrameTensor {
     this.frameValues = new Map;
   }
 
+  dropFrame() {
+    this.frameValues = new Map;
+  }
+
   dumpToFile(filename) {
     const lines = [];
     const stringifier = stringify({
