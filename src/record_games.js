@@ -1,6 +1,4 @@
 const flags = require('flags')
-const fs = require('fs');
-const stringify = require('csv-stringify');
 
 const {
   Coach
@@ -20,6 +18,9 @@ const {
 const {
   ZoneDefenseStrategy
 } = require('./strategy/zone_defense.js');
+const {
+  writeToFile
+} = require('./csv_utils.js');
 
 flags.defineInteger('games', 10, 'Number of games to simulate');
 flags.defineString('output_raw', 'data/output_raw.csv',
@@ -72,39 +73,14 @@ for (let i = 0; i < flags.get('games'); ++i) {
   console.log(`Game over! ${steps} steps`);
 }
 
-function dumpToFile(filename, data) {
-  const lines = [];
-  const stringifier = stringify({
-    delimiter: ','
-  });
-  stringifier.on('readable', () => {
-    let row;
-    while (row = stringifier.read()) {
-      lines.push(row);
-    }
-  });
-  stringifier.on('error', (e) => {
-    console.error(e.message);
-  });
-  stringifier.on('finish', () => {
-    fs.writeFile(filename, lines.join(''), (e) => {
-      if (e) throw err;
-    });
-  });
-  for (let i = 0; i < data.length; i++) {
-    stringifier.write(data[i]);
-  }
-  stringifier.end();
-}
-
 const frameData = frameTensor.getFrameCsvData();
-dumpToFile(flags.get('output_raw'), frameData);
+writeToFile(flags.get('output_raw'), frameData);
 console.log(
   `Wrote frames (shape ${frameData[0].length} x ${frameData.length-1}) to ${flags.get('output_raw')}`
 );
 
 const agentData = frameTensor.getPermutedCsvData();
-dumpToFile(flags.get('output'), agentData);
+writeToFile(flags.get('output'), agentData);
 console.log(
   `Wrote examples (shape ${agentData[0].length} x ${agentData.length-1}) to ${flags.get('output')}`
 );
