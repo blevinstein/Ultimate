@@ -25,8 +25,9 @@ module.exports.FrameTensor = class FrameTensor {
         const permutation = new Map([
           ['state', 'state'],
           ['stallCount', 'stallCount'],
-          ['offensiveTeam', t === 0 ? 'offensiveTeam' :
-          'defensiveTeam'],
+          ['offensiveTeam', t === 0 ? 'offensiveTeam'
+            : 'defensiveTeam'
+          ],
           ['offensiveGoalDirection', 'offensiveGoalDirection'],
           ['disc_x', 'disc_x'],
           ['disc_y', 'disc_y'],
