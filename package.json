@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/blevinstein/Ultimate#readme",
   "dependencies": {
+    "@tensorflow/tfjs-node": "^1.7.4",
     "browserify": "^16.5.1",
     "csv": "^5.3.2",
     "express": "^4.17.1",
