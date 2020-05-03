@@ -20,6 +20,7 @@
   "homepage": "https://github.com/blevinstein/Ultimate#readme",
   "dependencies": {
     "browserify": "^16.5.1",
+    "csv": "^5.3.2",
     "express": "^4.17.1",
     "express-browserify": "^1.0.3",
     "flags": "^0.1.3",
