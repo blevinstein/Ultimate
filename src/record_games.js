@@ -1,4 +1,6 @@
 const flags = require('flags')
+const fs = require('fs');
+const stringify = require('csv-stringify');
 
 const {
   Coach
@@ -20,8 +22,10 @@ const {
 } = require('./strategy/zone_defense.js');
 
 flags.defineInteger('games', 10, 'Number of games to simulate');
-flags.defineString('output', 'output.csv',
-  'File to store result in CSV format');
+flags.defineString('output_raw', 'data/output_raw.csv',
+  'File to store raw frame data in CSV format');
+flags.defineString('output', 'data/output.csv',
+  'File to store permuted agent training data in CSV format');
 flags.parse();
 
 let frameTensor = new FrameTensor();
@@ -52,9 +56,8 @@ for (let i = 0; i < flags.get('games'); ++i) {
   while (game.state != STATES.GameOver) {
     // Only save data from 'interesting' frames
     let recordFrame =
-      (game.state == STATES.Pickup || game.state == STATES.Normal || game.state
-        == STATES
-        .Receiving);
+      (game.state == STATES.Pickup || game.state == STATES.Normal
+        || game.state == STATES.Receiving);
     ++steps;
     if (recordFrame) {
       frameTensor.recordGameState(game);
@@ -69,4 +72,35 @@ for (let i = 0; i < flags.get('games'); ++i) {
   console.log(`Game over! ${steps} steps`);
 }
 
-frameTensor.dumpToFile(flags.get('output'));
+function dumpToFile(filename, data) {
+  const lines = [];
+  const stringifier = stringify({
+    delimiter: ','
+  });
+  stringifier.on('readable', () => {
+    let row;
+    while (row = stringifier.read()) {
+      lines.push(row);
+    }
+  });
+  stringifier.on('error', (e) => {
+    console.error(e.message);
+  });
+  stringifier.on('finish', () => {
+    fs.writeFile(filename, lines.join(''), (e) => {
+      if (e) throw err;
+    });
+  });
+  for (let i = 0; i < data.length; i++) {
+    stringifier.write(data[i]);
+  }
+  stringifier.end();
+}
+
+const frameData = frameTensor.getFrameCsvData();
+dumpToFile(flags.get('output_raw'), frameData);
+console.log(`Wrote ${frameData.length-1} frames to ${flags.get('output_raw')}`);
+
+const agentData = frameTensor.getPermutedCsvData();
+dumpToFile(flags.get('output'), agentData);
+console.log(`Wrote ${agentData.length-1} examples to ${flags.get('output')}`);
