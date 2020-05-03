@@ -33,7 +33,8 @@ module.exports.ManToManDefenseStrategy =
     constructor(game, team) {
       super(game, team);
       this.matchup = Matchup.minMeanSquaredDistance(game.teams);
-      this.forceDirection = Math.random() < 0.5 ? getVector('N') : getVector('S');
+      this.forceDirection = Math.random() < 0.5 ? getVector('N') : getVector(
+        'S');
       this.offset = add2d(mul2d(getVector(team.goalDirection), -8),
         mul2d(this.forceDirection, 5));
       this.markOffset = add2d(mul2d(getVector(team.goalDirection), -3),
@@ -71,7 +72,8 @@ module.exports.ManToManDefenseStrategy =
               FIELD_BOUNDS);
           // Adjust target to give disc space if necessary
           if (dist2d(target, match.position) < MIN_DISC_SPACE) {
-            target = mul2d(norm2d(sub2d(target, match.position)), MIN_DISC_SPACE);
+            target = mul2d(norm2d(sub2d(target, match.position)),
+              MIN_DISC_SPACE);
           }
           this.moveWithin(player, target, MARK_RADIUS,
             sub2d(match.position, player.position));

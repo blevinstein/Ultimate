@@ -44,7 +44,8 @@ module.exports.ToastService = class ToastService {
             screenPosition[1] - textMetrics.actualBoundingBoxAscent);
         }
         context.fillStyle = toast.color;
-        context.fillText(toast.text, screenPosition[0] - textMetrics.width / 2,
+        context.fillText(toast.text, screenPosition[0] - textMetrics
+          .width / 2,
           screenPosition[1]
           - textMetrics.actualBoundingBoxAscent);
       });

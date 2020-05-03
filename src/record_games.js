@@ -20,14 +20,16 @@ const {
 } = require('./strategy/zone_defense.js');
 
 flags.defineInteger('games', 10, 'Number of games to simulate');
-flags.defineString('output', 'output.csv', 'File to store result in CSV format');
+flags.defineString('output', 'output.csv',
+'File to store result in CSV format');
 flags.parse();
 
 let frameTensor = new FrameTensor();
 for (let i = 0; i < flags.get('games'); ++i) {
   const game = new Game(null, null, [
     new Coach(),
-    new Coach(undefined, (game, team) => new ZoneDefenseStrategy(game, team))
+    new Coach(undefined, (game, team) => new ZoneDefenseStrategy(game,
+      team))
   ]);
   const actionMap = new Map;
 
@@ -50,7 +52,8 @@ for (let i = 0; i < flags.get('games'); ++i) {
   while (game.state != STATES.GameOver) {
     // Only save data from 'interesting' frames
     let recordFrame =
-      (game.state == STATES.Pickup || game.state == STATES.Normal || game.state == STATES
+      (game.state == STATES.Pickup || game.state == STATES.Normal || game.state
+        == STATES
         .Receiving);
     ++steps;
     if (recordFrame) {

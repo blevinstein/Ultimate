@@ -33,7 +33,8 @@ module.exports.Coach = class Coach {
       || ((game, team) => new ManToManDefenseStrategy(game, team));
     this.aerialStrategy =
       aerialStrategy
-      || ((game, team) => team.onOffense ? new ClosestPickupStrategy(game, team)
+      || ((game, team) => team.onOffense ? new ClosestPickupStrategy(game,
+          team)
         : this.defensiveStrategy(game, team));
   }
 

@@ -16,7 +16,9 @@ module.exports.FrameTensor = class FrameTensor {
   }
 
   allKeys(withOutput) {
-    const keys = ['state', 'stallCount', 'disc_x', 'disc_y', 'disc_z'];
+    const keys = ['state', 'offensiveTeam', 'stallCount', 'disc_x',
+      'disc_y', 'disc_z'
+    ];
     for (let t = 0; t < 2; t++) {
       for (let p = 0; p < 7; p++) {
         keys.push(
@@ -54,6 +56,7 @@ module.exports.FrameTensor = class FrameTensor {
 
   recordGameState(game) {
     this.record('state', game.state);
+    this.record('offensiveTeam', game.teams[1].onOffense ? 1 : 0);
     this.record('stallCount', game.stallCount);
     for (let t = 0; t < game.teams.length; ++t) {
       for (let p = 0; p < game.teams[t].players.length; ++p) {
@@ -86,7 +89,8 @@ module.exports.FrameTensor = class FrameTensor {
             this.record(`team_${t}_player_${p}_throw_x`, velocity[0]);
             this.record(`team_${t}_player_${p}_throw_y`, velocity[1]);
             this.record(`team_${t}_player_${p}_throw_z`, velocity[2]);
-            this.record(`team_${t}_player_${p}_throw_angleOfAttack`, angleOfAttack);
+            this.record(`team_${t}_player_${p}_throw_angleOfAttack`,
+              angleOfAttack);
             this.record(`team_${t}_player_${p}_throw_tiltAngle`, tiltAngle);
           }
         }
@@ -120,12 +124,14 @@ module.exports.FrameTensor = class FrameTensor {
     stringifier.on('finish', () => {
       fs.writeFile(filename, lines.join(''), (e) => {
         if (e) throw err;
-        console.log(`Wrote ${this.frames.length} frames to ${filename}`);
+        console.log(
+          `Wrote ${this.frames.length} frames to ${filename}`);
       });
     });
     stringifier.write(this.headers);
     for (let i = 0; i < this.frames.length; i++) {
-      stringifier.write(this.headers.map(h => this.frames[i].has(h) ? this.frames[i].get(h)
+      stringifier.write(this.headers.map(h => this.frames[i].has(h) ? this
+        .frames[i].get(h)
         : ''));
     }
     stringifier.end();

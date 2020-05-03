@@ -54,7 +54,9 @@ module.exports.RandomOffenseStrategy =
             player.rest(getVector(this.team.goalDirection));
             continue;
           }
-          const [minX, maxX] = this.team.goalDirection === 'E' ? [player.position[0] - 5, 110] : [
+          const [minX, maxX] = this.team.goalDirection === 'E' ? [player
+            .position[0] - 5, 110
+          ] : [
             0, player.position[0] + 5
           ];
           let bestDestination;
@@ -62,7 +64,9 @@ module.exports.RandomOffenseStrategy =
           let bestParams;
           for (let i = 0; i < NUM_CANDIDATE_THROWS; i++) {
             // Choose a random location no more than 5 yards behind the thrower
-            let destination = [minX + Math.random() * (maxX - minX), Math.random() * 40];
+            let destination = [minX + Math.random() * (maxX - minX), Math
+              .random() * 40
+            ];
             let closestDefenderDistance = getClosestPlayer(
               this.game.defensiveTeam().players.filter(p => p != player),
               destination)[1];
@@ -103,7 +107,8 @@ module.exports.RandomOffenseStrategy =
           }
           if (bestDestination && bestForwardProgress > MIN_PROGRESS) {
             this.throw(player, [
-              bestParams.velocity, bestParams.angleOfAttack, bestParams.tiltAngle
+              bestParams.velocity, bestParams.angleOfAttack, bestParams
+              .tiltAngle
             ]);
           } else {
             player.rest(getVector(this.team.goalDirection));

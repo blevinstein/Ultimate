@@ -25,14 +25,18 @@ function chooseBestRandomDestination(game, team, numCandidateRoutes = 5) {
     return null;
   }
   const defensivePlayers = game.defensiveTeam().players;
-  const [minX, maxX] = team.goalDirection === 'E' ? [thrower.position[0] - 5, 110] : [0, thrower
+  const [minX, maxX] = team.goalDirection === 'E' ? [thrower.position[0] - 5,
+    110
+  ] : [0, thrower
     .position[0] + 5
   ];
   let bestDestination;
   let bestClosestDefenderDistance;
   for (let i = 0; i < numCandidateRoutes; i++) {
     // Choose a random location no more than 5 yards behind the thrower
-    let newDestination = [minX + Math.random() * (maxX - minX), Math.random() * 40];
+    let newDestination = [minX + Math.random() * (maxX - minX), Math.random() *
+      40
+    ];
     let closestDefenderDistance =
       getClosestPlayer(game.defensiveTeam().players, newDestination)[1];
     if (!bestDestination

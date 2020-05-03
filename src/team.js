@@ -36,10 +36,12 @@ module.exports.Team = class Team {
           .then((coloredImages) => {
             this.resources.runningSprites[direction] = coloredImages;
           });
-        const standingSprites = [game.resources.standingSprites[direction]];
+        const standingSprites = [game.resources.standingSprites[
+          direction]];
         recolorImages(standingSprites, this.colorMapping)
           .then((coloredImages) => {
-            this.resources.standingSprites[direction] = coloredImages[0];
+            this.resources.standingSprites[direction] = coloredImages[
+              0];
           });
       });
     }

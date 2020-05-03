@@ -98,7 +98,8 @@ class Disc {
     const intoScreenUnit = norm3d([0, -1, -1]);
     if (mag3d(cross3d(this.upVector, intoScreenUnit)) > 0) {
       const alongScreenUnit = norm3d(cross3d(this.upVector, intoScreenUnit));
-      const minorDiscAxisUnit = norm3d(cross3d(alongScreenUnit, this.upVector));
+      const minorDiscAxisUnit = norm3d(cross3d(alongScreenUnit, this
+        .upVector));
       // TODO: This projection isn't consistent with project3d
       screenMajorAxis = [
         alongScreenUnit[0],
@@ -120,7 +121,8 @@ class Disc {
     const verticalAxis = [0, 0, 1];
     if (mag3d(cross3d(this.upVector, verticalAxis)) > 0) {
       const alongGroundAxis = norm3d(cross3d(this.upVector, verticalAxis));
-      const minorDiscAxisUnit = norm3d(cross3d(alongGroundAxis, this.upVector));
+      const minorDiscAxisUnit = norm3d(cross3d(alongGroundAxis, this
+        .upVector));
 
       shadowMajorAxis = alongGroundAxis.slice(0, 2);
       shadowMinorAxis = minorDiscAxisUnit.slice(0, 2);
@@ -211,7 +213,8 @@ class Disc {
       let angleOfAttack;
       let lift;
       if (mag3d(cross3d(velocityDirection, this.upVector)) > 0) {
-        const sideDirection = norm3d(cross3d(velocityDirection, this.upVector));
+        const sideDirection = norm3d(cross3d(velocityDirection, this
+          .upVector));
         let liftDirection = cross3d(velocityDirection, sideDirection);
         if (magnitudeAlong3d(liftDirection, this.upVector) < 0) {
           liftDirection = mul3d(liftDirection, -1);

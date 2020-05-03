@@ -37,7 +37,8 @@ module.exports.KickoffStrategy = class KickoffStrategy extends Strategy {
       console.log('No player has the disc!!!');
       return true;
     }
-    const target = this.team.goalDirection === 'W' ? [10, Math.random() * 40] : [90, Math
+    const target = this.team.goalDirection === 'W' ? [10, Math.random() *
+      40] : [90, Math
       .random() * 40
     ];
     const params = playerWithDisc.rangeFinder.getLongestThrowParams(

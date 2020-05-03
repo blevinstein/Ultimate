@@ -41,7 +41,8 @@ module.exports.ClosestPickupStrategy =
             this.game.disc.upVector)
           .finalPosition;
 
-        const [closestPlayer] = getClosestPlayer(this.team.players, discTarget);
+        const [closestPlayer] = getClosestPlayer(this.team.players,
+          discTarget);
 
         for (let player of this.team.players) {
           if (player == closestPlayer) {
@@ -60,7 +61,8 @@ module.exports.ClosestPickupStrategy =
           for (let player of this.team.players) {
             if (player == playerWithDisc) {
               const moveTarget =
-                snapToBounds(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES);
+                snapToBounds(playerWithDisc.position,
+                  FIELD_BOUNDS_NO_ENDZONES);
               this.move(playerWithDisc, moveTarget);
             } else {
               this.chargeForward(player);

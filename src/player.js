@@ -76,7 +76,8 @@ module.exports.Player = class Player {
     this.moving = false;
     this.frame = Math.random() * ANIMATION_FRAMES;
     this.hasDisc = false;
-    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED, STEP_SIZE);
+    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED,
+    STEP_SIZE);
   }
 
   toString() {
@@ -171,7 +172,8 @@ module.exports.Player = class Player {
       : mul2d(norm2d(vector),
         2 * Math.sqrt(mag2d(vector) * MAX_PLAYER_ACCEL));
     const desiredAcceleration = sub2d(desiredVelocity, this.velocity);
-    const maxAcceleration = this.maxAllowedAcceleration(desiredAcceleration);
+    const maxAcceleration = this.maxAllowedAcceleration(
+    desiredAcceleration);
 
     this.accelerate(mag2d(desiredAcceleration) <= maxAcceleration
       ? desiredAcceleration
@@ -192,7 +194,8 @@ module.exports.Player = class Player {
 
     const desiredVelocity = mul2d(norm2d(vector), MAX_PLAYER_SPEED);
     const desiredAcceleration = sub2d(desiredVelocity, this.velocity);
-    const maxAcceleration = this.maxAllowedAcceleration(desiredAcceleration);
+    const maxAcceleration = this.maxAllowedAcceleration(
+    desiredAcceleration);
 
     this.accelerate(mag2d(desiredAcceleration) <= maxAcceleration
       ? desiredAcceleration
@@ -203,7 +206,8 @@ module.exports.Player = class Player {
 
   rest(faceVector) {
     const desiredAcceleration = mul2d(this.velocity, -1);
-    const maxAcceleration = this.maxAllowedAcceleration(desiredAcceleration);
+    const maxAcceleration = this.maxAllowedAcceleration(
+    desiredAcceleration);
 
     this.accelerate(mag2d(desiredAcceleration) <= maxAcceleration
       ? desiredAcceleration

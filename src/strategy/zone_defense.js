@@ -22,7 +22,8 @@ module.exports.ZoneDefenseStrategy =
   class ZoneDefenseStrategy extends Strategy {
     constructor(game, team) {
       super(game, team);
-      this.forceDirection = Math.random() < 0.5 ? getVector('N') : getVector('S');
+      this.forceDirection = Math.random() < 0.5 ? getVector('N') : getVector(
+        'S');
       let goalDirection = getVector(game.offensiveTeam().goalDirection);
 
       this.cupOffsets = [
@@ -80,7 +81,9 @@ module.exports.ZoneDefenseStrategy =
         // Wings: cover in-cuts in front of the thrower
         if (i < 6) {
           // Cover in front of the disc
-          const xRange = this.game.offensiveTeam().goalDirection === 'E' ? [discTarget[0], 110]
+          const xRange = this.game.offensiveTeam().goalDirection === 'E' ? [
+              discTarget[0], 110
+            ]
             : [0, discTarget[0]];
           // Cover top or bottom side depending on index
           const yRange = i === 4 ? [0, discTarget[1]] : [discTarget[1], 40];
@@ -89,7 +92,8 @@ module.exports.ZoneDefenseStrategy =
             && p != playerWithDisc);
 
           if (myCutters.length === 0) {
-            const myTarget = [(xRange[0] + xRange[1]) / 2, (yRange[0] + yRange[1]) / 2];
+            const myTarget = [(xRange[0] + xRange[1]) / 2, (yRange[0] +
+              yRange[1]) / 2];
             this.move(this.team.players[i], myTarget);
           } else {
             myCutters.sort((a, b) => this.wingThreatLevel(a, discTarget)
@@ -104,7 +108,8 @@ module.exports.ZoneDefenseStrategy =
         // Deep: cover the deepest threat
         if (i === 6) {
           const myCutters =
-            this.game.offensiveTeam().players.filter(p => p != playerWithDisc);
+            this.game.offensiveTeam().players.filter(p => p !=
+            playerWithDisc);
           myCutters.sort((a, b) =>
             this.deepThreatLevel(a) - this.deepThreatLevel(b));
           const myTarget =
