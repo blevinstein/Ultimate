@@ -37,8 +37,8 @@ class RangeFinder {
     for (let launchAngle = MIN_LAUNCH_ANGLE; launchAngle <= MAX_LAUNCH_ANGLE; launchAngle +=
       stepSize) {
       for (let speed = MIN_SPEED; speed <= maxSpeed; speed += stepSize) {
-        for (let angleOfAttack = MIN_ANGLE_OF_ATTACK; angleOfAttack <=
-          MAX_ANGLE_OF_ATTACK; angleOfAttack += stepSize) {
+        for (let angleOfAttack = MIN_ANGLE_OF_ATTACK; angleOfAttack
+          <= MAX_ANGLE_OF_ATTACK; angleOfAttack += stepSize) {
           for (let tiltAngle = MIN_TILT; tiltAngle <= MAX_TILT; tiltAngle += stepSize) {
             const velocity = [
               speed * Math.cos(launchAngle), 0, speed * Math.sin(launchAngle)

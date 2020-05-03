@@ -1,7 +1,7 @@
 module.exports = {
   STATES: {
     Kickoff: 'kickoff', // Waiting for defense to pull
-    Receiving: 'receiving', // Waiting for offense to receive pull
+    Receiving: 'receiving', // Waiting for pull to be caught or grounded
     Pickup: 'pickup', // Waiting for offense to pickup grounded disc
     Normal: 'normal', // Normal play; posession changes on grounded disc
     Reset: 'reset', // Waiting for players to return to the line after a score
