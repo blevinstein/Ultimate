@@ -36,8 +36,8 @@ function loadImage(path) {
     image.onerror = (error) => {
       reject(error);
     }
+    image.src = path;
   });
-  image.src = path;
   return promise;
 }
 
