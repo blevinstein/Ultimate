@@ -23,7 +23,7 @@ module.exports.ToastService = class ToastService {
         for (let i = 0; i < this.toasts.length; i++) {
             this.toasts[i].position =
                 add3d(this.toasts[i].position, this.toasts[i].velocity);
-            if (this.toasts[i].lifetime-- < 0) {
+            if (this.toasts[i].lifetime && --this.toasts[i].lifetime <= 0) {
                 this.toasts.splice(i--, 1);
             }
         }

@@ -481,7 +481,11 @@ module.exports.Game = class Game {
                     player.position.concat(5), [0, 0, 0.03],
                     this.offensiveTeam().textColor, 300);
                 if (player.team.score >= WIN_SCORE) {
+                    const winTeam = player.team;
+                    const loseTeam = interception ? this.offensiveTeam() : this.defensiveTeam();
                     this.setState(STATES.GameOver);
+                    this.toastService.addToast(`Game over! ${winTeam.score} - ${loseTeam.score}`,
+                    [55, 20, 10], [0, 0, 0], winTeam.textColor, null);
                 } else {
                     this.setState(STATES.Reset);
                     this.setOffensiveTeam(this.defensiveTeam());
