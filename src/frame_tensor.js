@@ -132,12 +132,24 @@ module.exports.FrameTensor = class FrameTensor {
     this.frameValues.set(key, value);
   }
 
+  encodeAction(action) {
+    switch (action) {
+      case 'rest':
+        return 0;
+      case 'move':
+        return 1;
+      case 'throw':
+        return 2;
+      default:
+        throw new Error(`Unexpected action: ${action}`);
+    }
+  }
+
   recordGameState(game) {
     this.record('state', game.state);
     this.record('offensiveTeam', game.teams[1].onOffense ? 1 : 0);
     this.record('defensiveTeam', game.teams[1].onOffense ? 0 : 1);
-    this.record('offensiveGoalDirection', game.offensiveTeam()
-      .goalDirection);
+    this.record('offensiveGoalDirection', game.offensiveTeam().goalDirection);
     this.record('stallCount', game.stallCount);
     for (let t = 0; t < game.teams.length; ++t) {
       for (let p = 0; p < game.teams[t].players.length; ++p) {
@@ -158,10 +170,12 @@ module.exports.FrameTensor = class FrameTensor {
       for (let p = 0; p < game.teams[t].players.length; p++) {
         const player = game.teams[t].players[p];
         if (!actionMap.has(player)) {
-          this.record(`team_${t}_player_${p}_action`, 'rest');
+          this.record(`team_${t}_player_${p}_action`, this.encodeAction(
+            'rest'));
         } else {
           const [action, detail] = actionMap.get(player);
-          this.record(`team_${t}_player_${p}_action`, action);
+          this.record(`team_${t}_player_${p}_action`, this.encodeAction(
+            action));
           if (action === 'move') {
             this.record(`team_${t}_player_${p}_move_x`, detail[0]);
             this.record(`team_${t}_player_${p}_move_y`, detail[1]);
@@ -196,7 +210,7 @@ module.exports.FrameTensor = class FrameTensor {
         data.push(headers.map(h =>
           this.frames[i].has(permutation.get(h))
           ? this.frames[i].get(permutation.get(h))
-          : 0));
+          : ''));
       }
     }
     return data;
@@ -207,7 +221,7 @@ module.exports.FrameTensor = class FrameTensor {
     const data = [headers];
     for (let i = 0; i < this.frames.length; i++) {
       data.push(headers.map(
-        h => this.frames[i].has(h) ? this.frames[i].get(h) : 0));
+        h => this.frames[i].has(h) ? this.frames[i].get(h) : ''));
     }
     return data;
   }
