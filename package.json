@@ -2,9 +2,11 @@
   "name": "ultimate",
   "version": "1.0.0",
   "description": "Ultimate ========",
-  "main": "src/server.js",
+  "main": "",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "fmt": "js-beautify src/*.js src/**/*.js",
+    "start": "node src/server.js"
   },
   "repository": {
     "type": "git",
