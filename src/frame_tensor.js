@@ -196,7 +196,7 @@ module.exports.FrameTensor = class FrameTensor {
         data.push(headers.map(h =>
           this.frames[i].has(permutation.get(h))
           ? this.frames[i].get(permutation.get(h))
-          : ''));
+          : 0));
       }
     }
     return data;
@@ -207,7 +207,7 @@ module.exports.FrameTensor = class FrameTensor {
     const data = [headers];
     for (let i = 0; i < this.frames.length; i++) {
       data.push(headers.map(
-        h => this.frames[i].has(h) ? this.frames[i].get(h) : ''));
+        h => this.frames[i].has(h) ? this.frames[i].get(h) : 0));
     }
     return data;
   }
