@@ -38,9 +38,9 @@ async function main() {
   const model = actionModel();
   const data = await readFromFile(flags.get('input'), (value, context) => {
     if (context.lines === 1) {
+      // Parse header row without modification
       return value;
     }
-    //console.log(`value=${value}   context=${context}`);
     if (context.column === 'state' || context.column === 'offensiveTeam'
       || context.column === 'offensiveGoalDirection'
       || context.column === 'action') {
@@ -49,7 +49,6 @@ async function main() {
       return value === '' ? '' : parseFloat(value);
     }
   });
-  console.log(data[0]);
 }
 
 main();
