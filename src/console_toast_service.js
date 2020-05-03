@@ -1,9 +1,9 @@
 module.exports.ConsoleToastService = class ConsoleToastService {
-    addToast(text, position, velocity, color, lifetime, accentColor = 'white') {
-        console.log(text);
-    }
+  addToast(text, position, velocity, color, lifetime, accentColor = 'white') {
+    console.log(text);
+  }
 
-    update() {}
+  update() {}
 
-    draw(frameBuffer) {}
+  draw(frameBuffer) {}
 };

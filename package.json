@@ -5,7 +5,7 @@
   "main": "",
   "scripts": {
     "test": "mocha",
-    "fmt": "js-beautify src/*.js src/**/*.js",
+    "fmt": "js-beautify src/*.js src/**/*.js --config=beautify.json",
     "start": "node src/server.js"
   },
   "repository": {
