@@ -23,9 +23,9 @@ const {
 } = require('./csv_utils.js');
 
 flags.defineInteger('games', 10, 'Number of games to simulate');
-flags.defineString('output_raw', 'data/output_raw.csv',
+flags.defineString('output_raw', '',
   'File to store raw frame data in CSV format');
-flags.defineString('output', 'data/output.csv',
+flags.defineString('output', 'data/examples.csv',
   'File to store permuted agent training data in CSV format');
 flags.parse();
 
@@ -73,14 +73,22 @@ for (let i = 0; i < flags.get('games'); ++i) {
   console.log(`Game over! ${steps} steps`);
 }
 
-const frameData = frameTensor.getFrameCsvData();
-writeToFile(flags.get('output_raw'), frameData);
-console.log(
-  `Writing frames (shape ${frameData[0].length} x ${frameData.length-1}) to ${flags.get('output_raw')}`
-);
+if (flags.get('output_raw') !== '') {
+  const frameData = frameTensor.getFrameCsvData();
+  writeToFile(flags.get('output_raw'), frameData);
+  console.log(
+    `Writing frames (shape ${frameData[0].length} x ${frameData.length-1}) to ${flags.get('output_raw')}`
+  );
+} else {
+  console.log('Not writing frame data.');
+}
 
-const agentData = frameTensor.getPermutedCsvData();
-writeToFile(flags.get('output'), agentData);
-console.log(
-  `Writing examples (shape ${agentData[0].length} x ${agentData.length-1}) to ${flags.get('output')}`
-);
+if (flags.get('output') !== '') {
+  const agentData = frameTensor.getPermutedCsvData();
+  writeToFile(flags.get('output'), agentData);
+  console.log(
+    `Writing examples (shape ${agentData[0].length} x ${agentData.length-1}) to ${flags.get('output')}`
+  );
+} else {
+  console.log('Not writing examples.');
+}
