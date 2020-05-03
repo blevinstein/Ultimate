@@ -54,7 +54,7 @@ for (let i = 0; i < flags.get('games'); ++i) {
         .Receiving);
     ++steps;
     if (recordFrame) {
-      frameTensor.recordInitialState(game);
+      frameTensor.recordGameState(game);
     }
     game.update();
     if (recordFrame) {

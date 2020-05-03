@@ -6,8 +6,8 @@ const {
 } = require('./game_params.js');
 
 module.exports.FrameTensor = class FrameTensor {
-  constructor() {
-    this.headers = this.allKeys();
+  constructor(withOutput = true) {
+    this.headers = this.allKeys(withOutput);
     this.headerSet = new Set(this.headers);
 
     this.frames = [];
@@ -15,7 +15,7 @@ module.exports.FrameTensor = class FrameTensor {
     this.frameValues = new Map;
   }
 
-  allKeys() {
+  allKeys(withOutput) {
     const keys = ['state', 'stallCount', 'disc_x', 'disc_y', 'disc_z'];
     for (let t = 0; t < 2; t++) {
       for (let p = 0; p < 7; p++) {
@@ -24,15 +24,19 @@ module.exports.FrameTensor = class FrameTensor {
           `team_${t}_player_${p}_y`,
           `team_${t}_player_${p}_vx`,
           `team_${t}_player_${p}_vy`,
-          `team_${t}_player_${p}_action`,
-          `team_${t}_player_${p}_move_x`,
-          `team_${t}_player_${p}_move_y`,
-          `team_${t}_player_${p}_throw_x`,
-          `team_${t}_player_${p}_throw_y`,
-          `team_${t}_player_${p}_throw_z`,
-          `team_${t}_player_${p}_throw_angleOfAttack`,
-          `team_${t}_player_${p}_throw_tiltAngle`,
         );
+        if (withOutput) {
+          keys.push(
+            `team_${t}_player_${p}_action`,
+            `team_${t}_player_${p}_move_x`,
+            `team_${t}_player_${p}_move_y`,
+            `team_${t}_player_${p}_throw_x`,
+            `team_${t}_player_${p}_throw_y`,
+            `team_${t}_player_${p}_throw_z`,
+            `team_${t}_player_${p}_throw_angleOfAttack`,
+            `team_${t}_player_${p}_throw_tiltAngle`,
+          );
+        }
       }
     }
     return keys;
@@ -48,7 +52,7 @@ module.exports.FrameTensor = class FrameTensor {
     this.frameValues.set(key, value);
   }
 
-  recordInitialState(game) {
+  recordGameState(game) {
     this.record('state', game.state);
     this.record('stallCount', game.stallCount);
     for (let t = 0; t < game.teams.length; ++t) {
