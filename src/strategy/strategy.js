@@ -24,6 +24,8 @@ module.exports.Strategy = class Strategy {
         // usually unused; all annotations will be drawn in front of the field
         // but behind the players and disc.
         this.frameBuffer = new FrameBuffer();
+        this.onMove = null;
+        this.onThrow = null;
     }
 
     // Move player to within 'within' of 'destination', then face in the
@@ -36,8 +38,18 @@ module.exports.Strategy = class Strategy {
         }
     }
 
+    throw (player, params) {
+        if (this.onThrow) {
+            this.onThrow(player, params);
+        }
+        player.throw(...params);
+    }
+
     // Move player exactly to 'destination'
     move(player, destination) {
+        if (this.onMove) {
+            this.onMove(player, destination);
+        }
         player.moveTo(destination);
         const playerScreenPosition = project2d(player.position);
         const destinationScreenPosition = project2d(destination);
@@ -65,4 +77,4 @@ module.exports.Strategy = class Strategy {
         this.frameBuffer.drawScene(context);
         this.frameBuffer.clear();
     }
-}
+};

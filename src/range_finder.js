@@ -165,7 +165,7 @@ class RangeFinder {
     getThrowParams(vector2d, minRunTime) {
         const sample = this.getBestSample(
             [
-                mag2d(vector2d) - RANGE_TOLERANCE, mag2d(vector2d) + RANGE_TOLERANCE
+                mag2d(vector2d) - RANGE_TOLERANCE, mag2d(vector2d)
             ],
             minRunTime);
         if (!sample) {

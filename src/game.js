@@ -105,6 +105,7 @@ module.exports.Game = class Game {
             this.setupCanvas();
         }
         this.reset();
+        this.onNewStrategy = null;
     }
 
     setToastService(toastService) {
@@ -263,12 +264,13 @@ module.exports.Game = class Game {
             // Pick a strategy if we don't have one active
             if (!team.strategy) {
                 team.strategy = team.coach.pickStrategy(this, team);
-                // DEBUG: console.log('New strategy (team ' + team.id + '): ' +
-                // team.strategy.constructor.name);
+                if (this.onNewStrategy) {
+                    this.onNewStrategy(team.strategy);
+                }
             }
             if (team.strategy) {
                 if (team.strategy.update()) {
-                    // Strategy returns truthy if it should be expired
+                    // Strategy#update() returns truthy if it has expired
                     team.strategy = null;
                 }
             } else {

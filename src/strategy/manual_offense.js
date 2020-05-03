@@ -89,8 +89,9 @@ module.exports.ManualOffenseStrategy =
                         .path;
                     drawPath(this.frameBuffer, path, 1, catchable ? '#49ff29' : 'red');
                     if (this.throwConfirmed) {
-                        player.throw(throwParams.velocity, throwParams.angleOfAttack,
-                            throwParams.tiltAngle);
+                        this.throw(player, [throwParams.velocity, throwParams.angleOfAttack,
+                            throwParams.tiltAngle
+                        ]);
                     } else {
                         player.rest(getVector(this.team.goalDirection));
                     }

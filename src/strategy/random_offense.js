@@ -87,7 +87,7 @@ module.exports.RandomOffenseStrategy =
                             Disc.createUpVector(params),
                             this.game.defensiveTeam().players)[0];
                         if (interceptor) {
-                            console.log('Defender would intercept throw.');
+                            // DEBUG: console.log('Defender would intercept throw.');
                             continue;
                         }
                         let forwardProgress =
@@ -100,8 +100,9 @@ module.exports.RandomOffenseStrategy =
                         }
                     }
                     if (bestDestination && bestForwardProgress > MIN_PROGRESS) {
-                        player.throw(bestParams.velocity, bestParams.angleOfAttack,
-                            bestParams.tiltAngle);
+                        this.throw(player, [bestParams.velocity, bestParams.angleOfAttack,
+                            bestParams.tiltAngle
+                        ]);
                     } else {
                         player.rest(getVector(this.team.goalDirection));
                     }
