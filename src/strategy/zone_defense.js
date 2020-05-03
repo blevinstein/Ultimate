@@ -92,8 +92,8 @@ module.exports.ZoneDefenseStrategy =
             && p != playerWithDisc);
 
           if (myCutters.length === 0) {
-            const myTarget = [(xRange[0] + xRange[1]) / 2, (yRange[0] +
-              yRange[1]) / 2];
+            const myTarget = [(xRange[0] + xRange[1]) / 2, (yRange[0]
+              + yRange[1]) / 2];
             this.move(this.team.players[i], myTarget);
           } else {
             myCutters.sort((a, b) => this.wingThreatLevel(a, discTarget)
@@ -108,8 +108,8 @@ module.exports.ZoneDefenseStrategy =
         // Deep: cover the deepest threat
         if (i === 6) {
           const myCutters =
-            this.game.offensiveTeam().players.filter(p => p !=
-            playerWithDisc);
+            this.game.offensiveTeam().players.filter(p => p
+              != playerWithDisc);
           myCutters.sort((a, b) =>
             this.deepThreatLevel(a) - this.deepThreatLevel(b));
           const myTarget =

@@ -34,8 +34,8 @@ class RangeFinder {
     this.samples = [];
     this.samplesOmitted = 0;
 
-    for (let launchAngle = MIN_LAUNCH_ANGLE; launchAngle <=
-      MAX_LAUNCH_ANGLE; launchAngle +=
+    for (let launchAngle = MIN_LAUNCH_ANGLE; launchAngle
+      <= MAX_LAUNCH_ANGLE; launchAngle +=
       stepSize) {
       for (let speed = MIN_SPEED; speed <= maxSpeed; speed += stepSize) {
         for (let angleOfAttack = MIN_ANGLE_OF_ATTACK; angleOfAttack
@@ -132,7 +132,7 @@ class RangeFinder {
     check2d(distanceRange);
     if (distanceRange[1] < distanceRange[0]) {
       throw new Error(
-      `distanceRange is in the wrong order: ${distanceRange}`);
+        `distanceRange is in the wrong order: ${distanceRange}`);
     }
     // Ensure our desired distance is in the range covered by our samples.
     if (this.samples[0].grounded.position[0] > distanceRange[1]

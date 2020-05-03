@@ -21,7 +21,7 @@ const {
 
 flags.defineInteger('games', 10, 'Number of games to simulate');
 flags.defineString('output', 'output.csv',
-'File to store result in CSV format');
+  'File to store result in CSV format');
 flags.parse();
 
 let frameTensor = new FrameTensor();

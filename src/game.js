@@ -161,14 +161,14 @@ module.exports.Game = class Game {
     this.update();
     this.draw(context);
     const tickDuration = new Date().getTime() - tickStartTime;
-    const desiredTickInterval = this.state === STATES.Reset &&
-      RESET_FF_DELAY
+    const desiredTickInterval = this.state === STATES.Reset
+      && RESET_FF_DELAY
       && this.stateTime > RESET_FF_DELAY
       ? FAST_FORWARD_MS
       : this.frameTime;
     if (tickDuration > desiredTickInterval) {
-      console.log('Tick was too slow for desiredTickInterval: ' +
-        tickDuration
+      console.log('Tick was too slow for desiredTickInterval: '
+        + tickDuration
         + ' > ' + desiredTickInterval);
     }
     const waitDuration = Math.max(desiredTickInterval - tickDuration, 0);
@@ -186,10 +186,10 @@ module.exports.Game = class Game {
     const wRatio = effectiveWidth / FIELD_SPRITE_SIZE[0];
     const hRatio = effectiveHeight / FIELD_SPRITE_SIZE[1];
     this.fieldScale = Math.min(wRatio, hRatio);
-    this.fieldOffset = wRatio < hRatio ? [0, (effectiveHeight -
-      FIELD_SPRITE_SIZE[1] * this
-      .fieldScale) / 2 + topMargin] : [(effectiveWidth -
-      FIELD_SPRITE_SIZE[0] * this
+    this.fieldOffset = wRatio < hRatio ? [0, (effectiveHeight
+      - FIELD_SPRITE_SIZE[1] * this
+      .fieldScale) / 2 + topMargin] : [(effectiveWidth
+      - FIELD_SPRITE_SIZE[0] * this
       .fieldScale) / 2, topMargin];
     this.canvas.width = this.canvas.parentElement.clientWidth;
     this.canvas.height = this.canvas.parentElement.clientHeight;
@@ -221,11 +221,11 @@ module.exports.Game = class Game {
         }
       } else if (event.key.toUpperCase() === 'S') {
         this.frameTime =
-          this.frameTime === SLOW_MOTION_MS ? FRAME_TIME_MS :
-          SLOW_MOTION_MS;
+          this.frameTime === SLOW_MOTION_MS ? FRAME_TIME_MS
+          : SLOW_MOTION_MS;
       } else if (event.key.toUpperCase() === 'F') {
-        this.frameTime = this.frameTime === FAST_FORWARD_MS ?
-          FRAME_TIME_MS
+        this.frameTime = this.frameTime === FAST_FORWARD_MS
+          ? FRAME_TIME_MS
           : FAST_FORWARD_MS;
       }
     };
@@ -342,8 +342,8 @@ module.exports.Game = class Game {
       // Waiting for players to return to their endzone
       let ready = true;
       for (let team of this.teams) {
-        let homeEndzone = Game.endzone(team.goalDirection === 'W' ? 'E' :
-          'W');
+        let homeEndzone = Game.endzone(team.goalDirection === 'W' ? 'E'
+          : 'W');
         for (let player of team.players) {
           if (!boundsCheck(player.position, homeEndzone)) {
             ready = false;
@@ -368,7 +368,7 @@ module.exports.Game = class Game {
       let playerWithDisc = this.playerWithDisc();
       if (playerWithDisc
         && !boundsCheck(playerWithDisc.position, FIELD_BOUNDS_NO_ENDZONES)
-        ) {
+      ) {
         // A player who steps out of bounds (or in the endzone) after catching
         // in-bounds must return the disc to the legal zone.
         this.setState(STATES.Pickup);
@@ -503,7 +503,8 @@ module.exports.Game = class Game {
           this.setState(STATES.GameOver);
           this.toastService.addToast(
             `Game over! ${winTeam.score} - ${loseTeam.score}`, [55, 20,
-              10],
+              10
+            ],
             [0, 0, 0], winTeam.textColor, null);
         } else {
           this.setState(STATES.Reset);
@@ -518,7 +519,7 @@ module.exports.Game = class Game {
       }
     } else {
       this.toastService.addToast('Out of bounds!', player.position.concat(
-        5),
+          5),
         [0, 0, 0.1], WARNING_COLOR, 100);
       this.setState(STATES.Pickup);
       this.setOffensiveTeam(this.defensiveTeam());

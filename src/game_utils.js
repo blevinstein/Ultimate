@@ -34,8 +34,8 @@ function chooseBestRandomDestination(game, team, numCandidateRoutes = 5) {
   let bestClosestDefenderDistance;
   for (let i = 0; i < numCandidateRoutes; i++) {
     // Choose a random location no more than 5 yards behind the thrower
-    let newDestination = [minX + Math.random() * (maxX - minX), Math.random() *
-      40
+    let newDestination = [minX + Math.random() * (maxX - minX), Math.random()
+      * 40
     ];
     let closestDefenderDistance =
       getClosestPlayer(game.defensiveTeam().players, newDestination)[1];
