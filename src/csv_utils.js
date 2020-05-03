@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fsPromises = require('fs.promises');
 const parse = require('csv-parse');
 const stringify = require('csv-stringify');
 
@@ -17,8 +18,10 @@ module.exports.writeToFile = (filename, data) => {
     console.error(e.message);
   });
   stringifier.on('finish', () => {
-    fs.writeFile(filename, lines.join(''), (e) => {
-      if (e) throw err;
+    fsPromises.open(filename, 'w+').then(async f => {
+      for (let line of lines) {
+        await fsPromises.write(f, line);
+      }
     });
   });
   for (let i = 0; i < data.length; i++) {
