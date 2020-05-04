@@ -114,14 +114,14 @@ def build_model():
 
   # /GRAVEYARD
 
-def build_estimator(model, features, labels, mode):
+def model_fn(features, labels, mode):
   action_head = tf.estimator.MultiClassHead(n_classes=3)
   return action_head.create_estimator_spec(
       features=features,
       mode=mode,
       labels=labels,
       optimizer=tf.keras.optimizers.Adam(0.01),
-      logits=model(features))
+      logits=build_model()(features))
 
 def input_features(data):
   return {k: data[k] for k in MODEL_INPUTS}
@@ -142,9 +142,11 @@ def input_fn():
 def main():
   model = build_model()
 
+  # Train using Estimator
   #estimator = tf.keras.estimator.model_to_estimator(model)
   #estimator.train(input_fn, steps=1)
   #model.summary()
+  #exit(0)
 
   # Train using Model
   for features, labels in input_fn().batch(1000).take(1):
@@ -154,10 +156,10 @@ def main():
     model.evaluate(x=features, y=labels)
 
   # Predict a single example
-  for features, labels in input_fn().take(1):
-    logits = model.predict(x=features)
-    predicted_label = tf.math.argmax(logits, axis=1)
-    print('prediction: %s' % predicted_label)
+  #for features, labels in input_fn().take(1):
+  #  logits = model.predict(x=features)
+  #  predicted_label = tf.math.argmax(logits, axis=1)
+  #  print('prediction: %s' % predicted_label)
 
   #tf.keras.models.save_model(model, flags.output)
 
