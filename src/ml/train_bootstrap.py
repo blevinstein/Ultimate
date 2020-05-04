@@ -130,12 +130,15 @@ def input_features(data):
 #def labels(data):
 #  return {k: data[k] for k in MODEL_OUTPUTS}
 
+def split_data(data):
+  return (input_features(data), data[MODEL_OUTPUTS[0]])
+
 def input_fn():
   return tf.data.experimental.make_csv_dataset(
         flags.input,
-        batch_size = 1000,
+        batch_size=1,
         select_columns = MODEL_INPUTS + MODEL_OUTPUTS,
-        na_value = '').map(lambda data: (input_features(data), data[MODEL_OUTPUTS[0]]))
+        na_value = '').map(split_data)
 
 def main():
   model = build_model()
@@ -145,9 +148,17 @@ def main():
   #model.summary()
 
   # Train using Model
-  for features, labels in input_fn().take(1):
+  for features, labels in input_fn().batch(1000).take(1):
     model.fit(x=features, y=labels, epochs=10)
   model.summary()
+  for features, labels in input_fn().batch(1000).take(1):
+    model.evaluate(x=features, y=labels)
+
+  # Predict a single example
+  for features, labels in input_fn().take(1):
+    logits = model.predict(x=features)
+    predicted_label = tf.math.argmax(logits, axis=1)
+    print('prediction: %s' % predicted_label)
 
   #tf.keras.models.save_model(model, flags.output)
 
