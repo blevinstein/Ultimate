@@ -75,7 +75,7 @@ def build_model():
 
   model.compile(
       loss = tf.keras.losses.SparseCategoricalCrossentropy(),
-      optimizer = tf.keras.optimizers.Adam(0.01),
+      optimizer = 'adam',
       metrics = ['accuracy'])
   return model
 
@@ -115,37 +115,38 @@ def build_model():
 
   # /GRAVEYARD
 
-def split_data(data):
-  features = {k: data[k] for k in MODEL_INPUTS}
-  action_labels = {'action': data['action']}
-  move_labels = {k: data[k] for k in ['move_x', 'move_y']}
-  throw_labels = {k: data[k] for k in ['throw_x', 'throw_y', 'throw_z', 'throw_angleOfAttack',
-    'throw_tiltAngle']}
-  return features, {'action': action_labels, 'move': move_labels, 'throw': throw_labels}
+def build_estimator(model, features, labels, mode):
+  action_head = tf.estimator.MultiClassHead(n_classes=3)
+  return action_head.create_estimator_spec(
+      features=features,
+      mode=mode,
+      labels=labels,
+      optimizer=tf.keras.optimizers.Adam(0.01),
+      logits=model(features))
+
+def input_features(data):
+  return {k: data[k] for k in MODEL_INPUTS}
+
+#def labels(data):
+#  return {k: data[k] for k in MODEL_OUTPUTS}
 
 def input_fn():
   return tf.data.experimental.make_csv_dataset(
-      flags.input,
-      batch_size = 1000,
-      select_columns = MODEL_INPUTS + MODEL_OUTPUTS,
-      na_value = '')
-
-def features(data):
-  return {k: data[k] for k in MODEL_INPUTS}
-
-def labels(data):
-  return {k: data[k] for k in MODEL_OUTPUTS}
+        flags.input,
+        batch_size = 1000,
+        select_columns = MODEL_INPUTS + MODEL_OUTPUTS,
+        na_value = '').map(lambda data: (input_features(data), data[MODEL_OUTPUTS[0]]))
 
 def main():
-  dataset = input_fn()
   model = build_model()
 
-  for batch in dataset.take(1):
-    print(features(batch))
-    print(batch[MODEL_OUTPUTS[0]])
-    model.fit(x=batch, y=batch[MODEL_OUTPUTS[0]], epochs=10)
-    #model.fit(x=features(batch), y=labels(batch), epochs=10)
+  #estimator = tf.keras.estimator.model_to_estimator(model)
+  #estimator.train(input_fn, steps=1)
+  #model.summary()
 
+  # Train using Model
+  for features, labels in input_fn().take(1):
+    model.fit(x=features, y=labels, epochs=10)
   model.summary()
 
   #tf.keras.models.save_model(model, flags.output)
