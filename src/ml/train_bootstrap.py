@@ -48,6 +48,13 @@ def build_model():
   offensive_team = tf.feature_column.indicator_column(
       tf.feature_column.categorical_column_with_vocabulary_list(
           'offensiveTeam', vocabulary_list=[0, 1]))
+  feature_layer_inputs = {
+      'state':
+          tf.keras.Input(shape = (1,), name = 'state', dtype = 'string'),
+      'offensiveGoalDirection':
+          tf.keras.Input(shape = (1,), name = 'offensiveGoalDirection', dtype = 'string'),
+      'offensiveTeam': tf.keras.Input(shape = (1,), name = 'offensiveTeam', dtype = 'int32'),
+  }
   feature_columns = [state, offensive_team, offensive_goal_direction]
   for column_name in [
       'stallCount', 'disc_x', 'disc_y', 'disc_z',
@@ -65,13 +72,16 @@ def build_model():
       'team_1_player_4_x', 'team_1_player_4_y', 'team_1_player_4_vx', 'team_1_player_4_vy',
       'team_1_player_5_x', 'team_1_player_5_y', 'team_1_player_5_vx', 'team_1_player_5_vy',
       'team_1_player_6_x', 'team_1_player_6_y', 'team_1_player_6_vx', 'team_1_player_6_vy']:
+    feature_layer_inputs[column_name] = tf.keras.Input(shape = (1,), name = column_name)
     feature_columns.append(tf.feature_column.numeric_column(column_name))
 
-  model = tf.keras.Sequential([
-      tf.keras.layers.DenseFeatures(feature_columns),
-      tf.keras.layers.Dense(80, activation='relu'),
-      tf.keras.layers.Dense(60, activation='relu'),
-      tf.keras.layers.Dense(3, activation='softmax')])
+  feature_layer_output = \
+      tf.keras.layers.DenseFeatures(feature_columns)(feature_layer_inputs)
+  hidden = tf.keras.layers.Dense(80, activation='relu')(feature_layer_output)
+  hidden = tf.keras.layers.Dense(60, activation='relu')(hidden)
+  output = tf.keras.layers.Dense(3, activation='softmax')(hidden)
+  model = tf.keras.Model(inputs=feature_layer_inputs, outputs=output)
+
 
   model.compile(
       loss = tf.keras.losses.SparseCategoricalCrossentropy(),
@@ -80,15 +90,6 @@ def build_model():
   return model
 
   # GRAVEYARD
-
-  #feature_layer_inputs = {
-  #    'state':
-  #        tf.keras.Input(shape = (1,), name = 'state', dtype = 'string'),
-  #    'offensiveGoalDirection':
-  #        tf.keras.Input(shape = (1,), name = 'offensiveGoalDirection', dtype = 'string'),
-  #    'offensiveTeam': tf.keras.Input(shape = (1,), name = 'offensiveTeam', dtype = 'int32'),
-  #}
-    #feature_layer_inputs[column_name] = tf.keras.Input(shape = (1,), name = column_name)
 
   #action_head = tf.estimator.MultiClassHead(
   #    name = 'action',
@@ -104,8 +105,6 @@ def build_model():
   #action_logits = tf.keras.layers.Dense(3, activation='softmax')(hidden_layer_2)
   #move_logits = tf.keras.layers.Dense(2)(hidden_layer_2)
   #throw_logits = tf.keras.layers.Dense(5)(hidden_layer_2)
-
-  #return tf.keras.Model(inputs = feature_layer_inputs, outputs = action_logits)
 
   #return multi_head.create_estimator_spec(
   #    mode = 'train',
