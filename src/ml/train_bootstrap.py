@@ -31,13 +31,13 @@ MODEL_INPUTS = [
     'team_1_player_6_x', 'team_1_player_6_y', 'team_1_player_6_vx', 'team_1_player_6_vy',
 ]
 
-MODEL_OUTPUTS = ['action'];
-    #, 'move_x', 'move_y'];
+MODEL_OUTPUTS = ['action']
+    #'move_x', 'move_y',
     #'throw_x', 'throw_y', 'throw_z',
     #'throw_angleOfAttack', 'throw_tiltAngle'];
 
 
-def build_model():
+def build_model(n_outputs, output_activation='softmax'):
   # Input layer
   state = tf.feature_column.indicator_column(
       tf.feature_column.categorical_column_with_vocabulary_list(
@@ -79,7 +79,7 @@ def build_model():
       tf.keras.layers.DenseFeatures(feature_columns)(feature_layer_inputs)
   hidden = tf.keras.layers.Dense(80, activation='relu')(feature_layer_output)
   hidden = tf.keras.layers.Dense(60, activation='relu')(hidden)
-  output = tf.keras.layers.Dense(3, activation='softmax')(hidden)
+  output = tf.keras.layers.Dense(n_outputs, activation=output_activation)(hidden)
   model = tf.keras.Model(inputs=feature_layer_inputs, outputs=output)
 
 
@@ -89,7 +89,7 @@ def build_model():
       metrics = ['accuracy'])
   return model
 
-  # GRAVEYARD
+# GRAVEYARD
 
   #action_head = tf.estimator.MultiClassHead(
   #    name = 'action',
@@ -112,25 +112,25 @@ def build_model():
   #    labels = {'action': 'action', 'move': ['move_x', 'move_y']}, # no idea wtf this is
   #    logits = {'action': action_logits, 'move': move_logits})
 
-  # /GRAVEYARD
+  #def model_fn(features, labels, mode):
+  #  action_head = tf.estimator.MultiClassHead(n_classes=3)
+  #  return action_head.create_estimator_spec(
+  #      features=features,
+  #      mode=mode,
+  #      labels=labels,
+  #      optimizer=tf.keras.optimizers.Adam(0.01),
+  #      logits=build_model()(features))
 
-def model_fn(features, labels, mode):
-  action_head = tf.estimator.MultiClassHead(n_classes=3)
-  return action_head.create_estimator_spec(
-      features=features,
-      mode=mode,
-      labels=labels,
-      optimizer=tf.keras.optimizers.Adam(0.01),
-      logits=build_model()(features))
+# /GRAVEYARD
 
 def input_features(data):
   return {k: data[k] for k in MODEL_INPUTS}
 
-#def labels(data):
-#  return {k: data[k] for k in MODEL_OUTPUTS}
+def labels(data):
+  return tf.concat([data[k] for k in MODEL_OUTPUTS], axis=1)
 
 def split_data(data):
-  return (input_features(data), data[MODEL_OUTPUTS[0]])
+  return (input_features(data), labels(data))
 
 def input_fn():
   return tf.data.experimental.make_csv_dataset(
@@ -140,7 +140,6 @@ def input_fn():
         na_value = '').map(split_data)
 
 def main():
-  model = build_model()
 
   # Train using Estimator
   #estimator = tf.keras.estimator.model_to_estimator(model)
@@ -149,11 +148,14 @@ def main():
   #exit(0)
 
   # Train using Model
+  action_model = build_model(3)
   for features, labels in input_fn().batch(1000).take(1):
-    model.fit(x=features, y=labels, epochs=10)
-  model.summary()
+    action_model.fit(x=features, y=labels, epochs=10)
+  action_model.summary()
   for features, labels in input_fn().batch(1000).take(1):
-    model.evaluate(x=features, y=labels)
+    print(features)
+    print(labels)
+    action_model.evaluate(x=features, y=labels)
 
   # Predict a single example
   #for features, labels in input_fn().take(1):
