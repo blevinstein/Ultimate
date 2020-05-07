@@ -98,7 +98,7 @@ async function main() {
     flags.defineInteger('games', 10, 'Number of games to simulate');
     flags.defineInteger(
       'min_tasks_per_worker', 4, 'Minimum number of tasks per worker thread'
-      );
+    );
     flags.defineInteger(
       'max_workers',
       8,
@@ -115,9 +115,10 @@ async function main() {
 
     const num_games = flags.get('games');
     const num_workers =
-      Math.min(
-        Math.ceil(num_games / flags.get('min_tasks_per_worker')),
-        flags.get('max_workers'));
+      Math.max(1,
+        Math.min(
+          Math.floor(num_games / flags.get('min_tasks_per_worker')),
+          flags.get('max_workers')));
 
     let frame_tensor = new FrameTensor();
     let games_played = 0;
