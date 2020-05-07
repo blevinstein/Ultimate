@@ -1,6 +1,7 @@
 const express = require('express')
-const flags = require('flags')
 const expressBrowserify = require('express-browserify');
+const flags = require('flags')
+const path = require('path');
 
 flags.defineInteger('port', 8000, 'Port for serving over http');
 flags.parse();
@@ -12,10 +13,13 @@ const browserifyOptions = {
 };
 
 app.use(express.static('static/'));
-// app.use(express.static('build/'));
-app.get('/index.js', expressBrowserify(['src/index.js'], browserifyOptions));
-app.get('/play.js', expressBrowserify(['src/play.js'], browserifyOptions));
-app.get('/practice_main.js',
-  expressBrowserify(['src/practice_main.js'], browserifyOptions));
+app.use(express.static('js_model/'));
+
+for (let root of ['index.js', 'play.js', 'practice_main.js']) {
+  app.get(
+    path.join('/', root),
+    expressBrowserify([path.join('src', root)],
+      browserifyOptions));
+}
 
 app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
