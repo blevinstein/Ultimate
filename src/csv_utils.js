@@ -26,7 +26,7 @@ module.exports.writeToFile = (filename, data) => {
   stringifier.on('finish', () => {
     fsPromises.open(filename, 'w+').then(async f => {
       for (let line of lines) {
-        await fsPromises.write(f, line);
+        await fsPromises.appendFile(f, line);
       }
     });
   });
