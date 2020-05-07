@@ -3,6 +3,12 @@ Ultimate
 
 Simulation of ultimate frisbee.
 
+ML TODO
+-------
+
+- Add last frame output (action, move, throw) as input to next frame. I'm hoping to use this
+  to provide limited memory to the agents while keeping internal state externally observable.
+
 Backlog
 -------
 
