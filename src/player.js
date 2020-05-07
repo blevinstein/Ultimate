@@ -241,7 +241,7 @@ module.exports.Player = class Player {
       velocity = mul3d(norm3d(velocity), MAX_THROW_SPEED);
       console.log(
         `Tried to throw too fast: ${mag3d(velocity)} > ${MAX_THROW_SPEED}`
-        );
+      );
     }
     if (!this.hasDisc) {
       console.log('Attempted to throw without the disc!');
