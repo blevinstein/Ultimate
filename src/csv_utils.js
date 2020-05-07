@@ -3,10 +3,16 @@ const fsPromises = require('fs.promises');
 const parse = require('csv-parse');
 const stringify = require('csv-stringify');
 
+const PRECISION = 3;
+
 module.exports.writeToFile = (filename, data) => {
   const lines = [];
   const stringifier = stringify({
-    delimiter: ','
+    delimiter: ',',
+    cast: {
+      number: (num) => Number.isInteger(num) ? num.toString() : num
+        .toFixed(PRECISION)
+    },
   });
   stringifier.on('readable', () => {
     let row;
