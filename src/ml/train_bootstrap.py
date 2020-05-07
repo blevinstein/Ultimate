@@ -31,13 +31,92 @@ MODEL_INPUTS = [
     'team_1_player_6_x', 'team_1_player_6_y', 'team_1_player_6_vx', 'team_1_player_6_vy',
 ]
 
-MODEL_OUTPUTS = ['action']
-    #'move_x', 'move_y',
-    #'throw_x', 'throw_y', 'throw_z',
-    #'throw_angleOfAttack', 'throw_tiltAngle'];
+ACTION_OUTPUT = 'action'
+ACTION_VALUES = ['rest', 'move', 'throw']
+NUMERIC_MODEL_OUTPUTS = [
+    'move_x', 'move_y', 'throw_x', 'throw_y', 'throw_z',
+    'throw_angleOfAttack', 'throw_tiltAngle']
+
+MODEL_OUTPUTS = [ACTION_OUTPUT] + NUMERIC_MODEL_OUTPUTS
+SELECTED_COLUMNS = MODEL_INPUTS + MODEL_OUTPUTS
+
+DEFAULTS_MAP = {
+    'state': tf.string,
+    'offensiveTeam': tf.int32,
+    'offensiveGoalDirection': tf.string,
+    'stallCount': tf.float32,
+    'disc_x': tf.float32,
+    'disc_y': tf.float32,
+    'disc_z': tf.float32,
+    'team_0_player_0_x': tf.float32,
+    'team_0_player_0_y': tf.float32,
+    'team_0_player_0_vx': tf.float32,
+    'team_0_player_0_vy': tf.float32,
+    'team_0_player_1_x': tf.float32,
+    'team_0_player_1_y': tf.float32,
+    'team_0_player_1_vx': tf.float32,
+    'team_0_player_1_vy': tf.float32,
+    'team_0_player_2_x': tf.float32,
+    'team_0_player_2_y': tf.float32,
+    'team_0_player_2_vx': tf.float32,
+    'team_0_player_2_vy': tf.float32,
+    'team_0_player_3_x': tf.float32,
+    'team_0_player_3_y': tf.float32,
+    'team_0_player_3_vx': tf.float32,
+    'team_0_player_3_vy': tf.float32,
+    'team_0_player_4_x': tf.float32,
+    'team_0_player_4_y': tf.float32,
+    'team_0_player_4_vx': tf.float32,
+    'team_0_player_4_vy': tf.float32,
+    'team_0_player_5_x': tf.float32,
+    'team_0_player_5_y': tf.float32,
+    'team_0_player_5_vx': tf.float32,
+    'team_0_player_5_vy': tf.float32,
+    'team_0_player_6_x': tf.float32,
+    'team_0_player_6_y': tf.float32,
+    'team_0_player_6_vx': tf.float32,
+    'team_0_player_6_vy': tf.float32,
+    'team_1_player_0_x': tf.float32,
+    'team_1_player_0_y': tf.float32,
+    'team_1_player_0_vx': tf.float32,
+    'team_1_player_0_vy': tf.float32,
+    'team_1_player_1_x': tf.float32,
+    'team_1_player_1_y': tf.float32,
+    'team_1_player_1_vx': tf.float32,
+    'team_1_player_1_vy': tf.float32,
+    'team_1_player_2_x': tf.float32,
+    'team_1_player_2_y': tf.float32,
+    'team_1_player_2_vx': tf.float32,
+    'team_1_player_2_vy': tf.float32,
+    'team_1_player_3_x': tf.float32,
+    'team_1_player_3_y': tf.float32,
+    'team_1_player_3_vx': tf.float32,
+    'team_1_player_3_vy': tf.float32,
+    'team_1_player_4_x': tf.float32,
+    'team_1_player_4_y': tf.float32,
+    'team_1_player_4_vx': tf.float32,
+    'team_1_player_4_vy': tf.float32,
+    'team_1_player_5_x': tf.float32,
+    'team_1_player_5_y': tf.float32,
+    'team_1_player_5_vx': tf.float32,
+    'team_1_player_5_vy': tf.float32,
+    'team_1_player_6_x': tf.float32,
+    'team_1_player_6_y': tf.float32,
+    'team_1_player_6_vx': tf.float32,
+    'team_1_player_6_vy': tf.float32,
+    'action': tf.int32,
+    'move_x': 0.0,
+    'move_y': 0.0,
+    'throw_x': 0.0,
+    'throw_y': 0.0,
+    'throw_z': 0.0,
+    'throw_angleOfAttack': 0.0,
+    'throw_tiltAngle': 0.0
+}
+COLUMN_DEFAULTS = list(map(lambda c: DEFAULTS_MAP[c], SELECTED_COLUMNS))
 
 
-def build_model(n_outputs, output_activation='softmax'):
+def build_model(n_outputs):
   # Input layer
   state = tf.feature_column.indicator_column(
       tf.feature_column.categorical_column_with_vocabulary_list(
@@ -79,14 +158,14 @@ def build_model(n_outputs, output_activation='softmax'):
       tf.keras.layers.DenseFeatures(feature_columns)(feature_layer_inputs)
   hidden = tf.keras.layers.Dense(80, activation='relu')(feature_layer_output)
   hidden = tf.keras.layers.Dense(60, activation='relu')(hidden)
-  output = tf.keras.layers.Dense(n_outputs, activation=output_activation)(hidden)
+  output = tf.keras.layers.Dense(n_outputs)(hidden)
   model = tf.keras.Model(inputs=feature_layer_inputs, outputs=output)
 
 
   model.compile(
-      loss = tf.keras.losses.SparseCategoricalCrossentropy(),
+      loss = tf.keras.losses.MeanSquaredError(),
       optimizer = 'adam',
-      metrics = ['accuracy'])
+      metrics = ['accuracy'],)
   return model
 
 # GRAVEYARD
@@ -123,11 +202,24 @@ def build_model(n_outputs, output_activation='softmax'):
 
 # /GRAVEYARD
 
+#def custom_loss(actual, predicted):
+
 def input_features(data):
   return {k: data[k] for k in MODEL_INPUTS}
 
+def encode_action(value):
+  return ['rest', 'move', 'throw'].index(value)
+
 def labels(data):
-  return tf.concat([data[k] for k in MODEL_OUTPUTS], axis=1)
+  #print('*******************')
+  #for col in data.keys():
+  #  print('%s => %s' % (col, data[col].dtype))
+  #print('*******************')
+  one_hot_action = tf.one_hot(data[ACTION_OUTPUT], 3)
+  numeric_labels = []
+  for k in NUMERIC_MODEL_OUTPUTS:
+    numeric_labels.append(tf.reshape(data[k], (1, 1), name=k))
+  return tf.concat([one_hot_action] + numeric_labels, axis=1)
 
 def split_data(data):
   return (input_features(data), labels(data))
@@ -136,11 +228,10 @@ def input_fn():
   return tf.data.experimental.make_csv_dataset(
         flags.input,
         batch_size=1,
-        select_columns = MODEL_INPUTS + MODEL_OUTPUTS,
-        na_value = '').map(split_data)
+        select_columns = SELECTED_COLUMNS,
+        column_defaults = COLUMN_DEFAULTS).map(split_data).shuffle(20000)
 
 def main():
-
   # Train using Estimator
   #estimator = tf.keras.estimator.model_to_estimator(model)
   #estimator.train(input_fn, steps=1)
@@ -148,14 +239,15 @@ def main():
   #exit(0)
 
   # Train using Model
-  action_model = build_model(3)
-  for features, labels in input_fn().batch(1000).take(1):
-    action_model.fit(x=features, y=labels, epochs=10)
-  action_model.summary()
-  for features, labels in input_fn().batch(1000).take(1):
-    print(features)
-    print(labels)
-    action_model.evaluate(x=features, y=labels)
+  model = build_model(len(ACTION_VALUES) + len(NUMERIC_MODEL_OUTPUTS))
+  for features, labels in input_fn().batch(5000).take(100):
+    model.fit(x=features, y=labels, epochs=10)
+
+  model.summary()
+  for features, labels in input_fn().batch(10000).take(1):
+    #print(features)
+    #print(labels)
+    model.evaluate(x=features, y=labels)
 
   # Predict a single example
   #for features, labels in input_fn().take(1):
@@ -163,7 +255,7 @@ def main():
   #  predicted_label = tf.math.argmax(logits, axis=1)
   #  print('prediction: %s' % predicted_label)
 
-  #tf.keras.models.save_model(model, flags.output)
+  tf.keras.models.save_model(model, flags.output)
 
 if __name__ == '__main__':
   main()
