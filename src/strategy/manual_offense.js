@@ -11,6 +11,7 @@ const {
 require('../game_utils.js');
 const {
   dist2d,
+  mul2d,
   getVector,
   inverseProject2d,
   mag2d,
