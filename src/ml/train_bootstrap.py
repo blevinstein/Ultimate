@@ -3,8 +3,8 @@ import tensorflow as tf
 from tensorflow import keras
 
 parser = argparse.ArgumentParser(description='Train a bootstrap model.')
-parser.add_argument('input', help='File to read examples from.')
-parser.add_argument('output', help='File to write model to.')
+parser.add_argument('--input', required=True, help='File to read examples from.')
+parser.add_argument('--output', required=True, help='File to write model to.')
 flags = parser.parse_args()
 
 MODEL_INPUTS = [
@@ -229,7 +229,7 @@ def input_fn():
         flags.input,
         batch_size=1,
         select_columns = SELECTED_COLUMNS,
-        column_defaults = COLUMN_DEFAULTS).map(split_data).shuffle(20000)
+        column_defaults = COLUMN_DEFAULTS).map(split_data).shuffle(100000)
 
 def main():
   # Train using Estimator
@@ -240,7 +240,7 @@ def main():
 
   # Train using Model
   model = build_model(len(ACTION_VALUES) + len(NUMERIC_MODEL_OUTPUTS))
-  for features, labels in input_fn().batch(5000).take(100):
+  for features, labels in input_fn().batch(10000).take(100):
     model.fit(x=features, y=labels, epochs=10)
 
   model.summary()
