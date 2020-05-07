@@ -7,7 +7,7 @@
     "test": "mocha",
     "fmt": "js-beautify src/*.js src/**/*.js --config=beautify.json",
     "start": "node src/server.js",
-    "record_games": "node src/record_games.js"
+    "record_games": "node --max-old-space-size=8000 src/record_games.js"
   },
   "repository": {
     "type": "git",
