@@ -32,9 +32,9 @@ module.exports.FrameTensor = class FrameTensor {
   // Given a single frame of raw data, we can permute that data in 14 different
   // ways, to create an example from the perspective of each player.
   // Each permutation is a Map<outputKey, rawKey>.
-  generatePermutations() {
+  generatePermutations(teams = [0, 1]) {
     const permutations = [];
-    for (let t = 0; t < 2; ++t) {
+    for (let t of teams) {
       for (let p = 0; p < 7; ++p) {
         // Permute so that team_$t_player_$p becomes team_0_player_0.
         // If $t != 0, we invert offensiveTeam.
