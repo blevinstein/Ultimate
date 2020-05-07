@@ -29,8 +29,8 @@ flags.defineString('output', 'data/examples.csv',
   'File to store permuted agent training data in CSV format');
 flags.parse();
 
-let frameTensor = new FrameTensor();
-for (let i = 0; i < flags.get('games'); ++i) {
+function playGame() {
+  const frameTensor = new FrameTensor();
   const game = new Game(null, null, [
     new Coach(),
     new Coach(undefined, (game, team) => new ZoneDefenseStrategy(game,
@@ -53,13 +53,11 @@ for (let i = 0; i < flags.get('games'); ++i) {
     }
   };
 
-  let steps = 0;
   while (game.state != STATES.GameOver) {
     // Only save data from 'interesting' frames
     let recordFrame =
       (game.state == STATES.Pickup || game.state == STATES.Normal
         || game.state == STATES.Receiving);
-    ++steps;
     if (recordFrame) {
       frameTensor.recordGameState(game);
     }
@@ -70,7 +68,16 @@ for (let i = 0; i < flags.get('games'); ++i) {
     }
     actionMap.clear();
   }
-  console.log(`Game over! ${steps} steps`);
+  return frameTensor;
+}
+
+let frameTensor = new FrameTensor();
+for (let i = 0; i < flags.get('games'); ++i) {
+  const newFrameTensor = playGame();
+  frameTensor = frameTensor.add(newFrameTensor);
+  console.log(
+    `Frames: ${frameTensor.frames.length} \
+          (${newFrameTensor.frames.length} new)`);
 }
 
 if (flags.get('output_raw') !== '') {

@@ -13,6 +13,22 @@ module.exports.FrameTensor = class FrameTensor {
     this.frameValues = new Map;
   }
 
+  add(otherTensor) {
+    if (this.withOutput !== otherTensor.withOutput) {
+      throw Error('Tensors are not compatible');
+    }
+    if (this.frameValues.size) {
+      throw new Error('Need to call nextFrame() on this');
+    }
+    if (otherTensor.frameValues.size) {
+      throw new Error('Need to call nextFrame() on otherTensor');
+    }
+
+    const newTensor = new FrameTensor(this.withOutput);
+    newTensor.frames = this.frames.concat(otherTensor.frames);
+    return newTensor;
+  }
+
   // Given a single frame of raw data, we can permute that data in 14 different
   // ways, to create an example from the perspective of each player.
   // Each permutation is a Map<outputKey, rawKey>.
@@ -149,7 +165,8 @@ module.exports.FrameTensor = class FrameTensor {
     this.record('state', game.state);
     this.record('offensiveTeam', game.teams[1].onOffense ? 1 : 0);
     this.record('defensiveTeam', game.teams[1].onOffense ? 0 : 1);
-    this.record('offensiveGoalDirection', game.offensiveTeam().goalDirection);
+    this.record('offensiveGoalDirection', game.offensiveTeam()
+      .goalDirection);
     this.record('stallCount', game.stallCount);
     for (let t = 0; t < game.teams.length; ++t) {
       for (let p = 0; p < game.teams[t].players.length; ++p) {
