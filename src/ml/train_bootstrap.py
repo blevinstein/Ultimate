@@ -5,6 +5,7 @@ from tensorflow import keras
 parser = argparse.ArgumentParser(description='Train a bootstrap model.')
 parser.add_argument('--input', required=True, help='File to read examples from.')
 parser.add_argument('--output', required=True, help='File to write model to.')
+parser.add_argument('--from_checkpoint', help='Model to load as a starting point.')
 flags = parser.parse_args()
 
 MODEL_INPUTS = [
@@ -154,6 +155,13 @@ def prediction_loss(y, y_pred):
 
   return action_loss + others_loss
 
+def reload_model(model):
+  model.compile(
+      loss = prediction_loss,
+      optimizer = 'adam',
+      metrics = ['accuracy'],)
+  return model
+
 def build_model(n_outputs):
   # Input layer
   state = tf.feature_column.indicator_column(
@@ -296,18 +304,21 @@ def main():
   #exit(0)
 
   # Train using Model
-  model = build_model(len(ACTION_VALUES) + len(NUMERIC_MODEL_OUTPUTS))
+  if flags.from_checkpoint:
+    model = reload_model(tf.keras.models.load_model(flags.from_checkpoint))
+  else:
+    model = build_model(len(ACTION_VALUES) + len(NUMERIC_MODEL_OUTPUTS))
   for features, labels in input_fn().batch(50000).take(1):
-    model.fit(x=features, y=labels, epochs=10)
+    model.fit(x=features, y=labels, epochs=5)
   model.summary()
 
   # Predict some examples
-  for features, labels in input_fn().take(1):
-    logits = model.predict(x=features)
-    print('prediction: %s %s' % labels_to_output(logits))
-    print('actual: %s %s' % labels_to_output(labels))
+  #for features, labels in input_fn().take(1):
+  #  logits = model.predict(x=features)
+  #  print('prediction: %s %s' % labels_to_output(logits))
+  #  print('actual: %s %s' % labels_to_output(labels))
 
-  tf.keras.models.save_model(model, flags.output)
+  model.save(flags.output, include_optimizer=False)
 
 if __name__ == '__main__':
   main()
