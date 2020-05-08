@@ -29,6 +29,14 @@ MODEL_INPUTS = [
     'team_1_player_4_x', 'team_1_player_4_y', 'team_1_player_4_vx', 'team_1_player_4_vy',
     'team_1_player_5_x', 'team_1_player_5_y', 'team_1_player_5_vx', 'team_1_player_5_vy',
     'team_1_player_6_x', 'team_1_player_6_y', 'team_1_player_6_vx', 'team_1_player_6_vy',
+    'last_action',
+    'last_move_x',
+    'last_move_y',
+    'last_throw_x',
+    'last_throw_y',
+    'last_throw_z',
+    'last_throw_angleOfAttack',
+    'last_throw_tiltAngle',
 ]
 
 ACTION_OUTPUT = 'action'
@@ -111,7 +119,15 @@ DEFAULTS_MAP = {
     'throw_y': 0.0,
     'throw_z': 0.0,
     'throw_angleOfAttack': 0.0,
-    'throw_tiltAngle': 0.0
+    'throw_tiltAngle': 0.0,
+    'last_action': tf.int32,
+    'last_move_x': 0.0,
+    'last_move_y': 0.0,
+    'last_throw_x': 0.0,
+    'last_throw_y': 0.0,
+    'last_throw_z': 0.0,
+    'last_throw_angleOfAttack': 0.0,
+    'last_throw_tiltAngle': 0.0,
 }
 COLUMN_DEFAULTS = list(map(lambda c: DEFAULTS_MAP[c], SELECTED_COLUMNS))
 
@@ -127,12 +143,16 @@ def build_model(n_outputs):
   offensive_team = tf.feature_column.indicator_column(
       tf.feature_column.categorical_column_with_vocabulary_list(
           'offensiveTeam', vocabulary_list=[0, 1]))
+  last_action = tf.feature_column.indicator_column(
+      tf.feature_column.categorical_column_with_vocabulary_list(
+          'last_action', vocabulary_list=['rest', 'move', 'throw']))
   feature_layer_inputs = {
       'state':
           tf.keras.Input(shape = (1,), name = 'state', dtype = 'string'),
       'offensiveGoalDirection':
           tf.keras.Input(shape = (1,), name = 'offensiveGoalDirection', dtype = 'string'),
       'offensiveTeam': tf.keras.Input(shape = (1,), name = 'offensiveTeam', dtype = 'int32'),
+      'last_action': tf.keras.Input(shape = (1,), name = 'last_action', dtype = 'string'),
   }
   feature_columns = [state, offensive_team, offensive_goal_direction]
   for column_name in [
@@ -150,7 +170,10 @@ def build_model(n_outputs):
       'team_1_player_3_x', 'team_1_player_3_y', 'team_1_player_3_vx', 'team_1_player_3_vy',
       'team_1_player_4_x', 'team_1_player_4_y', 'team_1_player_4_vx', 'team_1_player_4_vy',
       'team_1_player_5_x', 'team_1_player_5_y', 'team_1_player_5_vx', 'team_1_player_5_vy',
-      'team_1_player_6_x', 'team_1_player_6_y', 'team_1_player_6_vx', 'team_1_player_6_vy']:
+      'team_1_player_6_x', 'team_1_player_6_y', 'team_1_player_6_vx', 'team_1_player_6_vy',
+      'last_move_x', 'last_move_y',
+      'last_throw_x', 'last_throw_y', 'last_throw_z',
+      'last_throw_angleOfAttack', 'last_throw_tiltAngle']:
     feature_layer_inputs[column_name] = tf.keras.Input(shape = (1,), name = column_name)
     feature_columns.append(tf.feature_column.numeric_column(column_name))
 
