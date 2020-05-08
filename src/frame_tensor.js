@@ -2,9 +2,40 @@ const {
   STATES
 } = require('./game_params.js');
 
+// Stores a tensor representing individual frames of action from a recorded
+// game. Raw frames are stored as Map<string, ?>, recording the state and
+// actions of all players on the field.
+//
+// After permutation, these frames are transformed into examples, which contain
+// the state of all players on the field, but the actions of a *single* player.
+//
+// Usage: Record all actions taken during a game:
+//
+// const game = new Game(...);
+// const actionMap = new Map;
+// const frameTensor = new FrameTensor(/*withActions=*/true);
+// while (game.state != STATES.GameOver) {
+//   frameTensor.recordGameState(game);
+//   game.update();
+//   frameTensor.recordActions(game, actionMap);
+//   frameTensor.nextFrame();
+//   actionMap.clear();
+// }
+//
+// Usage: Create a tensor to be used by a model:
+//
+// const game = new Game(...);
+// ...
+// const model = new WinnerPredictor(...);
+// const frameTensor = new FrameTensor(/*withActions=*/false);
+// frameTensor.recordGameState(game);
+// frameTensor.nextFrame();
+// const predictedWinner = model.predict(frameTensor);
+//
+//
 module.exports.FrameTensor = class FrameTensor {
-  constructor(withOutput = true) {
-    this.withOutput = withOutput;
+  constructor(withActions = true) {
+    this.withActions = withActions;
 
     this.rawKeys = this.allKeys(false);
     this.keySet = new Set(this.rawKeys);
@@ -14,7 +45,7 @@ module.exports.FrameTensor = class FrameTensor {
   }
 
   add(otherTensor) {
-    if (this.withOutput !== otherTensor.withOutput) {
+    if (this.withActions !== otherTensor.withActions) {
       throw Error('Tensors are not compatible');
     }
     if (this.frameValues.size) {
@@ -24,7 +55,7 @@ module.exports.FrameTensor = class FrameTensor {
       throw new Error('Need to call nextFrame() on otherTensor');
     }
 
-    const newTensor = new FrameTensor(this.withOutput);
+    const newTensor = new FrameTensor(this.withActions);
     newTensor.frames = this.frames.concat(otherTensor.frames);
     return newTensor;
   }
@@ -93,6 +124,11 @@ module.exports.FrameTensor = class FrameTensor {
     return permutations;
   }
 
+  // Returns the list of keys to be expected in an output file.
+  //
+  // Iff withActions = true, includes columns for actions taken by players.
+  // Iff permuted = true, has a reduced set of columns applicable to a single
+  // player.
   allKeys(permuted) {
     const keys = [
       'state', 'offensiveTeam', 'offensiveGoalDirection', 'stallCount',
@@ -109,7 +145,7 @@ module.exports.FrameTensor = class FrameTensor {
           `team_${t}_player_${p}_vx`,
           `team_${t}_player_${p}_vy`,
         );
-        if (this.withOutput && !permuted) {
+        if (this.withActions && !permuted) {
           keys.push(
             `team_${t}_player_${p}_action`,
             `team_${t}_player_${p}_move_x`,
@@ -123,7 +159,7 @@ module.exports.FrameTensor = class FrameTensor {
         }
       }
     }
-    if (this.withOutput && permuted) {
+    if (this.withActions && permuted) {
       keys.push(
         'action',
         'move_x',
@@ -229,9 +265,11 @@ module.exports.FrameTensor = class FrameTensor {
     const data = [headers];
     for (let permutation of this.generatePermutations()) {
       for (let i = 0; i < this.frames.length; i++) {
-        if (!this.isInteresting(this.frames[i].get('state'))) {
+        const frame = this.frames[i];
+        if (!this.isInteresting(frame.get('state'))) {
           continue;
         }
+
         data.push(headers.map(h =>
           this.frames[i].has(permutation.get(h))
           ? this.frames[i].get(permutation.get(h))
