@@ -6,19 +6,14 @@ Simulation of ultimate frisbee.
 ML TODO
 -------
 
-- Add last frame output (action, move, throw) as input to next frame. I'm hoping to use this
-  to provide limited memory to the agents while keeping internal state externally observable.
-
 Backlog
 -------
 
 - Stack (vert, ho)
-- Pick/foul/injury/double-team
 - Visual improvements
   - Add permanent scoreboard, game over message
   - Render players with shadows
   - Render possessing player with ring
-  - Show cutter routes
   - Show "spot" when player catches near out-of-bounds or endzone
 - Audio improvements
   - Sounds effects, incl. crowd
@@ -33,7 +28,6 @@ Backlog
   - React to stall count?
   - Different throw types, incl. release positions offset
   - Pump fake?
-  - Is there a good way to show pivot foot movement? Look at basketball games?
 - Cutter behavior
   - React to stall count
   - Dump cut

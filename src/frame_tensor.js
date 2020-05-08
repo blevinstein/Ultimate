@@ -42,6 +42,7 @@ module.exports.FrameTensor = class FrameTensor {
 
     this.frames = [];
     this.frameValues = new Map;
+    this.lastFrameValues = null;
   }
 
   add(otherTensor) {
@@ -89,6 +90,18 @@ module.exports.FrameTensor = class FrameTensor {
             `team_${t}_player_${p}_throw_angleOfAttack`
           ],
           ['throw_tiltAngle', `team_${t}_player_${p}_throw_tiltAngle`],
+          ['last_action', `last_team_${t}_player_${p}_action`],
+          ['last_move_x', `last_team_${t}_player_${p}_move_x`],
+          ['last_move_y', `last_team_${t}_player_${p}_move_y`],
+          ['last_throw_x', `last_team_${t}_player_${p}_throw_x`],
+          ['last_throw_y', `last_team_${t}_player_${p}_throw_y`],
+          ['last_throw_z', `last_team_${t}_player_${p}_throw_z`],
+          ['last_throw_angleOfAttack',
+            `last_team_${t}_player_${p}_throw_angleOfAttack`
+          ],
+          ['last_throw_tiltAngle',
+            `last_team_${t}_player_${p}_throw_tiltAngle`
+          ],
           ['team_0_player_0_x', `team_${t}_player_${p}_x`],
           ['team_0_player_0_y', `team_${t}_player_${p}_y`],
           ['team_0_player_0_vx', `team_${t}_player_${p}_vx`],
@@ -155,6 +168,14 @@ module.exports.FrameTensor = class FrameTensor {
             `team_${t}_player_${p}_throw_z`,
             `team_${t}_player_${p}_throw_angleOfAttack`,
             `team_${t}_player_${p}_throw_tiltAngle`,
+            `last_team_${t}_player_${p}_action`,
+            `last_team_${t}_player_${p}_move_x`,
+            `last_team_${t}_player_${p}_move_y`,
+            `last_team_${t}_player_${p}_throw_x`,
+            `last_team_${t}_player_${p}_throw_y`,
+            `last_team_${t}_player_${p}_throw_z`,
+            `last_team_${t}_player_${p}_throw_angleOfAttack`,
+            `last_team_${t}_player_${p}_throw_tiltAngle`,
           );
         }
       }
@@ -169,6 +190,14 @@ module.exports.FrameTensor = class FrameTensor {
         'throw_z',
         'throw_angleOfAttack',
         'throw_tiltAngle',
+        'last_action',
+        'last_move_x',
+        'last_move_y',
+        'last_throw_x',
+        'last_throw_y',
+        'last_throw_z',
+        'last_throw_angleOfAttack',
+        'last_throw_tiltAngle',
       );
     }
     return keys;
@@ -222,6 +251,7 @@ module.exports.FrameTensor = class FrameTensor {
     for (let t = 0; t < game.teams.length; ++t) {
       for (let p = 0; p < game.teams[t].players.length; p++) {
         const player = game.teams[t].players[p];
+        // Record actions taken by the player on this frame.
         if (!actionMap.has(player)) {
           this.record(`team_${t}_player_${p}_action`, this.encodeAction(
             'rest'));
@@ -242,16 +272,35 @@ module.exports.FrameTensor = class FrameTensor {
             this.record(`team_${t}_player_${p}_throw_tiltAngle`, tiltAngle);
           }
         }
+        // Also re-record actions taken by the player on the previous frame.
+        for (let key of [`team_${t}_player_${p}_action`,
+            `team_${t}_player_${p}_move_x`,
+            `team_${t}_player_${p}_move_y`,
+            `team_${t}_player_${p}_throw_x`,
+            `team_${t}_player_${p}_throw_y`,
+            `team_${t}_player_${p}_throw_z`,
+            `team_${t}_player_${p}_throw_angleOfAttack`,
+            `team_${t}_player_${p}_throw_tiltAngle`
+          ]) {
+          if (this.lastFrameValues && this.lastFrameValues.has(key)) {
+            this.record(`last_${key}`, this.lastFrameValues.get(key));
+          }
+        }
       }
     }
   }
 
+  // Advances to the next frame. Updates lastFrameValues, and reset frameValues
+  // so that we can re-populate all fields again.
   nextFrame() {
     this.frames.push(this.frameValues);
+    this.lastFrameValues = this.frameValues;
     this.frameValues = new Map;
   }
 
+  // Similar to nextFrame, but values are not saved.
   dropFrame() {
+    this.lastFrameValues = this.frameValues;
     this.frameValues = new Map;
   }
 
