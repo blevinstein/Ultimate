@@ -6,6 +6,8 @@ Simulation of ultimate frisbee.
 ML TODO
 -------
 
+- Add ability to train from checkpoint (existing model)
+
 Backlog
 -------
 
