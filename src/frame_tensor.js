@@ -2,6 +2,39 @@ const {
   STATES
 } = require('./game_params.js');
 
+const INTERESTING_STATES = [STATES.Pickup, STATES.Normal, STATES.Receiving];
+
+const VOCABULARIES = new Map([
+  ['state', INTERESTING_STATES],
+  ['action', ['rest', 'move', 'throw']],
+  ['offensiveGoalDirection', ['E', 'W']]
+]);
+const NONE_VALUE = '';
+
+// Encodes a value which must
+function encodeValue(value, vocab) {
+  const index = vocab.findIndex(v => v === value);
+  if (index < 0) {
+    throw new Error(`Unexpected value: ${value}`);
+  }
+  return index;
+}
+
+// Enumerated values are encoded based on the contents of VOCABULARIES.
+function getEncoding(column, separator = '_') {
+  // Infers encoding vocabulary from the last part of the column name.
+  let encodingKey;
+  if (column.includes(separator)) {
+    const parts = column.split(separator);
+    encodingKey = parts[parts.length - 1];
+  } else {
+    encodingKey = column;
+  }
+  return VOCABULARIES.has(encodingKey)
+    ? value => encodeValue(value, VOCABULARIES.get(encodingKey))
+    : (value => value);
+}
+
 // Stores a tensor representing individual frames of action from a recorded
 // game. Raw frames are stored as Map<string, ?>, recording the state and
 // actions of all players on the field.
@@ -213,19 +246,6 @@ module.exports.FrameTensor = class FrameTensor {
     this.frameValues.set(key, value);
   }
 
-  encodeAction(action) {
-    switch (action) {
-      case 'rest':
-        return 0;
-      case 'move':
-        return 1;
-      case 'throw':
-        return 2;
-      default:
-        throw new Error(`Unexpected action: ${action}`);
-    }
-  }
-
   recordGameState(game) {
     this.record('state', game.state);
     this.record('offensiveTeam', game.teams[1].onOffense ? 1 : 0);
@@ -253,12 +273,10 @@ module.exports.FrameTensor = class FrameTensor {
         const player = game.teams[t].players[p];
         // Record actions taken by the player on this frame.
         if (!actionMap.has(player)) {
-          this.record(`team_${t}_player_${p}_action`, this.encodeAction(
-            'rest'));
+          this.record(`team_${t}_player_${p}_action`, 'rest');
         } else {
           const [action, detail] = actionMap.get(player);
-          this.record(`team_${t}_player_${p}_action`, this.encodeAction(
-            action));
+          this.record(`team_${t}_player_${p}_action`, action);
           if (action === 'move') {
             this.record(`team_${t}_player_${p}_move_x`, detail[0]);
             this.record(`team_${t}_player_${p}_move_y`, detail[1]);
@@ -305,8 +323,12 @@ module.exports.FrameTensor = class FrameTensor {
   }
 
   isInteresting(gameState) {
-    return [STATES.Pickup, STATES.Normal, STATES.Receiving].includes(
-      gameState);
+    return INTERESTING_STATES.includes(gameState);
+  }
+
+  renderCsvCell(frame, column) {
+    const encoding = getEncoding(column);
+    return frame.has(column) ? encoding(frame.get(column)) : NONE_VALUE;
   }
 
   getPermutedCsvData() {
@@ -318,11 +340,8 @@ module.exports.FrameTensor = class FrameTensor {
         if (!this.isInteresting(frame.get('state'))) {
           continue;
         }
-
-        data.push(headers.map(h =>
-          this.frames[i].has(permutation.get(h))
-          ? this.frames[i].get(permutation.get(h))
-          : ''));
+        data.push(headers.map(h => this.renderCsvCell(frame, permutation
+          .get(h))));
       }
     }
     return data;
@@ -332,8 +351,7 @@ module.exports.FrameTensor = class FrameTensor {
     const headers = this.allKeys(false);
     const data = [headers];
     for (let i = 0; i < this.frames.length; i++) {
-      data.push(headers.map(
-        h => this.frames[i].has(h) ? this.frames[i].get(h) : ''));
+      data.push(headers.map(h => this.renderCsvCell(this.frames[i], h)));
     }
     return data;
   }
