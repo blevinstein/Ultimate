@@ -49,9 +49,9 @@ MODEL_OUTPUTS = [ACTION_OUTPUT] + NUMERIC_MODEL_OUTPUTS
 SELECTED_COLUMNS = MODEL_INPUTS + MODEL_OUTPUTS
 
 DEFAULTS_MAP = {
-    'state': tf.string,
+    'state': tf.int32,
     'offensiveTeam': tf.int32,
-    'offensiveGoalDirection': tf.string,
+    'offensiveGoalDirection': tf.int32,
     'stallCount': tf.float32,
     'disc_x': tf.float32,
     'disc_y': tf.float32,
@@ -131,15 +131,37 @@ DEFAULTS_MAP = {
 }
 COLUMN_DEFAULTS = list(map(lambda c: DEFAULTS_MAP[c], SELECTED_COLUMNS))
 
+def prediction_loss(y, y_pred):
+  y_pred = tf.reshape(y_pred, tf.shape(y))
+  action, others = tf.split(y, [len(ACTION_VALUES), len(NUMERIC_MODEL_OUTPUTS)], axis=-1)
+  action_pred, others_pred = \
+      tf.split(y_pred, [len(ACTION_VALUES), len(NUMERIC_MODEL_OUTPUTS)], axis=-1)
+
+  #print('Action')
+  #print(action)
+  #print(action_pred)
+
+  action_loss = tf.nn.softmax_cross_entropy_with_logits(action, action_pred)
+
+  #print(action_loss)
+  #print('Others')
+  #print(others)
+  #print(others_pred)
+
+  others_loss = tf.compat.v1.losses.mean_squared_error(others, others_pred)
+
+  #print(others_loss)
+
+  return action_loss + others_loss
 
 def build_model(n_outputs):
   # Input layer
   state = tf.feature_column.indicator_column(
       tf.feature_column.categorical_column_with_vocabulary_list(
-          'state', vocabulary_list=['receiving', 'pickup', 'normal']))
+          'state', vocabulary_list=[0, 1, 2]))
   offensive_goal_direction = tf.feature_column.indicator_column(
       tf.feature_column.categorical_column_with_vocabulary_list(
-          'offensiveGoalDirection', vocabulary_list=['E', 'W']))
+          'offensiveGoalDirection', vocabulary_list=[0, 1]))
   offensive_team = tf.feature_column.indicator_column(
       tf.feature_column.categorical_column_with_vocabulary_list(
           'offensiveTeam', vocabulary_list=[0, 1]))
@@ -148,11 +170,11 @@ def build_model(n_outputs):
           'last_action', vocabulary_list=['rest', 'move', 'throw']))
   feature_layer_inputs = {
       'state':
-          tf.keras.Input(shape = (1,), name = 'state', dtype = 'string'),
+          tf.keras.Input(shape = (1,), name = 'state', dtype = 'int32'),
       'offensiveGoalDirection':
-          tf.keras.Input(shape = (1,), name = 'offensiveGoalDirection', dtype = 'string'),
+          tf.keras.Input(shape = (1,), name = 'offensiveGoalDirection', dtype = 'int32'),
       'offensiveTeam': tf.keras.Input(shape = (1,), name = 'offensiveTeam', dtype = 'int32'),
-      'last_action': tf.keras.Input(shape = (1,), name = 'last_action', dtype = 'string'),
+      'last_action': tf.keras.Input(shape = (1,), name = 'last_action', dtype = 'int32'),
   }
   feature_columns = [state, offensive_team, offensive_goal_direction]
   for column_name in [
@@ -184,9 +206,8 @@ def build_model(n_outputs):
   output = tf.keras.layers.Dense(n_outputs)(hidden)
   model = tf.keras.Model(inputs=feature_layer_inputs, outputs=output)
 
-
   model.compile(
-      loss = tf.keras.losses.MeanSquaredError(),
+      loss = prediction_loss,
       optimizer = 'adam',
       metrics = ['accuracy'],)
   return model
@@ -254,6 +275,12 @@ def input_fn():
         select_columns = SELECTED_COLUMNS,
         column_defaults = COLUMN_DEFAULTS).map(split_data).shuffle(100000)
 
+def labels_to_output(logits):
+  action_logits, other_logits = \
+      tf.split(logits, [len(ACTION_VALUES), len(NUMERIC_MODEL_OUTPUTS)], axis=-1)
+  actions = tf.math.argmax(action_logits, axis=-1)
+  return (actions, other_logits)
+
 def main():
   # Train using Estimator
   #estimator = tf.keras.estimator.model_to_estimator(model)
@@ -261,22 +288,24 @@ def main():
   #model.summary()
   #exit(0)
 
+  # Print a example
+  #for features, labels in input_fn().batch(1).take(1):
+  #  print(features)
+  #  print(labels)
+  #  print(labels_to_output(labels))
+  #exit(0)
+
   # Train using Model
   model = build_model(len(ACTION_VALUES) + len(NUMERIC_MODEL_OUTPUTS))
-  for features, labels in input_fn().batch(10000).take(100):
+  for features, labels in input_fn().batch(50000).take(1):
     model.fit(x=features, y=labels, epochs=10)
-
   model.summary()
-  for features, labels in input_fn().batch(10000).take(1):
-    #print(features)
-    #print(labels)
-    model.evaluate(x=features, y=labels)
 
-  # Predict a single example
-  #for features, labels in input_fn().take(1):
-  #  logits = model.predict(x=features)
-  #  predicted_label = tf.math.argmax(logits, axis=1)
-  #  print('prediction: %s' % predicted_label)
+  # Predict some examples
+  for features, labels in input_fn().take(1):
+    logits = model.predict(x=features)
+    print('prediction: %s %s' % labels_to_output(logits))
+    print('actual: %s %s' % labels_to_output(labels))
 
   tf.keras.models.save_model(model, flags.output)
 
