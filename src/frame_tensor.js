@@ -219,11 +219,19 @@ module.exports.FrameTensor = class FrameTensor {
     this.frameValues = new Map;
   }
 
+  isInteresting(gameState) {
+    return [STATES.Pickup, STATES.Normal, STATES.Receiving].includes(
+      gameState);
+  }
+
   getPermutedCsvData() {
     const headers = this.allKeys(true);
     const data = [headers];
     for (let permutation of this.generatePermutations()) {
       for (let i = 0; i < this.frames.length; i++) {
+        if (!this.isInteresting(this.frames[i].get('state'))) {
+          continue;
+        }
         data.push(headers.map(h =>
           this.frames[i].has(permutation.get(h))
           ? this.frames[i].get(permutation.get(h))

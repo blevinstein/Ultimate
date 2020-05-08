@@ -29,7 +29,7 @@ const {
 } = require('./csv_utils.js');
 
 function playGame() {
-  const frame_tensor = new FrameTensor();
+  const frameTensor = new FrameTensor();
   const game = new Game(null, null, [
     new Coach(),
     new Coach(undefined, (game, team) => new ZoneDefenseStrategy(game,
@@ -53,26 +53,18 @@ function playGame() {
   };
 
   while (game.state != STATES.GameOver) {
-    // Only save data from 'interesting' frames
-    let recordFrame =
-      (game.state == STATES.Pickup || game.state == STATES.Normal
-        || game.state == STATES.Receiving);
-    if (recordFrame) {
-      frame_tensor.recordGameState(game);
-    }
+    frameTensor.recordGameState(game);
     game.update();
-    if (recordFrame) {
-      frame_tensor.recordActions(game, actionMap);
-      frame_tensor.nextFrame();
-    }
+    frameTensor.recordActions(game, actionMap);
+    frameTensor.nextFrame();
     actionMap.clear();
   }
-  return frame_tensor;
+  return frameTensor;
 }
 
-function writeOutput(frame_tensor) {
+function writeOutput(frameTensor) {
   if (flags.get('output_raw') !== '') {
-    const frame_data = frame_tensor.getFrameCsvData();
+    const frame_data = frameTensor.getFrameCsvData();
     writeToFile(flags.get('output_raw'), frame_data);
     console.log(
       `Writing frames (shape ${frame_data[0].length} x ${frame_data.length-1}) to ${flags.get('output_raw')}`
@@ -82,7 +74,7 @@ function writeOutput(frame_tensor) {
   }
 
   if (flags.get('output') !== '') {
-    const agentData = frame_tensor.getPermutedCsvData();
+    const agentData = frameTensor.getPermutedCsvData();
     writeToFile(flags.get('output'), agentData);
     console.log(
       `Writing examples (shape ${agentData[0].length} x ${agentData.length-1}) to ${flags.get('output')}`
@@ -113,38 +105,38 @@ async function main() {
       'File to store permuted agent training data in CSV format');
     flags.parse();
 
-    const num_games = flags.get('games');
-    const num_workers =
+    const numGames = flags.get('games');
+    const numWorkers =
       Math.max(1,
         Math.min(
-          Math.floor(num_games / flags.get('min_tasks_per_worker')),
+          Math.floor(numGames / flags.get('min_tasks_per_worker')),
           flags.get('max_workers')));
 
-    let frame_tensor = new FrameTensor();
-    let games_played = 0;
-    let workers_alive = num_workers;
+    let frameTensor = new FrameTensor();
+    let gamesPlayed = 0;
+    let workersAlive = numWorkers;
 
     const checkDone = () => {
-      if (games_played === num_games && workers_alive === 0) {
-        writeOutput(frame_tensor);
+      if (gamesPlayed === numGames && workersAlive === 0) {
+        writeOutput(frameTensor);
       }
     }
 
     // Assign carefully so that we have the exact right number of games played.
-    const tasks_per_worker = Math.ceil(num_games / num_workers);
-    const extra_capacity = num_workers * tasks_per_worker - num_games;
-    for (let i = 0; i < num_workers; ++i) {
-      const num_tasks = tasks_per_worker - (i < extra_capacity ? 1 : 0);
-      console.log(`Spawn worker: play ${num_tasks} games`);
+    const tasksPerWorker = Math.ceil(numGames / numWorkers);
+    const extra_capacity = numWorkers * tasksPerWorker - numGames;
+    for (let i = 0; i < numWorkers; ++i) {
+      const numTasks = tasksPerWorker - (i < extra_capacity ? 1 : 0);
+      console.log(`Spawn worker: play ${numTasks} games`);
       const worker = new Worker(__filename, {
-        workerData: num_tasks
+        workerData: numTasks
       });
-      worker.on('message', (new_frame_tensor) => {
-        ++games_played;
-        frame_tensor = frame_tensor.add(new_frame_tensor);
+      worker.on('message', (newFrameTensor) => {
+        ++gamesPlayed;
+        frameTensor = frameTensor.add(newFrameTensor);
         console.log(
-          `Frames: ${frame_tensor.frames.length} \
-                  (${new_frame_tensor.frames.length} new)`);
+          `Frames: ${frameTensor.frames.length} \
+                  (${newFrameTensor.frames.length} new)`);
         checkDone();
       });
       worker.on('error', (e) => console.error(e));
@@ -152,7 +144,7 @@ async function main() {
         if (code !== 0) {
           console.log(`Worked stoped with code ${code}`);
         }
-        --workers_alive;
+        --workersAlive;
         checkDone();
       });
     }
