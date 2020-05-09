@@ -6,6 +6,10 @@ parser = argparse.ArgumentParser(description='Train a bootstrap model.')
 parser.add_argument('--input', required=True, help='File to read examples from.')
 parser.add_argument('--output', required=True, help='File to write model to.')
 parser.add_argument('--from_checkpoint', help='Model to load as a starting point.')
+parser.add_argument('--shuffle_size', default=100000, type=int, help='Shuffle batch size');
+parser.add_argument('--train_batches', default=10, type=int, help='Number of training batches');
+parser.add_argument('--train_batch_size', default=10000, type=int, help='Training batch size');
+parser.add_argument('--epochs', default=10, type=int, help='Number of epochs to train');
 flags = parser.parse_args()
 
 ACTION_VALUES = ['rest', 'move', 'throw']
@@ -324,7 +328,7 @@ def input_fn():
         batch_size=1,
         select_columns = SELECTED_COLUMNS,
         column_defaults = COLUMN_DEFAULTS
-      ).map(splitter).shuffle(100000)
+      ).map(splitter).shuffle(flags.shuffle_size)
 
 def input_fn_with_feature_columns():
   splitter = lambda data: (feature_column_inputs(data), labels(data))
@@ -333,7 +337,7 @@ def input_fn_with_feature_columns():
         batch_size=1,
         select_columns = SELECTED_COLUMNS,
         column_defaults = COLUMN_DEFAULTS
-      ).map(splitter).shuffle(100000)
+      ).map(splitter).shuffle(flags.shuffle_size)
 
 def labels_to_output(logits):
   action_logits, other_logits = \
@@ -360,15 +364,15 @@ def main():
     model = reload_model(tf.keras.models.load_model(flags.from_checkpoint))
   else:
     model = build_model(RAW_INPUTS, RAW_OUTPUTS)
-  for features, labels in input_fn().batch(50000).take(1):
-    model.fit(x=features, y=labels, epochs=5)
+  for features, labels in input_fn().batch(flags.train_batch_size).take(flags.train_batches):
+    model.fit(x=features, y=labels, epochs=flags.epochs)
   model.summary()
 
   # Predict some examples
-  #for features, labels in input_fn().take(1):
-  #  logits = model.predict(x=features)
-  #  print('prediction: %s %s' % labels_to_output(logits))
-  #  print('actual: %s %s' % labels_to_output(labels))
+  for features, labels in input_fn().batch(1).take(1):
+    logits = model.predict(x=features)
+    print('prediction: %s %s' % labels_to_output(logits))
+    print('actual: %s %s' % labels_to_output(labels))
 
   model.save(flags.output, include_optimizer=False)
 
