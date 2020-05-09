@@ -8,6 +8,8 @@ parser.add_argument('--output', required=True, help='File to write model to.')
 parser.add_argument('--from_checkpoint', help='Model to load as a starting point.')
 flags = parser.parse_args()
 
+ACTION_VALUES = ['rest', 'move', 'throw']
+
 MODEL_INPUTS = [
     'state',
     'offensiveTeam',
@@ -39,14 +41,18 @@ MODEL_INPUTS = [
     'last_throw_angleOfAttack',
     'last_throw_tiltAngle',
 ]
+ONE_HOT_MODEL_INPUTS = {
+    'state': ['pickup', 'normal', 'receiving'],
+    'last_action': ACTION_VALUES
+}
+BINARY_MODEL_INPUTS = ['offensiveTeam', 'offensiveGoalDirection']
 
-ACTION_OUTPUT = 'action'
-ACTION_VALUES = ['rest', 'move', 'throw']
 NUMERIC_MODEL_OUTPUTS = [
     'move_x', 'move_y', 'throw_x', 'throw_y', 'throw_z',
-    'throw_angleOfAttack', 'throw_tiltAngle']
+    'throw_angleOfAttack', 'throw_tiltAngle'
+]
+MODEL_OUTPUTS = ['action'] + NUMERIC_MODEL_OUTPUTS
 
-MODEL_OUTPUTS = [ACTION_OUTPUT] + NUMERIC_MODEL_OUTPUTS
 SELECTED_COLUMNS = MODEL_INPUTS + MODEL_OUTPUTS
 
 DEFAULTS_MAP = {
@@ -162,7 +168,8 @@ def reload_model(model):
       metrics = ['accuracy'],)
   return model
 
-def build_model(n_outputs):
+# This model does not work in TFJS
+def build_model_with_feature_columns(n_outputs):
   # Input layer
   state = tf.feature_column.indicator_column(
       tf.feature_column.categorical_column_with_vocabulary_list(
@@ -220,6 +227,20 @@ def build_model(n_outputs):
       metrics = ['accuracy'],)
   return model
 
+def build_model(n_inputs, n_outputs):
+  # Input layer
+  input = tf.keras.Input(shape=(n_inputs,))
+  hidden = tf.keras.layers.Dense(80, activation='relu')(input)
+  hidden = tf.keras.layers.Dense(60, activation='relu')(hidden)
+  output = tf.keras.layers.Dense(n_outputs)(hidden)
+  model = tf.keras.Model(inputs=input, outputs=output)
+
+  model.compile(
+      loss = prediction_loss,
+      optimizer = 'adam',
+      metrics = ['accuracy'],)
+  return model
+
 # GRAVEYARD
 
   #action_head = tf.estimator.MultiClassHead(
@@ -254,10 +275,33 @@ def build_model(n_outputs):
 
 # /GRAVEYARD
 
-#def custom_loss(actual, predicted):
-
-def input_features(data):
+# Returns input features in a dict. Requires using feature columns to merge all inputs into a single
+# DenseFeatures layer.
+def feature_column_inputs(data):
   return {k: data[k] for k in MODEL_INPUTS}
+
+# Merges input features into a single tensor
+# TODO: normalize inputs
+RAW_INPUTS = sum(len(values) for c, values in ONE_HOT_MODEL_INPUTS.items()) + \
+        len(MODEL_INPUTS) - len(ONE_HOT_MODEL_INPUTS)
+RAW_OUTPUTS = len(ACTION_VALUES) + len(NUMERIC_MODEL_OUTPUTS)
+def raw_inputs(data):
+  one_hot_inputs = []
+  for column, values in ONE_HOT_MODEL_INPUTS.items():
+    one_hot_inputs.append(
+        tf.reshape(
+            tf.dtypes.cast(
+                tf.one_hot(data[column], len(values)),
+                tf.float32),
+            (len(values),)))
+  numeric_inputs = []
+  for column in MODEL_INPUTS:
+    if column not in ONE_HOT_MODEL_INPUTS:
+      if column in BINARY_MODEL_INPUTS:
+        numeric_inputs.append(tf.cast(data[column], tf.float32))
+      else:
+        numeric_inputs.append(data[column])
+  return tf.concat(one_hot_inputs + numeric_inputs, axis = -1)
 
 def encode_action(value):
   return ['rest', 'move', 'throw'].index(value)
@@ -267,21 +311,29 @@ def labels(data):
   #for col in data.keys():
   #  print('%s => %s' % (col, data[col].dtype))
   #print('*******************')
-  one_hot_action = tf.one_hot(data[ACTION_OUTPUT], 3)
+  one_hot_action = tf.one_hot(data['action'], 3)
   numeric_labels = []
   for k in NUMERIC_MODEL_OUTPUTS:
     numeric_labels.append(tf.reshape(data[k], (1, 1), name=k))
-  return tf.concat([one_hot_action] + numeric_labels, axis=1)
-
-def split_data(data):
-  return (input_features(data), labels(data))
+  return tf.concat([one_hot_action] + numeric_labels, axis=-1)
 
 def input_fn():
+  splitter = lambda data: (raw_inputs(data), labels(data))
   return tf.data.experimental.make_csv_dataset(
         flags.input,
         batch_size=1,
         select_columns = SELECTED_COLUMNS,
-        column_defaults = COLUMN_DEFAULTS).map(split_data).shuffle(100000)
+        column_defaults = COLUMN_DEFAULTS
+      ).map(splitter).shuffle(100000)
+
+def input_fn_with_feature_columns():
+  splitter = lambda data: (feature_column_inputs(data), labels(data))
+  return tf.data.experimental.make_csv_dataset(
+        flags.input,
+        batch_size=1,
+        select_columns = SELECTED_COLUMNS,
+        column_defaults = COLUMN_DEFAULTS
+      ).map(splitter).shuffle(100000)
 
 def labels_to_output(logits):
   action_logits, other_logits = \
@@ -307,7 +359,7 @@ def main():
   if flags.from_checkpoint:
     model = reload_model(tf.keras.models.load_model(flags.from_checkpoint))
   else:
-    model = build_model(len(ACTION_VALUES) + len(NUMERIC_MODEL_OUTPUTS))
+    model = build_model(RAW_INPUTS, RAW_OUTPUTS)
   for features, labels in input_fn().batch(50000).take(1):
     model.fit(x=features, y=labels, epochs=5)
   model.summary()
