@@ -148,17 +148,10 @@ def prediction_loss(y, y_pred):
   action_pred, others_pred = \
       tf.split(y_pred, [len(ACTION_VALUES), len(NUMERIC_MODEL_OUTPUTS)], axis=-1)
 
-  #print('Action')
-  #print(action)
-  #print(action_pred)
-
+  # Cross entropy loss for categorizing action
   action_loss = tf.nn.softmax_cross_entropy_with_logits(action, action_pred)
 
-  #print(action_loss)
-  #print('Others')
-  #print(others)
-  #print(others_pred)
-
+  # MSE loss for numeric parameters (movement, throwing)
   others_loss = tf.compat.v1.losses.mean_squared_error(others, others_pred)
 
   #print(others_loss)
@@ -352,7 +345,7 @@ def main():
   #model.summary()
   #exit(0)
 
-  # Print a example
+  # Print an example
   #for features, labels in input_fn().batch(1).take(1):
   #  print(features)
   #  print(labels)
@@ -369,10 +362,10 @@ def main():
   model.summary()
 
   # Predict some examples
-  for features, labels in input_fn().batch(1).take(1):
-    logits = model.predict(x=features)
-    print('prediction: %s %s' % labels_to_output(logits))
-    print('actual: %s %s' % labels_to_output(labels))
+  #for features, labels in input_fn().batch(1).take(1):
+  #  logits = model.predict(x=features)
+  #  print('prediction: %s %s' % labels_to_output(logits))
+  #  print('actual: %s %s' % labels_to_output(labels))
 
   model.save(flags.output, include_optimizer=False)
 

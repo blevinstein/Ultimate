@@ -16,6 +16,9 @@ const {
   ManualOffenseStrategy
 } = require('./strategy/manual_offense.js');
 const {
+  ModelStrategy
+} = require('./strategy/model_strategy.js');
+const {
   ZoneDefenseStrategy
 } = require('./strategy/zone_defense.js');
 const {
@@ -28,7 +31,7 @@ window.initialize =
   () => {
     console.log('Initializing...');
 
-    Promise.all([Game.loadResources(), tf.loadLayersModel('model.json')]).then(
+    Promise.all([Game.loadResources(), tf.loadGraphModel('v1/model.json')]).then(
       (responses) => {
         initialized = true;
         console.log('Initialized.');

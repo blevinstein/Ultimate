@@ -1,6 +1,6 @@
 const {
   FrameTensor
-} = require('./frame_tensor.js');
+} = require('../frame_tensor.js');
 const {
   Strategy
 } = require('./strategy.js');

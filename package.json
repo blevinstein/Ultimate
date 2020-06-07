@@ -8,7 +8,8 @@
     "fmt": "js-beautify src/*.js src/**/*.js -r --config=beautify.json",
     "start": "node src/server.js",
     "record_games": "node --max-old-space-size=8000 src/record_games.js",
-    "train_bootstrap": "python3 src/ml/train_bootstrap.py --input=data/examples.csv"
+    "train_bootstrap": "python3 src/ml/train_bootstrap.py",
+    "convert_model": "tensorflowjs_converter --input_format=tf_saved_model --output_format=tfjs_graph_model --output_node_names=final_result --saved_model_tags=serve"
   },
   "repository": {
     "type": "git",
