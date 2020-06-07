@@ -5,7 +5,7 @@
   "main": "",
   "scripts": {
     "test": "mocha",
-    "fmt": "js-beautify src/*.js src/**/*.js --config=beautify.json",
+    "fmt": "js-beautify src/*.js src/**/*.js -r --config=beautify.json",
     "start": "node src/server.js",
     "record_games": "node --max-old-space-size=8000 src/record_games.js",
     "train_bootstrap": "python3 src/ml/train_bootstrap.py --input=data/examples.csv"
