@@ -540,7 +540,8 @@ module.exports.Game = class Game {
         if (actionMap.has(player)) {
           throw new Error('Player already has an action registered!');
         }
-        actionMap.set(player, ['move', destination]);
+        actionMap.set(player, ['move', sub2d(destination, player
+          .position)]);
       };
       strategy.onThrow = (player, params) => {
         if (actionMap.has(player)) {

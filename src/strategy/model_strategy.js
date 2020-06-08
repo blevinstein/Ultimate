@@ -1,6 +1,9 @@
 const tf = require('@tensorflow/tfjs');
 
 const {
+  add2d
+} = require('./math_utils.js');
+const {
   FrameTensor
 } = require('../frame_tensor.js');
 const {
@@ -38,9 +41,8 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
           player.rest();
         }
       } else if (!player.hasDisc && moveAction > restAction) {
-        const params = [moveX, moveY];
-        this.move(player, params);
-        actionMap.set(player, ['move', params]);
+        this.move(player, add2d(player.position, [moveX, moveY]));
+        actionMap.set(player, ['move', [moveX, moveY]]);
       } else {
         player.rest();
       }
