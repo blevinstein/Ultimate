@@ -39,7 +39,7 @@ module.exports.Strategy = class Strategy {
     }
   }
 
-  throw (player, params) {
+  throw(player, params) {
     if (this.onThrow) {
       this.onThrow(player, params);
     }

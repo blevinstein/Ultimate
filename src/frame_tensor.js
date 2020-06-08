@@ -1,8 +1,21 @@
+const tf = require('@tensorflow/tfjs');
+
 const {
   STATES
 } = require('./game_params.js');
 
 const INTERESTING_STATES = [STATES.Pickup, STATES.Normal, STATES.Receiving];
+const ONE_HOT_COLUMNS = ['state', 'action'];
+const OUTPUT_ONLY_COLUMNS = [
+    'action',
+    'move_x',
+    'move_y',
+    'throw_x',
+    'throw_y',
+    'throw_z',
+    'throw_angleOfAttack',
+    'throw_tiltAngle',
+];
 
 const VOCABULARIES = new Map([
   ['state', INTERESTING_STATES],
@@ -11,7 +24,7 @@ const VOCABULARIES = new Map([
 ]);
 const NONE_VALUE = '';
 
-// Encodes a value which must
+// Encodes a value using a list of enum values.
 function encodeValue(value, vocab) {
   const index = vocab.findIndex(v => v === value);
   if (index < 0) {
@@ -20,16 +33,30 @@ function encodeValue(value, vocab) {
   return index;
 }
 
-// Enumerated values are encoded based on the contents of VOCABULARIES.
-function getEncoding(column, separator = '_') {
-  // Infers encoding vocabulary from the last part of the column name.
-  let encodingKey;
+function encodeOneHot(value, vocab) {
+  const index = value ? encodeValue(value, vocab) : -1;
+  let result = [];
+  for (let i = 0; i < vocab.length; ++i) {
+    result.push(i === index ? 1 : 0);
+  }
+  return result;
+}
+
+function getLastPart(column, separator = '_') {
+  let lastPart;
   if (column.includes(separator)) {
     const parts = column.split(separator);
-    encodingKey = parts[parts.length - 1];
+    lastPart = parts[parts.length - 1];
   } else {
-    encodingKey = column;
+    lastPart = column;
   }
+  return lastPart;
+}
+
+// Enumerated values are encoded based on the contents of VOCABULARIES.
+function getEncoding(column) {
+  // Infers encoding vocabulary from the last part of the column name.
+  const encodingKey = getLastPart(column);
   return VOCABULARIES.has(encodingKey)
     ? value => encodeValue(value, VOCABULARIES.get(encodingKey))
     : (value => value);
@@ -46,7 +73,8 @@ function getEncoding(column, separator = '_') {
 //
 // const game = new Game(...);
 // const actionMap = new Map;
-// const frameTensor = new FrameTensor(/*withActions=*/true);
+// game.recordActions(actionMap);
+// const frameTensor = new FrameTensor();
 // while (game.state != STATES.GameOver) {
 //   frameTensor.recordGameState(game);
 //   game.update();
@@ -60,16 +88,14 @@ function getEncoding(column, separator = '_') {
 // const game = new Game(...);
 // ...
 // const model = new WinnerPredictor(...);
-// const frameTensor = new FrameTensor(/*withActions=*/false);
+// const frameTensor = new FrameTensor();
 // frameTensor.recordGameState(game);
+// const predictedAction = model.predict(frameTensor.getPermutedInputs());
 // frameTensor.nextFrame();
-// const predictedWinner = model.predict(frameTensor);
 //
 //
 module.exports.FrameTensor = class FrameTensor {
-  constructor(withActions = true) {
-    this.withActions = withActions;
-
+  constructor() {
     this.rawKeys = this.allKeys(false);
     this.keySet = new Set(this.rawKeys);
 
@@ -79,9 +105,6 @@ module.exports.FrameTensor = class FrameTensor {
   }
 
   add(otherTensor) {
-    if (this.withActions !== otherTensor.withActions) {
-      throw Error('Tensors are not compatible');
-    }
     if (this.frameValues.size) {
       throw new Error('Need to call nextFrame() on this');
     }
@@ -89,7 +112,7 @@ module.exports.FrameTensor = class FrameTensor {
       throw new Error('Need to call nextFrame() on otherTensor');
     }
 
-    const newTensor = new FrameTensor(this.withActions);
+    const newTensor = new FrameTensor();
     newTensor.frames = this.frames.concat(otherTensor.frames);
     return newTensor;
   }
@@ -171,10 +194,6 @@ module.exports.FrameTensor = class FrameTensor {
   }
 
   // Returns the list of keys to be expected in an output file.
-  //
-  // Iff withActions = true, includes columns for actions taken by players.
-  // Iff permuted = true, has a reduced set of columns applicable to a single
-  // player.
   allKeys(permuted) {
     const keys = [
       'state', 'offensiveTeam', 'offensiveGoalDirection', 'stallCount',
@@ -191,7 +210,7 @@ module.exports.FrameTensor = class FrameTensor {
           `team_${t}_player_${p}_vx`,
           `team_${t}_player_${p}_vy`,
         );
-        if (this.withActions && !permuted) {
+        if (!permuted) {
           keys.push(
             `team_${t}_player_${p}_action`,
             `team_${t}_player_${p}_move_x`,
@@ -208,12 +227,11 @@ module.exports.FrameTensor = class FrameTensor {
             `last_team_${t}_player_${p}_throw_y`,
             `last_team_${t}_player_${p}_throw_z`,
             `last_team_${t}_player_${p}_throw_angleOfAttack`,
-            `last_team_${t}_player_${p}_throw_tiltAngle`,
-          );
+            `last_team_${t}_player_${p}_throw_tiltAngle`);
         }
       }
     }
-    if (this.withActions && permuted) {
+    if (permuted) {
       keys.push(
         'action',
         'move_x',
@@ -230,8 +248,7 @@ module.exports.FrameTensor = class FrameTensor {
         'last_throw_y',
         'last_throw_z',
         'last_throw_angleOfAttack',
-        'last_throw_tiltAngle',
-      );
+        'last_throw_tiltAngle');
     }
     return keys;
   }
@@ -329,6 +346,30 @@ module.exports.FrameTensor = class FrameTensor {
   renderCsvCell(frame, column) {
     const encoding = getEncoding(column);
     return frame.has(column) ? encoding(frame.get(column)) : NONE_VALUE;
+  }
+
+  encodeInputs(column, value) {
+    if (OUTPUT_ONLY_COLUMNS.includes(column)) {
+      return [];
+    }
+    const encodingKey = getLastPart(column);
+    return ONE_HOT_COLUMNS.includes(encodingKey)
+      ? encodeOneHot(value, VOCABULARIES.get(encodingKey))
+      : (value || 0);
+  }
+
+  // Returns an array of tf.Tensor where element i is the world as perceived
+  // by player number i on team number 'team'.
+  getPermutedInputs(team) {
+    const headers = this.allKeys(true);
+    const permutedInputs = [];
+    for (let permutation of this.generatePermutations([team])) {
+      permutedInputs.push(tf.tensor(
+          headers.flatMap(h =>
+              this.encodeInputs(h, this.frameValues.get(permutation.get(h)))),
+          [1, 75]));
+    }
+    return permutedInputs;
   }
 
   getPermutedCsvData() {

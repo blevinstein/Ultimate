@@ -32,25 +32,11 @@ function playGame() {
   const frameTensor = new FrameTensor();
   const game = new Game(null, null, [
     new Coach(),
-    new Coach(undefined, (game, team) => new ZoneDefenseStrategy(game,
-      team))
+    new Coach(undefined, (game, team) => new ZoneDefenseStrategy(game, team))
   ]);
   const actionMap = new Map;
 
-  game.onNewStrategy = strategy => {
-    strategy.onMove = (player, destination) => {
-      if (actionMap.has(player)) {
-        throw new Error('Player already has an action registered!');
-      }
-      actionMap.set(player, ['move', destination]);
-    };
-    strategy.onThrow = (player, params) => {
-      if (actionMap.has(player)) {
-        throw new Error('Player already has an action registered!');
-      }
-      actionMap.set(player, ['throw', params]);
-    }
-  };
+  game.recordActions(actionMap);
 
   while (game.state != STATES.GameOver) {
     frameTensor.recordGameState(game);

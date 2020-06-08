@@ -534,6 +534,23 @@ module.exports.Game = class Game {
     this.stallCount = 0;
   }
 
+  recordActions(actionMap) {
+    this.onNewStrategy = strategy => {
+      strategy.onMove = (player, destination) => {
+        if (actionMap.has(player)) {
+          throw new Error('Player already has an action registered!');
+        }
+        actionMap.set(player, ['move', destination]);
+      };
+      strategy.onThrow = (player, params) => {
+        if (actionMap.has(player)) {
+          throw new Error('Player already has an action registered!');
+        }
+        actionMap.set(player, ['throw', params]);
+      }
+    };
+  }
+
   static endzone(goalDirection) {
     return goalDirection === 'E' ? [
       [90, 110],
