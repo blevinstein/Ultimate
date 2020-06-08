@@ -105,9 +105,9 @@ async function main() {
     'min_tasks_per_worker', 4, 'Minimum number of tasks per worker thread'
   );
   flags.defineInteger(
-    'max_workers',
-    8,
-    'Maximum number of worker threads to use for processing');
+    'num_workers',
+    4,
+    'Number of worker threads to use for processing');
   flags.defineString(
     'output_raw',
     '',
@@ -150,11 +150,7 @@ function trainSerial(numGames) {
 }
 
 function trainParallel(numGames) {
-  const numWorkers =
-    Math.max(1,
-      Math.min(
-        Math.floor(numGames / flags.get('min_tasks_per_worker')),
-        flags.get('max_workers')));
+  const numWorkers = flags.get('num_workers');
 
   let frameTensor = new FrameTensor();
   let gamesPlayed = 0;
