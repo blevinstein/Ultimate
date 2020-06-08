@@ -27,11 +27,21 @@ const {
 
 let initialized = false;
 
+function makeModel() {
+  const model = tf.sequential();
+  model.add(tf.layers.dense({units: 80, inputShape: [75]}));
+  model.add(tf.layers.dense({units: 60}));
+  model.add(tf.layers.dense({units: 10}));
+  model.compile({optimizer: 'sgd', loss: 'meanSquaredError'});
+  return Promise.resolve(model);
+}
+
 window.initialize =
   () => {
     console.log('Initializing...');
 
     Promise.all([Game.loadResources(), tf.loadLayersModel('v1/model.json')]).then(
+    //Promise.all([Game.loadResources(), makeModel()]).then(
       (responses) => {
         initialized = true;
         console.log('Initialized.');

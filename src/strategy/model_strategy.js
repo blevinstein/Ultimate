@@ -1,3 +1,5 @@
+const tf = require('@tensorflow/tfjs');
+
 const {
   FrameTensor
 } = require('../frame_tensor.js');
@@ -8,12 +10,9 @@ const {
 module.exports.ModelStrategy = class ModelStrategy extends Strategy {
   constructor(model, game, team) {
     super(game, team);
-    if (!model) {
-      throw new Error(`Invalid model: ${model}`);
-    }
     this.model = model;
     this.teamNumber = this.team === this.game.teams[1] ? 1 : 0;
-    this.frameTensor = new FrameTensor(true);
+    this.frameTensor = new FrameTensor();
   }
 
   update() {
@@ -24,7 +23,6 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
       const player = this.team.players[p];
       // TODO: Make all predictions with a single call to model.predict
       const prediction = this.model.predict(inputs[p]);
-      window.prediction = prediction;
       const [restAction, moveAction, throwAction, moveX, moveY,
           throwX, throwY, throwZ, throwAngleOfAttack, throwTiltAngle] =
               prediction.as1D().arraySync();
@@ -33,14 +31,14 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
           const params =
               [[throwX, throwY, throwZ], throwAngleOfAttack, throwTiltAngle];
           this.throw(player, params);
-          actionMap.put(player, ['throw', params]);
+          actionMap.set(player, ['throw', params]);
         } else {
           player.rest();
         }
       } else if (!player.hasDisc && moveAction > restAction) {
         const params = [moveX, moveY];
         this.move(player, params);
-        actionMap.put(player, ['move', params]);
+        actionMap.set(player, ['move', params]);
       } else {
         player.rest();
       }

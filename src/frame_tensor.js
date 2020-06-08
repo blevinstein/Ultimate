@@ -6,6 +6,7 @@ const {
 
 const INTERESTING_STATES = [STATES.Pickup, STATES.Normal, STATES.Receiving];
 const ONE_HOT_COLUMNS = ['state', 'action'];
+const BINARY_COLUMNS = ['offensiveGoalDirection'];
 const OUTPUT_ONLY_COLUMNS = [
     'action',
     'move_x',
@@ -353,9 +354,13 @@ module.exports.FrameTensor = class FrameTensor {
       return [];
     }
     const encodingKey = getLastPart(column);
-    return ONE_HOT_COLUMNS.includes(encodingKey)
-      ? encodeOneHot(value, VOCABULARIES.get(encodingKey))
-      : (value || 0);
+    if (ONE_HOT_COLUMNS.includes(encodingKey)) {
+      return encodeOneHot(value, VOCABULARIES.get(encodingKey));
+    } else if (BINARY_COLUMNS.includes(encodingKey)) {
+      return encodeValue(value, VOCABULARIES.get(encodingKey));
+    } else {
+      return value || 0;
+    }
   }
 
   // Returns an array of tf.Tensor where element i is the world as perceived
