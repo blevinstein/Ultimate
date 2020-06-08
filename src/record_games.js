@@ -28,6 +28,7 @@ const {
   writeToFile
 } = require('./csv_utils.js');
 
+// Play a single game until completion, and return as a FrameTensor.
 function playGame() {
   const frameTensor = new FrameTensor();
   const game = new Game(null, null, [
@@ -72,73 +73,103 @@ function writeOutput(frameTensor) {
 }
 
 async function main() {
-  if (isMainThread) {
+  flags.defineInteger('games', 10, 'Number of games to simulate');
+  flags.defineBoolean(
+    'parallel',
+    true,
+    'Set to train in using multiple worker threads');
+  flags.defineInteger(
+    'min_tasks_per_worker', 4, 'Minimum number of tasks per worker thread'
+  );
+  flags.defineInteger(
+    'max_workers',
+    8,
+    'Maximum number of worker threads to use for processing');
+  flags.defineString(
+    'output_raw',
+    '',
+    'File to store raw frame data in CSV format');
+  flags.defineString(
+    'output',
+    'data/examples.csv',
+    'File to store permuted agent training data in CSV format');
+  flags.parse();
 
-    flags.defineInteger('games', 10, 'Number of games to simulate');
-    flags.defineInteger(
-      'min_tasks_per_worker', 4, 'Minimum number of tasks per worker thread'
-    );
-    flags.defineInteger(
-      'max_workers',
-      8,
-      'Maximum number of worker threads to use for processing');
-    flags.defineString(
-      'output_raw',
-      '',
-      'File to store raw frame data in CSV format');
-    flags.defineString(
-      'output',
-      'data/examples.csv',
-      'File to store permuted agent training data in CSV format');
-    flags.parse();
+  const numGames = flags.get('games');
 
-    const numGames = flags.get('games');
-    const numWorkers =
-      Math.max(1,
-        Math.min(
-          Math.floor(numGames / flags.get('min_tasks_per_worker')),
-          flags.get('max_workers')));
-
-    let frameTensor = new FrameTensor();
-    let gamesPlayed = 0;
-    let workersAlive = numWorkers;
-
-    const checkDone = () => {
-      if (gamesPlayed === numGames && workersAlive === 0) {
-        writeOutput(frameTensor);
-      }
-    }
-
-    // Assign carefully so that we have the exact right number of games played.
-    const tasksPerWorker = Math.ceil(numGames / numWorkers);
-    const extra_capacity = numWorkers * tasksPerWorker - numGames;
-    for (let i = 0; i < numWorkers; ++i) {
-      const numTasks = tasksPerWorker - (i < extra_capacity ? 1 : 0);
-      console.log(`Spawn worker: play ${numTasks} games`);
-      const worker = new Worker(__filename, {
-        workerData: numTasks
-      });
-      worker.on('message', (newFrameTensor) => {
-        ++gamesPlayed;
-        frameTensor = frameTensor.add(newFrameTensor);
-        console.log(
-          `Frames: ${frameTensor.frames.length} \
-                  (${newFrameTensor.frames.length} new)`);
-        checkDone();
-      });
-      worker.on('error', (e) => console.error(e));
-      worker.on('exit', (code) => {
-        if (code !== 0) {
-          console.log(`Worked stoped with code ${code}`);
-        }
-        --workersAlive;
-        checkDone();
-      });
+  if (flags.get('parallel')) {
+    if (isMainThread) {
+      trainParallel(numGames);
+    } else {
+      trainParallelWorker();
     }
   } else {
-    for (let i = 0; i < workerData; ++i) {
-      parentPort.postMessage(playGame());
+    trainSerial(numGames);
+  }
+}
+
+function trainSerial(numGames) {
+  let frameTensor = new FrameTensor();
+
+  for (let i = 0; i < numGames; ++i) {
+    const newFrameTensor = playGame();
+    frameTensor = frameTensor.add(newFrameTensor);
+    console.log(
+      `Frames: ${frameTensor.frames.length} \
+              (${newFrameTensor.frames.length} new)`);
+  }
+
+  writeOutput(frameTensor);
+}
+
+function trainParallel(numGames) {
+  const numWorkers =
+    Math.max(1,
+      Math.min(
+        Math.floor(numGames / flags.get('min_tasks_per_worker')),
+        flags.get('max_workers')));
+
+  let frameTensor = new FrameTensor();
+  let gamesPlayed = 0;
+  let workersAlive = numWorkers;
+
+  const checkDone = () => {
+    if (gamesPlayed === numGames && workersAlive === 0) {
+      writeOutput(frameTensor);
     }
+  }
+
+  // Assign carefully so that we have the exact right number of games played.
+  const tasksPerWorker = Math.ceil(numGames / numWorkers);
+  const extra_capacity = numWorkers * tasksPerWorker - numGames;
+  for (let i = 0; i < numWorkers; ++i) {
+    const numTasks = tasksPerWorker - (i < extra_capacity ? 1 : 0);
+    console.log(`Spawn worker: play ${numTasks} games`);
+    const worker = new Worker(__filename, {
+      workerData: numTasks
+    });
+    worker.on('message', (newFrameTensor) => {
+      ++gamesPlayed;
+      frameTensor = frameTensor.add(newFrameTensor);
+      console.log(
+        `Frames: ${frameTensor.frames.length} \
+                (${newFrameTensor.frames.length} new)`);
+      checkDone();
+    });
+    worker.on('error', (e) => console.error(e));
+    worker.on('exit', (code) => {
+      if (code !== 0) {
+        console.log(`Worked stopped with code ${code}`);
+      }
+      --workersAlive;
+      checkDone();
+    });
+  }
+}
+
+function trainParallelWorker() {
+  for (let i = 0; i < workerData; ++i) {
+    parentPort.postMessage(playGame());
   }
 }
 

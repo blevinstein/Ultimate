@@ -287,8 +287,8 @@ module.exports.FrameTensor = class FrameTensor {
         this.record(`team_${t}_player_${p}_y`, player.position[1]);
         this.record(`team_${t}_player_${p}_vx`, player.velocity[0]);
         this.record(`team_${t}_player_${p}_vy`, player.velocity[1]);
-        this.record(`team_${t}_player_${p}_hasDisc`, player.hasDisc ? 1 :
-        0);
+        this.record(`team_${t}_player_${p}_hasDisc`, player.hasDisc ? 1
+          : 0);
       }
     }
     this.record('disc_x', game.disc.position[0]);
@@ -381,7 +381,7 @@ module.exports.FrameTensor = class FrameTensor {
     const permutedInputs = [];
     for (let permutation of this.generatePermutations([team])) {
       const inputs = headers.flatMap(h =>
-          this.encodeInputs(h, this.frameValues.get(permutation.get(h))));
+        this.encodeInputs(h, this.frameValues.get(permutation.get(h))));
       permutedInputs.push(tf.tensor(inputs, [1, inputs.length]));
     }
     return permutedInputs;
