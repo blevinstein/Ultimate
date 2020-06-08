@@ -380,11 +380,9 @@ module.exports.FrameTensor = class FrameTensor {
     const headers = this.allKeys(true);
     const permutedInputs = [];
     for (let permutation of this.generatePermutations([team])) {
-      permutedInputs.push(tf.tensor(
-        headers.flatMap(h =>
-          this.encodeInputs(h, this.frameValues.get(permutation.get(h)))
-        ),
-        [1, 75]));
+      const inputs = headers.flatMap(h =>
+          this.encodeInputs(h, this.frameValues.get(permutation.get(h))));
+      permutedInputs.push(tf.tensor(inputs, [1, inputs.length]));
     }
     return permutedInputs;
   }
