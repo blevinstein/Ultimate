@@ -72,7 +72,8 @@ const WIN_SCORE = 11;
 const FIELD_SPRITE_SIZE = [992, 408];
 
 const COLLISION_DIST = 1.5;
-const MAX_COLLISION_IMPULSE = 1.0;
+const MAX_COLLISION_IMPULSE = 2.0;
+const STANDING_FRICTION = 4.0;
 
 const WARNING_COLOR = '#fc8b28';
 
@@ -291,24 +292,8 @@ module.exports.Game = class Game {
     // coordinates, find all pairs of players that are too close.
     let allPlayers =
       this.allPlayers().sort((a, b) => a.position[0] - b.position[0]);
-    let windowMin = 0;
-    let windowMax = 0;
     for (let i = 0; i < allPlayers.length; i++) {
-      // Update window.
-      // windowMin = first player within collisionDist by x coord.
-      while (allPlayers[windowMin].position[0]
-        < allPlayers[i].position[0] - COLLISION_DIST) {
-        windowMin++;
-      }
-      // windowMax = first player not within collisionDist by x coord.
-      while (windowMax < allPlayers.length
-        && allPlayers[windowMax].position[0]
-        < allPlayers[i].position[0] + COLLISION_DIST) {
-        windowMax++;
-      }
-      for (let j = windowMin; j < windowMax; j++) {
-        if (i <= j)
-          continue;
+      for (let j = i + 1; j < allPlayers.length; j++) {
         let distance = dist2d(allPlayers[i].position, allPlayers[j]
           .position);
         if (distance < COLLISION_DIST) {
@@ -317,14 +302,12 @@ module.exports.Game = class Game {
             * MAX_COLLISION_IMPULSE;
           const collisionDirection =
             norm2d(sub2d(allPlayers[i].position, allPlayers[j].position));
-          if (allPlayers[i].moving) {
-            allPlayers[i].accelerate(
-              mul2d(collisionDirection, collisionImpulse));
-          }
-          if (allPlayers[j].moving) {
-            allPlayers[j].accelerate(
-              mul2d(collisionDirection, -collisionImpulse));
-          }
+          allPlayers[i].accelerate(
+            mul2d(collisionDirection, collisionImpulse)) / (allPlayers[i]
+            .moving ? 1 : STANDING_FRICTION);
+          allPlayers[j].accelerate(
+            mul2d(collisionDirection, -collisionImpulse)) / (allPlayers[j]
+            .moving ? 1 : STANDING_FRICTION);
         }
       }
     }
