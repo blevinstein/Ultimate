@@ -20,9 +20,13 @@ module.exports.writeToFile = (filename, headers, data) => {
   }
   fsPromises.open(filename, 'a').then(file => {
     stringifier.on('readable', async () => {
+      const lines = [];
       let row;
       while (row = stringifier.read()) {
-        await file.appendFile(row);
+        lines.push(row);
+      }
+      for (let line of lines) {
+        await file.appendFile(line);
       }
     });
     stringifier.on('error', (e) => {
