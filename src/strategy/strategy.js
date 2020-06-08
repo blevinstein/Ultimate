@@ -12,6 +12,7 @@ const {
   add2d,
   dist2d,
   mul2d,
+  sub2d,
   project2d,
   project3d
 } =
@@ -48,10 +49,10 @@ module.exports.Strategy = class Strategy {
 
   // Move player exactly to 'destination'
   move(player, destination) {
-    destination = snapToBounds(destination, FIELD_BOUNDS);
     if (this.onMove) {
-      this.onMove(player, destination);
+      this.onMove(player, sub2d(destination, player.position));
     }
+    destination = snapToBounds(destination, FIELD_BOUNDS);
     player.moveTo(destination);
     const playerScreenPosition = project2d(player.position);
     const destinationScreenPosition = project2d(destination);
