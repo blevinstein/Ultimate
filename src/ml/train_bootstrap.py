@@ -13,6 +13,7 @@ parser.add_argument('--epochs', default=10, type=int, help='Number of epochs to 
 flags = parser.parse_args()
 
 ACTION_VALUES = ['rest', 'move', 'throw']
+ACTION_WEIGHT = 100
 
 MODEL_INPUTS = [
     'state',
@@ -156,7 +157,7 @@ def prediction_loss(y, y_pred):
 
   #print(others_loss)
 
-  return action_loss + others_loss
+  return action_loss * ACTION_WEIGHT + others_loss
 
 def reload_model(model):
   model.compile(
