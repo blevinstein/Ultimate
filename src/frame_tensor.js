@@ -411,4 +411,10 @@ module.exports.FrameTensor = class FrameTensor {
     }
     return data;
   }
+
+  filter(condition) {
+    const newTensor = new FrameTensor();
+    newTensor.frames = this.frames.filter(condition);
+    return newTensor;
+  }
 };

@@ -28,9 +28,26 @@ const {
   writeToFile
 } = require('./csv_utils.js');
 
+const ACTION_COLUMNS = [
+  'team_0_player_0_action',
+  'team_0_player_1_action',
+  'team_0_player_2_action',
+  'team_0_player_3_action',
+  'team_0_player_4_action',
+  'team_0_player_5_action',
+  'team_0_player_6_action',
+  'team_1_player_0_action',
+  'team_1_player_1_action',
+  'team_1_player_2_action',
+  'team_1_player_3_action',
+  'team_1_player_4_action',
+  'team_1_player_5_action',
+  'team_1_player_6_action',
+];
+
 // Play a single game until completion, and return as a FrameTensor.
-function playGame() {
-  const frameTensor = new FrameTensor();
+function playGame(enriched = false) {
+  let frameTensor = new FrameTensor();
   const game = new Game(null, null, [
     new Coach(),
     new Coach(undefined, (game, team) => new ZoneDefenseStrategy(game,
@@ -47,6 +64,12 @@ function playGame() {
     frameTensor.nextFrame();
     actionMap.clear();
   }
+
+  if (enriched) {
+    frameTensor = frameTensor.filter(
+      frame => ACTION_COLUMNS.some(column => frame.get(column) === 'throw'));
+  }
+
   return frameTensor;
 }
 
@@ -93,6 +116,10 @@ async function main() {
     'output',
     'data/examples.csv',
     'File to store permuted agent training data in CSV format');
+  flags.defineBoolean(
+    'enriched',
+    false,
+    'Set to true for examples from throwing frames only.');
   flags.parse();
 
   const numGames = flags.get('games');
@@ -112,7 +139,7 @@ function trainSerial(numGames) {
   let frameTensor = new FrameTensor();
 
   for (let i = 0; i < numGames; ++i) {
-    const newFrameTensor = playGame();
+    const newFrameTensor = playGame(flags.get('enriched'));
     frameTensor = frameTensor.add(newFrameTensor);
     console.log(
       `Frames: ${frameTensor.frames.length} \
@@ -146,7 +173,10 @@ function trainParallel(numGames) {
     const numTasks = tasksPerWorker - (i < extra_capacity ? 1 : 0);
     console.log(`Spawn worker: play ${numTasks} games`);
     const worker = new Worker(__filename, {
-      workerData: numTasks
+      workerData: {
+        numTasks: numTasks,
+        enriched: flags.get('enriched')
+      },
     });
     worker.on('message', (newFrameTensor) => {
       ++gamesPlayed;
@@ -168,8 +198,8 @@ function trainParallel(numGames) {
 }
 
 function trainParallelWorker() {
-  for (let i = 0; i < workerData; ++i) {
-    parentPort.postMessage(playGame());
+  for (let i = 0; i < workerData.numTasks; ++i) {
+    parentPort.postMessage(playGame(workerData.enriched));
   }
 }
 
