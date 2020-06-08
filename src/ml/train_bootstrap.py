@@ -368,7 +368,7 @@ def main():
   #  print('prediction: %s %s' % labels_to_output(logits))
   #  print('actual: %s %s' % labels_to_output(labels))
 
-  model.save(flags.output, include_optimizer=False)
+  model.save(flags.output, include_optimizer=False, save_format='h5')
 
 if __name__ == '__main__':
   main()

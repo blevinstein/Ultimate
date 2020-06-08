@@ -31,7 +31,7 @@ window.initialize =
   () => {
     console.log('Initializing...');
 
-    Promise.all([Game.loadResources(), tf.loadGraphModel('v1/model.json')]).then(
+    Promise.all([Game.loadResources(), tf.loadLayersModel('v1/model.json')]).then(
       (responses) => {
         initialized = true;
         console.log('Initialized.');
