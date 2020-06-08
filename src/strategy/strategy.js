@@ -48,6 +48,7 @@ module.exports.Strategy = class Strategy {
 
   // Move player exactly to 'destination'
   move(player, destination) {
+    destination = snapToBounds(destination, FIELD_BOUNDS);
     if (this.onMove) {
       this.onMove(player, destination);
     }
