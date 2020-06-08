@@ -1,3 +1,5 @@
+const tf = require('@tensorflow/tfjs');
+
 const {
   Coach
 } = require('./coach.js');
@@ -8,6 +10,9 @@ const {
   Game
 } = require('./game.js');
 const {
+  ModelStrategy
+} = require('./strategy/model_strategy.js');
+const {
   ZoneDefenseStrategy
 } = require('./strategy/zone_defense.js');
 
@@ -16,23 +21,25 @@ let initialized = false;
 window.initialize = () => {
   console.log('Initializing...');
 
-  Game.loadResources().then(
-    (resources) => {
-      initialized = true;
-      console.log('Initialized.');
-      start(resources);
-    },
-    (error) => {
-      console.log('Failed to initialize.');
-      console.log(error);
-    });
+  Promise.all([Game.loadResources(), tf.loadLayersModel('v1/model.json')])
+    .then(
+      (responses) => {
+        initialized = true;
+        console.log('Initialized.');
+        start(responses);
+      },
+      (error) => {
+        console.log('Failed to initialize.');
+        console.log(error);
+      });
 };
 
-function start(resources) {
+function start(responses) {
+  const [resources, model] = responses;
+  const strategyPicker = (game, team) => new ModelStrategy(model, game, team);
   window.game = new Game(resources, document.getElementById('canvas'), [
     new Coach(),
-    new Coach(undefined, (game, team) => new ZoneDefenseStrategy(game,
-      team)),
+    new Coach(strategyPicker, strategyPicker)
   ]);
   window.game.start();
 }
