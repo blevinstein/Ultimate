@@ -2,7 +2,7 @@ const tf = require('@tensorflow/tfjs');
 
 const {
   add2d
-} = require('./math_utils.js');
+} = require('../math_utils.js');
 const {
   FrameTensor
 } = require('../frame_tensor.js');
