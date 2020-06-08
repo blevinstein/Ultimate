@@ -255,13 +255,20 @@ def build_model_with_feature_columns(n_outputs):
       metrics = ['accuracy'],)
   return model
 
-def build_model(n_inputs, n_outputs):
-  # Input layer
-  input = tf.keras.Input(shape=(n_inputs,))
-  hidden = tf.keras.layers.Dense(80, activation='relu')(input)
-  hidden = tf.keras.layers.Dense(60, activation='relu')(hidden)
-  output = tf.keras.layers.Dense(n_outputs)(hidden)
-  model = tf.keras.Model(inputs=input, outputs=output)
+class FullyConnectedModel(tf.keras.Model):
+  def __init__(self):
+    super(FullyConnectedModel, self).__init__()
+    self.hidden1 = tf.keras.layers.Dense(80, activation='relu')
+    self.hidden2 = tf.keras.layers.Dense(60, activation='relu')
+    self.outputLayer = tf.keras.layers.Dense(10)
+
+  def call(self, inputs):
+    x = self.hidden1(inputs)
+    x = self.hidden2(x)
+    return self.outputLayer(x)
+
+def build_model():
+  model = FullyConnectedModel()
 
   model.compile(
       loss = prediction_loss,
@@ -291,15 +298,6 @@ def build_model(n_inputs, n_outputs):
   #    features = MODEL_INPUTS,
   #    labels = {'action': 'action', 'move': ['move_x', 'move_y']}, # no idea wtf this is
   #    logits = {'action': action_logits, 'move': move_logits})
-
-  #def model_fn(features, labels, mode):
-  #  action_head = tf.estimator.MultiClassHead(n_classes=3)
-  #  return action_head.create_estimator_spec(
-  #      features=features,
-  #      mode=mode,
-  #      labels=labels,
-  #      optimizer=tf.keras.optimizers.Adam(0.01),
-  #      logits=build_model()(features))
 
 # /GRAVEYARD
 
@@ -387,7 +385,7 @@ def main():
   if flags.from_checkpoint:
     model = reload_model(tf.keras.models.load_model(flags.from_checkpoint))
   else:
-    model = build_model(RAW_INPUTS, RAW_OUTPUTS)
+    model = build_model()
   for features, labels in input_fn().batch(flags.train_batch_size).take(flags.train_batches):
     model.fit(x=features, y=labels, epochs=flags.epochs)
   model.summary()
@@ -398,7 +396,7 @@ def main():
   #  print('prediction: %s %s' % labels_to_output(logits))
   #  print('actual: %s %s' % labels_to_output(labels))
 
-  model.save(flags.output, include_optimizer=False, save_format='h5')
+  model.save(flags.output, include_optimizer=False)
 
 if __name__ == '__main__':
   main()
