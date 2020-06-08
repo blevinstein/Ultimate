@@ -44,6 +44,9 @@ function encodeOneHot(value, vocab) {
 }
 
 function getLastPart(column, separator = '_') {
+  if (!column) {
+    throw new Error(`Invalid column: ${column}`);
+  }
   let lastPart;
   if (column.includes(separator)) {
     const parts = column.split(separator);
@@ -163,6 +166,7 @@ module.exports.FrameTensor = class FrameTensor {
           ['team_0_player_0_y', `team_${t}_player_${p}_y`],
           ['team_0_player_0_vx', `team_${t}_player_${p}_vx`],
           ['team_0_player_0_vy', `team_${t}_player_${p}_vy`],
+          ['team_0_player_0_hasDisc', `team_${t}_player_${p}_hasDisc`],
         ]);
         for (let teammate = 0; teammate < 7; ++teammate) {
           if (teammate === p) {
@@ -177,6 +181,8 @@ module.exports.FrameTensor = class FrameTensor {
             `team_${t}_player_${teammate}_vx`);
           permutation.set(`team_0_player_${newIndex}_vy`,
             `team_${t}_player_${teammate}_vy`);
+          permutation.set(`team_0_player_${newIndex}_hasDisc`,
+            `team_${t}_player_${teammate}_hasDisc`);
         }
         for (let opponent = 0; opponent < 7; ++opponent) {
           permutation.set(`team_1_player_${opponent}_x`,
@@ -187,6 +193,8 @@ module.exports.FrameTensor = class FrameTensor {
             `team_${1-t}_player_${opponent}_vx`);
           permutation.set(`team_1_player_${opponent}_vy`,
             `team_${1-t}_player_${opponent}_vy`);
+          permutation.set(`team_1_player_${opponent}_hasDisc`,
+            `team_${1-t}_player_${opponent}_hasDisc`);
         }
         permutations.push(permutation);
       }
@@ -210,6 +218,7 @@ module.exports.FrameTensor = class FrameTensor {
           `team_${t}_player_${p}_y`,
           `team_${t}_player_${p}_vx`,
           `team_${t}_player_${p}_vy`,
+          `team_${t}_player_${p}_hasDisc`,
         );
         if (!permuted) {
           keys.push(
@@ -278,6 +287,8 @@ module.exports.FrameTensor = class FrameTensor {
         this.record(`team_${t}_player_${p}_y`, player.position[1]);
         this.record(`team_${t}_player_${p}_vx`, player.velocity[0]);
         this.record(`team_${t}_player_${p}_vy`, player.velocity[1]);
+        this.record(`team_${t}_player_${p}_hasDisc`, player.hasDisc ? 1 :
+        0);
       }
     }
     this.record('disc_x', game.disc.position[0]);
