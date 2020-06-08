@@ -39,11 +39,11 @@ module.exports.Strategy = class Strategy {
     }
   }
 
-  throw(player, params) {
+  throwDisc(player, params) {
     if (this.onThrow) {
       this.onThrow(player, params);
     }
-    player.throw(...params);
+    player.throwDisc(...params);
   }
 
   // Move player exactly to 'destination'

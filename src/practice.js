@@ -107,7 +107,7 @@ class Practice extends Game {
         this.rangeFinder
         .samples[this.rangeFinder.samples.length - this.throwCount]
         .input;
-      this.thrower.throw(zRotate3d(throwParams.velocity, sprinklerAngle),
+      this.thrower.throwDisc(zRotate3d(throwParams.velocity, sprinklerAngle),
         throwParams.angleOfAttack, throwParams.tiltAngle);
     }
     // Players and physics update

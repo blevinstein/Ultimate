@@ -106,7 +106,7 @@ module.exports.RandomOffenseStrategy =
             }
           }
           if (bestDestination && bestForwardProgress > MIN_PROGRESS) {
-            this.throw(player, [
+            this.throwDisc(player, [
               bestParams.velocity, bestParams.angleOfAttack, bestParams
               .tiltAngle
             ]);

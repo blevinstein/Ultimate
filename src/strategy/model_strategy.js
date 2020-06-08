@@ -24,13 +24,15 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
       // TODO: Make all predictions with a single call to model.predict
       const prediction = this.model.predict(inputs[p]);
       const [restAction, moveAction, throwAction, moveX, moveY,
-          throwX, throwY, throwZ, throwAngleOfAttack, throwTiltAngle] =
-              prediction.as1D().arraySync();
+        throwX, throwY, throwZ, throwAngleOfAttack, throwTiltAngle
+      ] =
+      prediction.as1D().arraySync();
       if (player.hasDisc && throwAction > restAction) {
         if (player.canThrow()) {
-          const params =
-              [[throwX, throwY, throwZ], throwAngleOfAttack, throwTiltAngle];
-          this.throw(player, params);
+          const params = [
+            [throwX, throwY, throwZ], throwAngleOfAttack, throwTiltAngle
+          ];
+          this.throwDisc(player, params);
           actionMap.set(player, ['throw', params]);
         } else {
           player.rest();

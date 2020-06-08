@@ -29,10 +29,20 @@ let initialized = false;
 
 function makeModel() {
   const model = tf.sequential();
-  model.add(tf.layers.dense({units: 80, inputShape: [75]}));
-  model.add(tf.layers.dense({units: 60}));
-  model.add(tf.layers.dense({units: 10}));
-  model.compile({optimizer: 'sgd', loss: 'meanSquaredError'});
+  model.add(tf.layers.dense({
+    units: 80,
+    inputShape: [75]
+  }));
+  model.add(tf.layers.dense({
+    units: 60
+  }));
+  model.add(tf.layers.dense({
+    units: 10
+  }));
+  model.compile({
+    optimizer: 'sgd',
+    loss: 'meanSquaredError'
+  });
   return Promise.resolve(model);
 }
 
@@ -40,17 +50,17 @@ window.initialize =
   () => {
     console.log('Initializing...');
 
-    Promise.all([Game.loadResources(), tf.loadLayersModel('v1/model.json')]).then(
-    //Promise.all([Game.loadResources(), makeModel()]).then(
-      (responses) => {
-        initialized = true;
-        console.log('Initialized.');
-        start(responses);
-      },
-      (error) => {
-        console.log('Failed to initialize.');
-        console.log(error);
-      });
+    Promise.all([Game.loadResources(), tf.loadLayersModel('v1/model.json')])
+      .then(
+        (responses) => {
+          initialized = true;
+          console.log('Initialized.');
+          start(responses);
+        },
+        (error) => {
+          console.log('Failed to initialize.');
+          console.log(error);
+        });
   }
 
 function start(responses) {

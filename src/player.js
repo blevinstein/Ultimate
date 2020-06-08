@@ -233,7 +233,7 @@ module.exports.Player = class Player {
 
   // TODO: Add noise for high velocity throws
   // TODO: Throw farther when !moving or moving in direction of throw?
-  throw(velocity, angleOfAttack, tiltAngle) {
+  throwDisc(velocity, angleOfAttack, tiltAngle) {
     // DEBUG: console.log('Throw: velocity=' + velocity + ' angleOfAttack=' +
     // angleOfAttack + ' tiltAngle=' + tiltAngle);
     check3d(velocity);

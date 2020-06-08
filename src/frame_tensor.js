@@ -8,14 +8,14 @@ const INTERESTING_STATES = [STATES.Pickup, STATES.Normal, STATES.Receiving];
 const ONE_HOT_COLUMNS = ['state', 'action'];
 const BINARY_COLUMNS = ['offensiveGoalDirection'];
 const OUTPUT_ONLY_COLUMNS = [
-    'action',
-    'move_x',
-    'move_y',
-    'throw_x',
-    'throw_y',
-    'throw_z',
-    'throw_angleOfAttack',
-    'throw_tiltAngle',
+  'action',
+  'move_x',
+  'move_y',
+  'throw_x',
+  'throw_y',
+  'throw_z',
+  'throw_angleOfAttack',
+  'throw_tiltAngle',
 ];
 
 const VOCABULARIES = new Map([
@@ -370,9 +370,10 @@ module.exports.FrameTensor = class FrameTensor {
     const permutedInputs = [];
     for (let permutation of this.generatePermutations([team])) {
       permutedInputs.push(tf.tensor(
-          headers.flatMap(h =>
-              this.encodeInputs(h, this.frameValues.get(permutation.get(h)))),
-          [1, 75]));
+        headers.flatMap(h =>
+          this.encodeInputs(h, this.frameValues.get(permutation.get(h)))
+        ),
+        [1, 75]));
     }
     return permutedInputs;
   }
@@ -386,8 +387,8 @@ module.exports.FrameTensor = class FrameTensor {
         if (!this.isInteresting(frame.get('state'))) {
           continue;
         }
-        data.push(headers.map(h => this.renderCsvCell(frame, permutation
-          .get(h))));
+        data.push(
+          headers.map(h => this.renderCsvCell(frame, permutation.get(h))));
       }
     }
     return data;

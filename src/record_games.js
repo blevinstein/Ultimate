@@ -32,7 +32,8 @@ function playGame() {
   const frameTensor = new FrameTensor();
   const game = new Game(null, null, [
     new Coach(),
-    new Coach(undefined, (game, team) => new ZoneDefenseStrategy(game, team))
+    new Coach(undefined, (game, team) => new ZoneDefenseStrategy(game,
+      team))
   ]);
   const actionMap = new Map;
 
