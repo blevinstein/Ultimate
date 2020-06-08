@@ -26,6 +26,7 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
       const player = this.team.players[p];
       // TODO: Make all predictions with a single call to model.predict
       const prediction = this.model.predict(inputs[p]);
+      // DEBUG: console.log(prediction.as1D().arraySync());
       const [restAction, moveAction, throwAction, moveX, moveY,
         throwX, throwY, throwZ, throwAngleOfAttack, throwTiltAngle
       ] =
