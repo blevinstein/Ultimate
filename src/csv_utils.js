@@ -14,27 +14,29 @@ module.exports.writeToFile = (filename, headers, data) => {
         .toFixed(PRECISION)
     },
   });
-  stringifier.on('readable', () => {
-    let row;
-    while (row = stringifier.read()) {
-      lines.push(row);
-    }
-  });
-  stringifier.on('error', (e) => {
-    console.error(e.message);
-  });
-  stringifier.on('finish', () => {
-    fsPromises.open(filename, 'w').then(async f => {
-      for (let line of lines) {
-        await fsPromises.appendFile(f, line);
+  const appendMode = fs.existsSync(filename);
+  if (appendMode) {
+    console.log('Appending to existing output file...');
+  }
+  fsPromises.open(filename, 'a').then(file => {
+    stringifier.on('readable', async () => {
+      let row;
+      while (row = stringifier.read()) {
+        await file.appendFile(row);
       }
     });
+    stringifier.on('error', (e) => {
+      console.error(e.message);
+    });
+    stringifier.on('finish', () => {});
+    if (!appendMode) {
+      stringifier.write(headers);
+    }
+    for (let i = 0; i < data.length; i++) {
+      stringifier.write(data[i]);
+    }
+    stringifier.end();
   });
-  stringifier.write(headers);
-  for (let i = 0; i < data.length; i++) {
-    stringifier.write(data[i]);
-  }
-  stringifier.end();
 };
 
 module.exports.readFromFile = (filename, cast = undefined) => {
