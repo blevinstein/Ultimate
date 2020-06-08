@@ -7,8 +7,8 @@ parser.add_argument('--input', required=True, help='File to read examples from.'
 parser.add_argument('--output', required=True, help='File to write model to.')
 parser.add_argument('--from_checkpoint', help='Model to load as a starting point.')
 parser.add_argument('--shuffle_size', default=250000, type=int, help='Shuffle batch size');
-parser.add_argument('--train_batches', default=10, type=int, help='Number of training batches');
-parser.add_argument('--train_batch_size', default=100000, type=int, help='Training batch size');
+parser.add_argument('--train_batches', default=100, type=int, help='Number of training batches');
+parser.add_argument('--train_batch_size', default=10000, type=int, help='Training batch size');
 parser.add_argument('--epochs', default=10, type=int, help='Number of epochs to train');
 flags = parser.parse_args()
 
