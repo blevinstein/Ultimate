@@ -389,7 +389,7 @@ module.exports.FrameTensor = class FrameTensor {
 
   getPermutedCsvData() {
     const headers = this.allKeys(true);
-    const data = [headers];
+    const data = [];
     for (let permutation of this.generatePermutations()) {
       for (let i = 0; i < this.frames.length; i++) {
         const frame = this.frames[i];
@@ -400,16 +400,16 @@ module.exports.FrameTensor = class FrameTensor {
           headers.map(h => this.renderCsvCell(frame, permutation.get(h))));
       }
     }
-    return data;
+    return [headers, data];
   }
 
   getFrameCsvData() {
     const headers = this.allKeys(false);
-    const data = [headers];
+    const data = [];
     for (let i = 0; i < this.frames.length; i++) {
       data.push(headers.map(h => this.renderCsvCell(this.frames[i], h)));
     }
-    return data;
+    return [headers, data];
   }
 
   filter(condition) {

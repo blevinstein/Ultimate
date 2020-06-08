@@ -5,7 +5,7 @@ const stringify = require('csv-stringify');
 
 const PRECISION = 3;
 
-module.exports.writeToFile = (filename, data) => {
+module.exports.writeToFile = (filename, headers, data) => {
   const lines = [];
   const stringifier = stringify({
     delimiter: ',',
@@ -24,12 +24,13 @@ module.exports.writeToFile = (filename, data) => {
     console.error(e.message);
   });
   stringifier.on('finish', () => {
-    fsPromises.open(filename, 'w+').then(async f => {
+    fsPromises.open(filename, 'w').then(async f => {
       for (let line of lines) {
         await fsPromises.appendFile(f, line);
       }
     });
   });
+  stringifier.write(headers);
   for (let i = 0; i < data.length; i++) {
     stringifier.write(data[i]);
   }

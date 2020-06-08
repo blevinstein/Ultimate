@@ -75,18 +75,18 @@ function playGame(enriched = false) {
 
 function writeOutput(frameTensor) {
   if (flags.get('output_raw') !== '') {
-    const frame_data = frameTensor.getFrameCsvData();
-    writeToFile(flags.get('output_raw'), frame_data);
+    const [frameHeaders, frameData] = frameTensor.getFrameCsvData();
+    writeToFile(flags.get('output_raw'), frameHeaders, frameData);
     console.log(
-      `Writing frames (shape ${frame_data[0].length} x ${frame_data.length-1}) to ${flags.get('output_raw')}`
+      `Writing frames (shape ${frameData[0].length} x ${frameData.length-1}) to ${flags.get('output_raw')}`
     );
   } else {
     console.log('Not writing frame data.');
   }
 
   if (flags.get('output') !== '') {
-    const agentData = frameTensor.getPermutedCsvData();
-    writeToFile(flags.get('output'), agentData);
+    const [agentHeaders, agentData] = frameTensor.getPermutedCsvData();
+    writeToFile(flags.get('output'), agentHeaders, agentData);
     console.log(
       `Writing examples (shape ${agentData[0].length} x ${agentData.length-1}) to ${flags.get('output')}`
     );
