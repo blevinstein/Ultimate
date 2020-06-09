@@ -353,6 +353,10 @@ module.exports.FrameTensor = class FrameTensor {
     this.frameValues = new Map;
   }
 
+  clearFrames() {
+    this.frames = [];
+  }
+
   isInteresting(gameState) {
     return INTERESTING_STATES.includes(gameState);
   }

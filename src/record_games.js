@@ -44,6 +44,7 @@ const ACTION_COLUMNS = [
   'team_1_player_5_action',
   'team_1_player_6_action',
 ];
+const MAX_IN_MEMORY_FRAMES = 1e5;
 
 // Play a single game until completion, and return as a FrameTensor.
 function playGame(enriched = false) {
@@ -76,20 +77,20 @@ function playGame(enriched = false) {
 function writeOutput(frameTensor) {
   if (flags.get('output_raw') !== '') {
     const [frameHeaders, frameData] = frameTensor.getFrameCsvData();
-    writeToFile(flags.get('output_raw'), frameHeaders, frameData);
     console.log(
       `Writing frames (shape ${frameData[0].length} x ${frameData.length-1}) to ${flags.get('output_raw')}`
     );
+    writeToFile(flags.get('output_raw'), frameHeaders, frameData);
   } else {
     console.log('Not writing frame data.');
   }
 
   if (flags.get('output') !== '') {
     const [agentHeaders, agentData] = frameTensor.getPermutedCsvData();
-    writeToFile(flags.get('output'), agentHeaders, agentData);
     console.log(
       `Writing examples (shape ${agentData[0].length} x ${agentData.length-1}) to ${flags.get('output')}`
     );
+    writeToFile(flags.get('output'), agentHeaders, agentData);
   } else {
     console.log('Not writing examples.');
   }
@@ -106,7 +107,7 @@ async function main() {
   );
   flags.defineInteger(
     'num_workers',
-    4,
+    3,
     'Number of worker threads to use for processing');
   flags.defineString(
     'output_raw',
@@ -159,6 +160,9 @@ function trainParallel(numGames) {
   const checkDone = () => {
     if (gamesPlayed === numGames && workersAlive === 0) {
       writeOutput(frameTensor);
+    } else if (frameTensor.frames.length > MAX_IN_MEMORY_FRAMES) {
+      writeOutput(frameTensor);
+      frameTensor.clearFrames();
     }
   }
 
