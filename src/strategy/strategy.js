@@ -52,7 +52,6 @@ module.exports.Strategy = class Strategy {
     if (this.onMove) {
       this.onMove(player, sub2d(destination, player.position));
     }
-    destination = snapToBounds(destination, FIELD_BOUNDS);
     player.moveTo(destination);
     const playerScreenPosition = project2d(player.position);
     const destinationScreenPosition = project2d(destination);
