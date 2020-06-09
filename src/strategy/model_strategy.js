@@ -17,9 +17,9 @@ const {
 const INFERENCE_STEP = 10;
 
 module.exports.ModelStrategy = class ModelStrategy extends Strategy {
-  constructor(model, game, team) {
+  constructor(models, game, team) {
     super(game, team);
-    this.model = model;
+    this.models = models;
     this.teamNumber = this.team === this.game.teams[1] ? 1 : 0;
     this.frameTensor = new FrameTensor();
 
@@ -34,8 +34,9 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
       const inputs = this.frameTensor.getPermutedInputs(this.teamNumber);
       for (let p = 0; p < this.team.players.length; ++p) {
         const player = this.team.players[p];
+        const model = this.models[p % this.models.length];
         // TODO: Make all predictions with a single call to model.predict
-        const prediction = this.model.predict(inputs[p]);
+        const prediction = model.predict(inputs[p]);
         // DEBUG: console.log(prediction.as1D().arraySync());
         const [restAction, moveAction, throwAction, moveX, moveY,
           throwX, throwY, throwZ, throwAngleOfAttack, throwTiltAngle
@@ -77,8 +78,8 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
     }
   }
 
-  static coach(model) {
-    const strategyPicker = (game, team) => new ModelStrategy(model, game,
+  static coach(models) {
+    const strategyPicker = (game, team) => new ModelStrategy(models, game,
       team);
     // TODO: Use strategyPicker for kickoffStrategy as well
     return new Coach(strategyPicker, strategyPicker, strategyPicker);

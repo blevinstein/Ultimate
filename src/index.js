@@ -38,7 +38,7 @@ function start(responses) {
   const [resources, model] = responses;
   window.game = new Game(resources, document.getElementById('canvas'), [
     new Coach(),
-    ModelStrategy.coach(model),
+    ModelStrategy.coach([model]),
   ]);
   window.game.start();
 }

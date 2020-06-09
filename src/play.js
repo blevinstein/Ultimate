@@ -67,7 +67,7 @@ function start(responses) {
   const [resources, model] = responses;
   window.game = new Game(resources, document.getElementById('canvas'), [
     new Coach((game, team) => new ManualOffenseStrategy(game, team)),
-    ModelStrategy.coach(model),
+    ModelStrategy.coach([model]),
   ]);
   window.game.start();
 }
