@@ -199,8 +199,8 @@ class FullyConnectedModel(tf.keras.Model):
     super(FullyConnectedModel, self).__init__()
     self.hidden1 = tf.keras.layers.Dense(80, activation='relu')
     self.hidden2 = tf.keras.layers.Dense(60, activation='relu')
-    self.outputAction = tf.keras.layers.Dense(3, activation='softmax')
-    self.outputNumeric = tf.keras.layers.Dense(7)
+    self.outputAction = tf.keras.layers.Dense(len(ACTION_VALUES), activation='softmax')
+    self.outputNumeric = tf.keras.layers.Dense(len(NUMERIC_MODEL_OUTPUTS))
     self.outputLayer = tf.keras.layers.Concatenate(axis=1)
 
   def call(self, inputs):
@@ -224,13 +224,13 @@ class ConvolutionModel(tf.keras.Model):
     self.flattenTeamConvolution = tf.keras.layers.Flatten()
     self.flattenEnemyConvolution = tf.keras.layers.Flatten()
     self.mergeConvolution = tf.keras.layers.Concatenate(axis=1)
-    self.hidden1 = tf.keras.layers.Dense(20, activation='relu')
+    self.hidden1 = tf.keras.layers.Dense(30, activation='relu')
     self.hidden2 = tf.keras.layers.Dense(20, activation='relu')
-    self.outputAction = tf.keras.layers.Dense(3, activation='softmax')
-    self.outputNumeric = tf.keras.layers.Dense(7)
+    self.outputAction = tf.keras.layers.Dense(len(ACTION_VALUES), activation='softmax')
+    self.outputNumeric = tf.keras.layers.Dense(len(NUMERIC_MODEL_OUTPUTS))
     self.outputLayer = tf.keras.layers.Concatenate(axis=1)
 
-  def call(self, inputs):
+  def call(self, inputs, training=False):
     gameState, myState, teamState, enemyState, lastAction = tf.split(
         inputs, [9, PLAYER_LOGITS, 6 * PLAYER_LOGITS, 7 * PLAYER_LOGITS, 10], axis=1)
     a = self.nonConvolutionHidden(
@@ -258,6 +258,7 @@ def build_model():
 RAW_INPUTS = sum(len(values) for c, values in ONE_HOT_MODEL_INPUTS.items()) + \
         len(MODEL_INPUTS) - len(ONE_HOT_MODEL_INPUTS)
 RAW_OUTPUTS = len(ACTION_VALUES) + len(NUMERIC_MODEL_OUTPUTS)
+
 def raw_inputs(data):
   all_inputs = []
   for column in MODEL_INPUTS:
