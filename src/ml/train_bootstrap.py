@@ -324,8 +324,13 @@ def main():
     model = reload_model(tf.keras.models.load_model(flags.from_checkpoint))
   else:
     model = build_model()
-  for features, labels in input_fn().batch(flags.train_batch_size).take(flags.train_batches):
-    model.fit(x=features, y=labels, epochs=flags.epochs)
+
+  try:
+    for features, labels in input_fn().batch(flags.train_batch_size).take(flags.train_batches):
+      model.fit(x=features, y=labels, epochs=flags.epochs)
+  except KeyboardInterrupt:
+    print('\nTraining stopped.')
+
   model.summary()
 
   # Predict some examples
