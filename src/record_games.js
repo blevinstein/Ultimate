@@ -145,6 +145,10 @@ function trainSerial(numGames) {
     console.log(
       `Frames: ${frameTensor.frames.length} \
               (${newFrameTensor.frames.length} new)`);
+    if (frameTensor.frames.length > MAX_IN_MEMORY_FRAMES) {
+      writeOutput(frameTensor);
+      frameTensor.clearFrames();
+    }
   }
 
   writeOutput(frameTensor);
