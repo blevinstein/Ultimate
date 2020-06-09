@@ -4,6 +4,9 @@ const {
   add2d
 } = require('../math_utils.js');
 const {
+  Coach
+} = require('../coach.js');
+const {
   FrameTensor
 } = require('../frame_tensor.js');
 const {
@@ -72,5 +75,12 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
         }
       }
     }
+  }
+
+  static coach(model) {
+    const strategyPicker = (game, team) => new ModelStrategy(model, game,
+      team);
+    // TODO: Use strategyPicker for kickoffStrategy as well
+    return new Coach(strategyPicker, strategyPicker, strategyPicker);
   }
 }

@@ -47,7 +47,7 @@ MODEL_INPUTS = [
     'last_throw_tiltAngle',
 ]
 ONE_HOT_MODEL_INPUTS = {
-    'state': ['pickup', 'normal', 'receiving'],
+    'state': ['pickup', 'normal', 'receiving', 'kickoff'],
     'last_action': ACTION_VALUES,
 }
 BINARY_MODEL_INPUTS = [
@@ -232,7 +232,7 @@ class ConvolutionModel(tf.keras.Model):
 
   def call(self, inputs, training=False):
     gameState, myState, teamState, enemyState, lastAction = tf.split(
-        inputs, [9, PLAYER_LOGITS, 6 * PLAYER_LOGITS, 7 * PLAYER_LOGITS, 10], axis=1)
+        inputs, [10, PLAYER_LOGITS, 6 * PLAYER_LOGITS, 7 * PLAYER_LOGITS, 10], axis=1)
     a = self.nonConvolutionHidden(
         self.nonConvolutionMerge([gameState, myState, lastAction]))
     b = self.flattenTeamConvolution(

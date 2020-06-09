@@ -24,7 +24,8 @@ const {
 } = require('./strategy/random_offense.js');
 
 module.exports.Coach = class Coach {
-  constructor(offensiveStrategy, defensiveStrategy, aerialStrategy) {
+  constructor(
+    offensiveStrategy, defensiveStrategy, aerialStrategy, kickoffStrategy) {
     this.offensiveStrategy =
       offensiveStrategy
       || ((game, team) => new RandomOffenseStrategy(game, team));
@@ -36,17 +37,16 @@ module.exports.Coach = class Coach {
       || ((game, team) => team.onOffense ? new ClosestPickupStrategy(game,
           team)
         : this.defensiveStrategy(game, team));
+    this.kickoffStrategy =
+      kickoffStrategy
+      || ((game, team) => new KickoffStrategy(game, team));
   }
 
   pickStrategy(game, team) {
     switch (game.state) {
       case STATES.Kickoff:
         if (!team.onOffense) {
-          if (team.hasDisc()) {
-            return new KickoffStrategy(game, team);
-          } else {
-            return new ClosestPickupStrategy(game, team);
-          }
+          return this.kickoffStrategy(game, team);
         } else {
           return new IdleStrategy(game, team);
         }

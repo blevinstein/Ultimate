@@ -36,10 +36,9 @@ window.initialize = () => {
 
 function start(responses) {
   const [resources, model] = responses;
-  const strategyPicker = (game, team) => new ModelStrategy(model, game, team);
   window.game = new Game(resources, document.getElementById('canvas'), [
     new Coach(),
-    new Coach(strategyPicker, strategyPicker)
+    ModelStrategy.coach(model),
   ]);
   window.game.start();
 }

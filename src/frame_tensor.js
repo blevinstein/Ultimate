@@ -4,7 +4,9 @@ const {
   STATES
 } = require('./game_params.js');
 
-const INTERESTING_STATES = [STATES.Pickup, STATES.Normal, STATES.Receiving];
+const INTERESTING_STATES = [
+  STATES.Pickup, STATES.Normal, STATES.Receiving, STATES.Kickoff
+];
 const ONE_HOT_COLUMNS = ['state', 'action'];
 const BINARY_COLUMNS = ['offensiveGoalDirection'];
 const OUTPUT_ONLY_COLUMNS = [
