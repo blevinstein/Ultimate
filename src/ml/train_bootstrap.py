@@ -253,31 +253,6 @@ def build_model():
       metrics = ['accuracy'],)
   return model
 
-# GRAVEYARD
-
-  #action_head = tf.estimator.MultiClassHead(
-  #    name = 'action',
-  #    n_classes = 3,
-  #    label_vocabulary = ['rest', 'move', 'throw']);
-  #move_head = tf.estimator.RegressionHead(name = 'move', label_dimension = 2)
-  #throw_head = tf.estimator.RegressionHead(name = 'throw', label_dimension = 5)
-  #multi_head = tf.estimator.MultiHead([action_head, move_head])
-
-  #hidden_layer_1 = tf.keras.layers.Dense(80, activation='relu')(feature_layer)
-  #hidden_layer_2 = tf.keras.layers.Dense(60, activation='relu')(hidden_layer_1)
-
-  #action_logits = tf.keras.layers.Dense(3, activation='softmax')(hidden_layer_2)
-  #move_logits = tf.keras.layers.Dense(2)(hidden_layer_2)
-  #throw_logits = tf.keras.layers.Dense(5)(hidden_layer_2)
-
-  #return multi_head.create_estimator_spec(
-  #    mode = 'train',
-  #    features = MODEL_INPUTS,
-  #    labels = {'action': 'action', 'move': ['move_x', 'move_y']}, # no idea wtf this is
-  #    logits = {'action': action_logits, 'move': move_logits})
-
-# /GRAVEYARD
-
 # Merges input features into a single tensor
 # TODO: normalize inputs
 RAW_INPUTS = sum(len(values) for c, values in ONE_HOT_MODEL_INPUTS.items()) + \
