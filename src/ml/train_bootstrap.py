@@ -6,7 +6,7 @@ parser = argparse.ArgumentParser(description='Train a bootstrap model.')
 parser.add_argument('--input', required=True, help='File to read examples from.')
 parser.add_argument('--output', required=True, help='File to write model to.')
 parser.add_argument('--from_checkpoint', help='Model to load as a starting point.')
-parser.add_argument('--shuffle_size', default=250000, type=int, help='Shuffle batch size');
+parser.add_argument('--shuffle_size', default=50000, type=int, help='Shuffle batch size');
 parser.add_argument('--train_batches', default=100, type=int, help='Number of training batches');
 parser.add_argument('--train_batch_size', default=10000, type=int, help='Training batch size');
 parser.add_argument('--epochs', default=10, type=int, help='Number of epochs to train');
@@ -185,70 +185,9 @@ def prediction_loss(y, y_pred):
   # MSE loss for numeric parameters (movement, throwing)
   others_loss = tf.compat.v1.losses.mean_squared_error(others, others_pred)
 
-  #print(others_loss)
-
   return action_loss * ACTION_WEIGHT + others_loss
 
 def reload_model(model):
-  model.compile(
-      loss = prediction_loss,
-      optimizer = 'adam',
-      metrics = ['accuracy'],)
-  return model
-
-# This model does not work in TFJS
-def build_model_with_feature_columns(n_outputs):
-  # Input layer
-  state = tf.feature_column.indicator_column(
-      tf.feature_column.categorical_column_with_vocabulary_list(
-          'state', vocabulary_list=[0, 1, 2]))
-  offensive_goal_direction = tf.feature_column.indicator_column(
-      tf.feature_column.categorical_column_with_vocabulary_list(
-          'offensiveGoalDirection', vocabulary_list=[0, 1]))
-  offensive_team = tf.feature_column.indicator_column(
-      tf.feature_column.categorical_column_with_vocabulary_list(
-          'offensiveTeam', vocabulary_list=[0, 1]))
-  last_action = tf.feature_column.indicator_column(
-      tf.feature_column.categorical_column_with_vocabulary_list(
-          'last_action', vocabulary_list=['rest', 'move', 'throw']))
-  feature_layer_inputs = {
-      'state':
-          tf.keras.Input(shape = (1,), name = 'state', dtype = 'int32'),
-      'offensiveGoalDirection':
-          tf.keras.Input(shape = (1,), name = 'offensiveGoalDirection', dtype = 'int32'),
-      'offensiveTeam': tf.keras.Input(shape = (1,), name = 'offensiveTeam', dtype = 'int32'),
-      'last_action': tf.keras.Input(shape = (1,), name = 'last_action', dtype = 'int32'),
-  }
-  feature_columns = [state, offensive_team, offensive_goal_direction]
-  for column_name in [
-      'stallCount', 'disc_x', 'disc_y', 'disc_z',
-      'team_0_player_0_x', 'team_0_player_0_y', 'team_0_player_0_vx', 'team_0_player_0_vy',
-      'team_0_player_1_x', 'team_0_player_1_y', 'team_0_player_1_vx', 'team_0_player_1_vy',
-      'team_0_player_2_x', 'team_0_player_2_y', 'team_0_player_2_vx', 'team_0_player_2_vy',
-      'team_0_player_3_x', 'team_0_player_3_y', 'team_0_player_3_vx', 'team_0_player_3_vy',
-      'team_0_player_4_x', 'team_0_player_4_y', 'team_0_player_4_vx', 'team_0_player_4_vy',
-      'team_0_player_5_x', 'team_0_player_5_y', 'team_0_player_5_vx', 'team_0_player_5_vy',
-      'team_0_player_6_x', 'team_0_player_6_y', 'team_0_player_6_vx', 'team_0_player_6_vy',
-      'team_1_player_0_x', 'team_1_player_0_y', 'team_1_player_0_vx', 'team_1_player_0_vy',
-      'team_1_player_1_x', 'team_1_player_1_y', 'team_1_player_1_vx', 'team_1_player_1_vy',
-      'team_1_player_2_x', 'team_1_player_2_y', 'team_1_player_2_vx', 'team_1_player_2_vy',
-      'team_1_player_3_x', 'team_1_player_3_y', 'team_1_player_3_vx', 'team_1_player_3_vy',
-      'team_1_player_4_x', 'team_1_player_4_y', 'team_1_player_4_vx', 'team_1_player_4_vy',
-      'team_1_player_5_x', 'team_1_player_5_y', 'team_1_player_5_vx', 'team_1_player_5_vy',
-      'team_1_player_6_x', 'team_1_player_6_y', 'team_1_player_6_vx', 'team_1_player_6_vy',
-      'last_move_x', 'last_move_y',
-      'last_throw_x', 'last_throw_y', 'last_throw_z',
-      'last_throw_angleOfAttack', 'last_throw_tiltAngle']:
-    feature_layer_inputs[column_name] = tf.keras.Input(shape = (1,), name = column_name)
-    feature_columns.append(tf.feature_column.numeric_column(column_name))
-
-  feature_layer_output = \
-      tf.keras.layers.DenseFeatures(feature_columns)(feature_layer_inputs)
-  hidden = tf.keras.layers.Dense(80, activation='relu')(feature_layer_output)
-  hidden = tf.keras.layers.Dense(60, activation='relu')(hidden)
-  output = tf.keras.layers.Dense(n_outputs)(hidden)
-  model = tf.keras.Model(inputs=feature_layer_inputs, outputs=output)
-
   model.compile(
       loss = prediction_loss,
       optimizer = 'adam',
@@ -260,15 +199,53 @@ class FullyConnectedModel(tf.keras.Model):
     super(FullyConnectedModel, self).__init__()
     self.hidden1 = tf.keras.layers.Dense(80, activation='relu')
     self.hidden2 = tf.keras.layers.Dense(60, activation='relu')
-    self.outputLayer = tf.keras.layers.Dense(10)
+    self.outputAction = tf.keras.layers.Dense(3, activation='softmax')
+    self.outputNumeric = tf.keras.layers.Dense(7)
+    self.outputLayer = tf.keras.layers.Concatenate(axis=1)
 
   def call(self, inputs):
     x = self.hidden1(inputs)
     x = self.hidden2(x)
-    return self.outputLayer(x)
+    return self.outputLayer([
+        self.outputAction(x), self.outputNumeric(x)])
+
+PLAYER_LOGITS = 5
+class ConvolutionModel(tf.keras.Model):
+  def __init__(self):
+    super(ConvolutionModel, self).__init__()
+    self.nonConvolutionMerge = tf.keras.layers.Concatenate(axis=1)
+    self.nonConvolutionHidden = tf.keras.layers.Dense(20, activation='relu')
+    self.reshapeTeamConvolution = tf.keras.layers.Reshape((PLAYER_LOGITS * 6, 1))
+    self.reshapeEnemyConvolution = tf.keras.layers.Reshape((PLAYER_LOGITS * 7, 1))
+    self.teamConvolution = tf.keras.layers.Conv1D(
+        4, (PLAYER_LOGITS,), strides = (PLAYER_LOGITS,), activation='relu')
+    self.enemyConvolution = tf.keras.layers.Conv1D(
+        4, (PLAYER_LOGITS,), strides = (PLAYER_LOGITS,), activation='relu')
+    self.flattenTeamConvolution = tf.keras.layers.Flatten()
+    self.flattenEnemyConvolution = tf.keras.layers.Flatten()
+    self.mergeConvolution = tf.keras.layers.Concatenate(axis=1)
+    self.hidden1 = tf.keras.layers.Dense(20, activation='relu')
+    self.hidden2 = tf.keras.layers.Dense(20, activation='relu')
+    self.outputAction = tf.keras.layers.Dense(3, activation='softmax')
+    self.outputNumeric = tf.keras.layers.Dense(7)
+    self.outputLayer = tf.keras.layers.Concatenate(axis=1)
+
+  def call(self, inputs):
+    gameState, myState, teamState, enemyState, lastAction = tf.split(
+        inputs, [9, PLAYER_LOGITS, 6 * PLAYER_LOGITS, 7 * PLAYER_LOGITS, 10], axis=1)
+    a = self.nonConvolutionHidden(
+        self.nonConvolutionMerge([gameState, myState, lastAction]))
+    b = self.flattenTeamConvolution(
+        self.teamConvolution(self.reshapeTeamConvolution(teamState)))
+    c = self.flattenEnemyConvolution(
+        self.enemyConvolution(self.reshapeEnemyConvolution(enemyState)))
+    d = self.hidden1(self.mergeConvolution([a, b, c]))
+    e = self.hidden2(d)
+    return self.outputLayer([
+        self.outputAction(e), self.outputNumeric(e)])
 
 def build_model():
-  model = FullyConnectedModel()
+  model = ConvolutionModel()
 
   model.compile(
       loss = prediction_loss,
@@ -301,33 +278,28 @@ def build_model():
 
 # /GRAVEYARD
 
-# Returns input features in a dict. Requires using feature columns to merge all inputs into a single
-# DenseFeatures layer.
-def feature_column_inputs(data):
-  return {k: data[k] for k in MODEL_INPUTS}
-
 # Merges input features into a single tensor
 # TODO: normalize inputs
 RAW_INPUTS = sum(len(values) for c, values in ONE_HOT_MODEL_INPUTS.items()) + \
         len(MODEL_INPUTS) - len(ONE_HOT_MODEL_INPUTS)
 RAW_OUTPUTS = len(ACTION_VALUES) + len(NUMERIC_MODEL_OUTPUTS)
 def raw_inputs(data):
-  one_hot_inputs = []
-  for column, values in ONE_HOT_MODEL_INPUTS.items():
-    one_hot_inputs.append(
-        tf.reshape(
-            tf.dtypes.cast(
-                tf.one_hot(data[column], len(values)),
-                tf.float32),
-            (len(values),)))
-  numeric_inputs = []
+  all_inputs = []
   for column in MODEL_INPUTS:
-    if column not in ONE_HOT_MODEL_INPUTS:
+    if column in ONE_HOT_MODEL_INPUTS:
+      values = ONE_HOT_MODEL_INPUTS[column]
+      all_inputs.append(
+          tf.reshape(
+              tf.dtypes.cast(
+                  tf.one_hot(data[column], len(values)),
+                  tf.float32),
+              (len(values),)))
+    else:
       if column in BINARY_MODEL_INPUTS:
-        numeric_inputs.append(tf.cast(data[column], tf.float32))
+        all_inputs.append(tf.cast(data[column], tf.float32))
       else:
-        numeric_inputs.append(data[column])
-  return tf.concat(one_hot_inputs + numeric_inputs, axis = -1)
+        all_inputs.append(data[column])
+  return tf.concat(all_inputs, axis = -1)
 
 def encode_action(value):
   return ['rest', 'move', 'throw'].index(value)
@@ -345,15 +317,6 @@ def labels(data):
 
 def input_fn():
   splitter = lambda data: (raw_inputs(data), labels(data))
-  return tf.data.experimental.make_csv_dataset(
-        flags.input,
-        batch_size=1,
-        select_columns = SELECTED_COLUMNS,
-        column_defaults = COLUMN_DEFAULTS
-      ).map(splitter).shuffle(flags.shuffle_size)
-
-def input_fn_with_feature_columns():
-  splitter = lambda data: (feature_column_inputs(data), labels(data))
   return tf.data.experimental.make_csv_dataset(
         flags.input,
         batch_size=1,
