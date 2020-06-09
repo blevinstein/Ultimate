@@ -44,7 +44,7 @@ const ACTION_COLUMNS = [
   'team_1_player_5_action',
   'team_1_player_6_action',
 ];
-const MAX_IN_MEMORY_FRAMES = 1e5;
+const MAX_IN_MEMORY_SAMPLES = 1e6;
 
 // Play a single game until completion, and return as a FrameTensor.
 function playGame(enriched = false) {
@@ -71,26 +71,18 @@ function playGame(enriched = false) {
       frame => ACTION_COLUMNS.some(column => frame.get(column) === 'throw'));
   }
 
-  return frameTensor;
+  return frameTensor.getPermutedCsvData();
 }
 
-function writeOutput(frameTensor) {
-  if (flags.get('output_raw') !== '') {
-    const [frameHeaders, frameData] = frameTensor.getFrameCsvData();
-    console.log(
-      `Writing frames (shape ${frameData[0].length} x ${frameData.length-1}) to ${flags.get('output_raw')}`
-    );
-    writeToFile(flags.get('output_raw'), frameHeaders, frameData);
-  } else {
-    console.log('Not writing frame data.');
+function writeOutput(headers, data) {
+  if (data.length === 0) {
+    return;
   }
-
   if (flags.get('output') !== '') {
-    const [agentHeaders, agentData] = frameTensor.getPermutedCsvData();
     console.log(
-      `Writing examples (shape ${agentData[0].length} x ${agentData.length-1}) to ${flags.get('output')}`
-    );
-    writeToFile(flags.get('output'), agentHeaders, agentData);
+      `Writing data (shape ${data[0].length} x ${data.length}) `
+      + `to ${flags.get('output')}`);
+    writeToFile(flags.get('output'), headers, data);
   } else {
     console.log('Not writing examples.');
   }
@@ -109,10 +101,6 @@ async function main() {
     'num_workers',
     3,
     'Number of worker threads to use for processing');
-  flags.defineString(
-    'output_raw',
-    '',
-    'File to store raw frame data in CSV format');
   flags.defineString(
     'output',
     'data/examples.csv',
@@ -137,36 +125,35 @@ async function main() {
 }
 
 function trainSerial(numGames) {
-  let frameTensor = new FrameTensor();
+  let headers;
+  let data = [];
 
   for (let i = 0; i < numGames; ++i) {
-    const newFrameTensor = playGame(flags.get('enriched'));
-    frameTensor = frameTensor.add(newFrameTensor);
-    console.log(
-      `Frames: ${frameTensor.frames.length} \
-              (${newFrameTensor.frames.length} new)`);
-    if (frameTensor.frames.length > MAX_IN_MEMORY_FRAMES) {
-      writeOutput(frameTensor);
-      frameTensor.clearFrames();
+    const [newHeaders, newData] = playGame(flags.get('enriched'));
+    headers = headers || newHeaders;
+    data = data.concat(newData);
+    console.log(`Samples: ${data.length} \t (${newData.length} new)`);
+    if (data.length > MAX_IN_MEMORY_SAMPLES) {
+      writeOutput(headers, data);
+      data = [];
     }
   }
 
-  writeOutput(frameTensor);
+  writeOutput(headers, data);
 }
 
 function trainParallel(numGames) {
   const numWorkers = flags.get('num_workers');
 
-  let frameTensor = new FrameTensor();
+  let headers;
+  let data = [];
   let gamesPlayed = 0;
   let workersAlive = numWorkers;
 
-  const checkDone = () => {
-    if (gamesPlayed === numGames && workersAlive === 0) {
-      writeOutput(frameTensor);
-    } else if (frameTensor.frames.length > MAX_IN_MEMORY_FRAMES) {
-      writeOutput(frameTensor);
-      frameTensor.clearFrames();
+  const maybeWrite = () => {
+    if (data.length > MAX_IN_MEMORY_SAMPLES || gamesPlayed === numGames) {
+      writeOutput(headers, data);
+      data = [];
     }
   }
 
@@ -182,13 +169,13 @@ function trainParallel(numGames) {
         enriched: flags.get('enriched')
       },
     });
-    worker.on('message', (newFrameTensor) => {
+    worker.on('message', (newMessage) => {
       ++gamesPlayed;
-      frameTensor = frameTensor.add(newFrameTensor);
-      console.log(
-        `Frames: ${frameTensor.frames.length} \
-                (${newFrameTensor.frames.length} new)`);
-      checkDone();
+      const [newHeaders, newData] = newMessage;
+      headers = headers || newHeaders;
+      data = data.concat(newData);
+      console.log(`Samples: ${data.length} \t (${newData.length} new)`);
+      maybeWrite();
     });
     worker.on('error', (e) => console.error(e));
     worker.on('exit', (code) => {
@@ -196,7 +183,7 @@ function trainParallel(numGames) {
         console.log(`Worked stopped with code ${code}`);
       }
       --workersAlive;
-      checkDone();
+      maybeWrite();
     });
   }
 }
