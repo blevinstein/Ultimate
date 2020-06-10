@@ -38,6 +38,12 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
     this.frameTensor.recordActions(this.game, this.actionMap);
     this.frameTensor.nextFrame();
     this.frameTensor.clearFrames();
+
+    for (let model of models) {
+      if (!(model instanceof tf.GraphModel)) {
+        throw new Error(`Invalid model input: ${model}`);
+      }
+    }
   }
 
   update() {
@@ -94,6 +100,9 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
   }
 
   static coach(models) {
+    if (!models instanceof Array) {
+      throw new Error(`Illegal input: ${models}`);
+    }
     const strategyPicker = (game, team) => new ModelStrategy(models, game,
       team);
     // TODO: Use strategyPicker for kickoffStrategy as well
