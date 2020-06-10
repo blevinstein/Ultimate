@@ -510,6 +510,8 @@ module.exports.Game = class Game {
         || (player.team.goalDirection === 'W' && player.position[0] < 20)) {
         this.rewardPlayer(player, SCORE_REWARD);
         if (!interception) {
+          // Only reward the thrower if they are on the same team as the
+          // receiver.
           this.rewardPlayer(this.lastThrower, SCORE_REWARD);
         }
         player.team.score++;
@@ -530,7 +532,10 @@ module.exports.Game = class Game {
             [0, 0, 0], winTeam.textColor, null);
         } else {
           this.setState(STATES.Reset);
-          this.setOffensiveTeam(this.defensiveTeam());
+          if (!interception) {
+            // In case of a Callahan, the offensive team does NOT change.
+            this.setOffensiveTeam(this.defensiveTeam());
+          }
           this.swapSides();
         }
       } else if (interception) {
