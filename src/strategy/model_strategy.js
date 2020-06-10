@@ -12,6 +12,12 @@ const {
 const {
   Strategy
 } = require('./strategy.js');
+const {
+  snapToBounds
+} = require('../game_utils.js');
+const {
+  FIELD_BOUNDS
+} = require('../game_params.js');
 
 // Run inference once every STEP, start over every CYCLE.
 const INFERENCE_CYCLE = 14;
@@ -60,7 +66,9 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
             player.rest();
           }
         } else if (!player.hasDisc && moveAction > restAction) {
-          this.move(player, add2d(player.position, [moveX, moveY]));
+          const moveTarget = snapToBounds(
+            add2d(player.position, [moveX, moveY]), FIELD_BOUNDS);
+          this.move(player, moveTarget);
           this.actionMap.set(player, ['move', [moveX, moveY]]);
         } else {
           player.rest();
@@ -70,7 +78,9 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
         if (this.actionMap.has(player)) {
           const [previousAction, params] = this.actionMap.get(player);
           if (previousAction === 'move') {
-            this.move(player, add2d(player.position, params));
+            const moveTarget =
+              snapToBounds(add2d(player.position, params), FIELD_BOUNDS);
+            this.move(player, moveTarget);
           } else {
             player.rest();
           }
