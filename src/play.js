@@ -25,7 +25,23 @@ const {
   Team
 } = require('./team.js');
 
+const ALL_MODELS = [
+  'v1-1/model.json',
+  'v1-2/model.json',
+  'v1-3/model.json',
+  'v1-4/model.json',
+  'v1-5/model.json',
+  'v1-6/model.json',
+  'v1-7/model.json',
+];
+
 let initialized = false;
+
+// Returns Promise<Array<Model>>
+function loadModels(paths) {
+  return Promise.all(
+    paths.map(path => tf.loadGraphModel(path)));
+}
 
 function makeModel() {
   const model = tf.sequential();
@@ -50,7 +66,7 @@ window.initialize =
   () => {
     console.log('Initializing...');
 
-    Promise.all([Game.loadResources(), tf.loadGraphModel('v1/model.json')])
+    Promise.all([Game.loadResources(), loadModels(ALL_MODELS)])
       .then(
         (responses) => {
           initialized = true;
@@ -64,10 +80,10 @@ window.initialize =
   }
 
 function start(responses) {
-  const [resources, model] = responses;
+  const [resources, models] = responses;
   window.game = new Game(resources, document.getElementById('canvas'), [
     new Coach((game, team) => new ManualOffenseStrategy(game, team)),
-    ModelStrategy.coach([model]),
+    ModelStrategy.coach(models),
   ]);
   window.game.start();
 }
