@@ -1,0 +1,130 @@
+const tf = require('@tensorflow/tfjs-node');
+
+const fs = require('fs');
+const fsPromises = require('fs.promises');
+
+const {
+  weightedChoice
+} = require('./math_utils.js');
+const {
+  applyNoise
+} = require('./tensor_utils.js');
+const {
+  Coach
+} = require('./coach.js');
+const {
+  Game
+} = require('./game.js');
+const {
+  ModelStrategy
+} = require('./strategy/model_strategy.js');
+const {
+  STATES
+} = require('./game_params.js');
+
+const GENERATED_MODELS_PREFIX = 'generated/model-';
+const GENERATED_MODELS_FILENAME = 'model.json';
+const REWARD_FACTOR = 500;
+
+// Play a single game until completion, and return corresponding reward scores.
+function playGame(models) {
+  const game = new Game(null, null, [
+    new Coach(),
+    ModelStrategy.coach(models),
+  ]);
+
+  while (game.state != STATES.GameOver) {
+    game.update();
+  }
+
+  const rewards = [];
+  for (let i = 0; i < 7; ++i) {
+    rewards.push(game.reward.get(game.teams[1].players[i]));
+  }
+  return rewards;
+}
+
+// TODO: Cleanup poor (generated) models and delete from disk.
+module.exports.Population = class Population {
+  constructor(modelPaths) {
+    // All model paths known
+    this.modelPaths = modelPaths;
+    // Models which are in memory, keyed by model path
+    this.models = new Map;
+    // Expected reward for each model path based on previous evaluations
+    this.expectedReward = new Map;
+    this.expectedRewardWeight = new Map;
+  }
+
+  async loadModel(path) {
+    if (!this.models.has(path)) {
+      console.log(`Loading ${path}...`);
+      this.models.set(path, await tf.loadGraphModel(path));
+    }
+    return this.models.get(path);
+  }
+
+  // Choose between models with weight e^(expectedReward/k)
+  chooseModel() {
+    return weightedChoice(
+      this.modelPaths,
+      path => Math.exp((this.expectedReward.get(path) || 0)
+        / REWARD_FACTOR));
+  }
+
+  generateModelDir() {
+    let i = 0;
+    while (fs.existsSync(`${GENERATED_MODELS_PREFIX}${i}`)) {
+      i++;
+    }
+    return `file://${GENERATED_MODELS_PREFIX}${i}`;
+  }
+
+  summarize() {
+    for (let modelPath of this.modelPaths) {
+      console.log(
+        `${modelPath} => \t ${this.expectedReward.get(modelPath)} (x${this.expectedRewardWeight.get(modelPath)})`
+      );
+    }
+  }
+
+  async evaluate() {
+    const chosenModelPaths = [];
+    for (let i = 0; i < 7; ++i) {
+      chosenModelPaths.push(this.chooseModel());
+    }
+    const chosenModels = [];
+    for (let path of chosenModelPaths) {
+      chosenModels.push(await this.loadModel(path));
+    }
+    const rewards = playGame(chosenModels);
+    for (let i = 0; i < 7; ++i) {
+      // Attribute reward to the relevant model.
+      const modelPath = chosenModelPaths[i];
+      const modelReward = rewards[i] || 0;
+      const prevReward = this.expectedReward.get(modelPath) || 0;
+      const prevWeight = this.expectedRewardWeight.get(modelPath) || 0;
+      const newReward = (prevReward * prevWeight + modelReward) / (
+        prevWeight + 1);
+      this.expectedReward.set(modelPath, newReward);
+      this.expectedRewardWeight.set(modelPath, prevWeight + 1);
+    }
+  }
+
+  async breed(n = 1) {
+    for (let i = 0; i < n; ++i) {
+      await this.asexualReproduction(this.chooseModel());
+    }
+  }
+
+  async asexualReproduction(sourceModelPath) {
+    const newModel = await tf.loadGraphModel(sourceModelPath);
+    applyNoise(newModel);
+    const newModelDir = this.generateModelDir();
+    const newModelPath = `${newModelDir}/${GENERATED_MODELS_FILENAME}`;
+    console.log(`Saving new model to ${newModelDir}...`);
+    await newModel.save(newModelDir);
+    this.modelPaths.push(newModelPath);
+    this.models.set(newModelPath, newModel);
+  }
+}
