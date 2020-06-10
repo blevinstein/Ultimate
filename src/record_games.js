@@ -58,6 +58,12 @@ function playGame(enriched = false) {
 
   game.recordActions(actionMap);
 
+  // Record one frame of 'rest' actions to avoid null 'last_action' values.
+  frameTensor.recordGameState(game);
+  frameTensor.recordActions(game, actionMap);
+  frameTensor.nextFrame();
+  frameTensor.clearFrames();
+
   while (game.state != STATES.GameOver) {
     frameTensor.recordGameState(game);
     game.update();
