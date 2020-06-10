@@ -10,6 +10,12 @@ const {
 const {
   Strategy
 } = require('./strategy.js');
+const {
+  NUM_PLAYERS
+} = require('../team.js');
+const {
+  ARM_HEIGHT
+} = require('../player_params.js');
 
 const DELAY_TIME = 1.0;
 
@@ -29,6 +35,13 @@ module.exports.KickoffStrategy = class KickoffStrategy extends Strategy {
 
     if (!this.team.hasDisc()) {
       console.log('Cannot pull without the disc!');
+      // HACK: Fix the problem by transporting the disc to a random player.
+      const randomPlayer =
+        this.team.players[Math.trunc(Math.random() * NUM_PLAYERS)];
+      this.game.disc
+        .setPlayer(randomPlayer)
+        .setVelocity([0, 0, 0])
+        .setPosition(randomPlayer.position.concat(ARM_HEIGHT));
       return true;
     }
 
