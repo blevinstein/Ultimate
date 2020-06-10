@@ -13,8 +13,9 @@ const {
   Strategy
 } = require('./strategy.js');
 
-// Run inference every N steps
-const INFERENCE_STEP = 10;
+// Run inference once every STEP, start over every CYCLE.
+const INFERENCE_CYCLE = 14;
+const INFERENCE_STEP = 2;
 
 module.exports.ModelStrategy = class ModelStrategy extends Strategy {
   constructor(models, game, team) {
@@ -24,18 +25,24 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
     this.frameTensor = new FrameTensor();
 
     this.actionMap = new Map;
-    this.frame = 0;
+    this.frameCount = 0;
+
+    // Record one frame of 'rest' actions to avoid null 'last_action' values.
+    this.frameTensor.recordGameState(this.game);
+    this.frameTensor.recordActions(this.game, this.actionMap);
+    this.frameTensor.nextFrame();
+    this.frameTensor.clearFrames();
   }
 
   update() {
-    if (++this.frame % INFERENCE_STEP === 0) {
-      this.actionMap = new Map;
-      this.frameTensor.recordGameState(this.game);
-      const inputs = this.frameTensor.getPermutedInputs(this.teamNumber);
-      for (let p = 0; p < this.team.players.length; ++p) {
-        const player = this.team.players[p];
+    this.frameTensor.recordGameState(this.game);
+    ++this.frameCount;
+    for (let p = 0; p < this.team.players.length; ++p) {
+      const player = this.team.players[p];
+      if ((this.frameCount + p * INFERENCE_STEP) % INFERENCE_CYCLE === 0) {
+        this.actionMap.delete(player);
+        const inputs = this.frameTensor.getPermutedInputs(this.teamNumber);
         const model = this.models[p % this.models.length];
-        // TODO: Make all predictions with a single call to model.predict
         const prediction = model.predict(inputs[p]);
         // DEBUG: console.log(prediction.as1D().arraySync());
         const [restAction, moveAction, throwAction, moveX, moveY,
@@ -58,12 +65,8 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
         } else {
           player.rest();
         }
-      }
-      this.frameTensor.recordActions(this.game, this.actionMap);
-      this.frameTensor.nextFrame();
-    } else {
-      // Replace actions from previous model evaluation.
-      for (let player of this.team.players) {
+      } else {
+        // Replay actions from previous model evaluation.
         if (this.actionMap.has(player)) {
           const [previousAction, params] = this.actionMap.get(player);
           if (previousAction === 'move') {
@@ -76,6 +79,8 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
         }
       }
     }
+    this.frameTensor.recordActions(this.game, this.actionMap);
+    this.frameTensor.nextFrame();
   }
 
   static coach(models) {

@@ -31,7 +31,7 @@ const NONE_VALUE = '';
 function encodeValue(value, vocab) {
   const index = vocab.findIndex(v => v === value);
   if (index < 0) {
-    throw new Error(`Unexpected value: ${value}`);
+    throw new Error(`Unexpected value: ${value} (expected ${vocab})`);
   }
   return index;
 }
