@@ -18,14 +18,23 @@ const MODELS = [
 ];
 
 async function main() {
+  flags.defineInteger('rounds', 100, 'Number of breeding rounds to simulate');
+  flags.defineInteger('games_per_round', 10,
+    'Number of games played per round to evaluate the current population.');
+  flags.defineInteger('breeding_per_round', 3,
+    'Number of new models to generate during each breeding round.');
+  flags.parse();
+
   const population = new Population(MODELS);
 
-  for (let i = 0; i < 10; i++) {
-    for (let j = 0; j < 2; j++) {
+  for (let i = 0; i < flags.get('rounds'); ++i) {
+    for (let j = 0; j < flags.get('games_per_round'); ++j) {
       await population.evaluate();
     }
     population.summarize();
-    await population.breed();
+    for (let j = 0; j < flags.get('breeding_per_round'); ++j) {
+      await population.breed();
+    }
   }
 }
 
