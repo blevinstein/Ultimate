@@ -26,6 +26,7 @@ module.exports.Strategy = class Strategy {
     // usually unused; all annotations will be drawn in front of the field
     // but behind the players and disc.
     this.frameBuffer = new FrameBuffer();
+    // TODO: Refactor onMove/onThrow out of Strategy
     this.onMove = null;
     this.onThrow = null;
   }

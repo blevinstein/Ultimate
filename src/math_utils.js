@@ -175,7 +175,7 @@ function dot2d(a, b) {
 // vector (dot) direction / |direction|
 //   = |vector| * cos(angle between vector and direction)
 function magnitudeAlong2d(vector, direction) {
-  let mag = mag2d(direction);
+  let mag = mag2d(check2d(direction));
   if (mag === 0) {
     return 0;
   }

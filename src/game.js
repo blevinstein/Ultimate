@@ -17,7 +17,9 @@ const {
   mag2d,
   mul2d,
   norm2d,
-  sub2d
+  sub2d,
+  getVector,
+  magnitudeAlong2d
 } = require('./math_utils.js');
 const {
   ARM_HEIGHT
@@ -97,6 +99,12 @@ const BLUE_COLORS = [
   [HAIR],
 ];
 
+const TURNOVER_PENALTY = -50;
+const SCORE_REWARD = 100;
+const PROGRESS_REWARD_PER_YARD = 1;
+const COMPLETION_REWARD = 20;
+const INTERCEPTION_REWARD = 50;
+
 module.exports.Game = class Game {
   constructor(resources, canvas, coaches = [new Coach(), new Coach()]) {
     this.canvas = canvas;
@@ -133,6 +141,7 @@ module.exports.Game = class Game {
       .setPosition(player.position.concat(ARM_HEIGHT));
     this.toastService = new ToastService();
     this.setState(STATES.Kickoff);
+    this.reward = new Map;
   }
 
   start() {
@@ -228,6 +237,12 @@ module.exports.Game = class Game {
         this.frameTime = this.frameTime === FAST_FORWARD_MS
           ? FRAME_TIME_MS
           : FAST_FORWARD_MS;
+      } else if (event.key.toUpperCase() === 'Z') {
+        // DEBUG
+        console.log('Rewards:');
+        for (let p of this.reward.keys()) {
+          console.log(`player ${p} => ${this.reward.get(p)}`);
+        }
       }
     };
   }
@@ -361,6 +376,7 @@ module.exports.Game = class Game {
         // TODO: Only increment stallCount when a defender is in stall range
         this.stallCount += FRAME_TIME_MS / 1000;
         if (this.stallCount >= 10) {
+          this.rewardPlayer(playerWithDisc, TURNOVER_PENALTY);
           playerWithDisc.drop();
           this.setOffensiveTeam(this.defensiveTeam());
           this.setState(STATES.Pickup);
@@ -423,6 +439,7 @@ module.exports.Game = class Game {
   discThrownBy(player) {
     // DEBUG: console.log('discThrown by player ' + player.id);
     this.lastThrower = player;
+    this.lastThrowOrigin = this.disc.position;
     if (this.state === STATES.Kickoff) {
       this.setState(STATES.Receiving);
     }
@@ -433,7 +450,9 @@ module.exports.Game = class Game {
     if (this.state === STATES.Receiving) {
       this.setState(STATES.Pickup);
       return;
-    } else if (this.state === STATES.Pickup) {
+    }
+    this.rewardPlayer(this.lastThrower, TURNOVER_PENALTY);
+    if (this.state === STATES.Pickup) {
       return;
     } else if (this.state !== STATES.Normal) {
       throw new Error('Disc grounded in unexpected state: ' + this.state);
@@ -469,10 +488,26 @@ module.exports.Game = class Game {
     }
 
     this.stallCount = 0;
-    let interception = !player.team.onOffense;
+    const interception = !player.team.onOffense;
+    if (interception) {
+      this.rewardPlayer(this.lastThrower, TURNOVER_PENALTY);
+      this.rewardPlayer(player, INTERCEPTION_REWARD);
+    } else {
+      const movementTowardsGoal = magnitudeAlong2d(
+        sub2d(this.disc.position, this.lastThrowOrigin),
+        getVector(player.team.goalDirection));
+      const totalReward =
+        COMPLETION_REWARD + PROGRESS_REWARD_PER_YARD * movementTowardsGoal;
+      this.rewardPlayer(this.lastThrower, totalReward);
+      this.rewardPlayer(player, totalReward);
+    }
     if (boundsCheck(player.position, FIELD_BOUNDS)) {
       if ((player.team.goalDirection === 'E' && player.position[0] > 90)
         || (player.team.goalDirection === 'W' && player.position[0] < 20)) {
+        this.rewardPlayer(player, SCORE_REWARD);
+        if (!interception) {
+          this.rewardPlayer(this.lastThrower, SCORE_REWARD);
+        }
         player.team.score++;
         this.toastService.addToast((interception ? 'Callahan!!' : 'Score!')
           + ' ' + this.offensiveTeam().score
@@ -517,6 +552,14 @@ module.exports.Game = class Game {
     this.stallCount = 0;
   }
 
+  rewardPlayer(player, amount) {
+    if (!player) {
+      throw new Error(`Invalid player: ${player}`);
+    }
+    this.reward.set(player, (this.reward.get(player) || 0) + amount);
+  }
+
+  // Registers callbacks so that actions will be record in 'actionMap'
   recordActions(actionMap) {
     this.onNewStrategy = strategy => {
       strategy.onMove = (player, relativeDestination) => {
