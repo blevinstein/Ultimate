@@ -81,10 +81,14 @@ module.exports.Population = class Population {
   }
 
   summarize() {
-    for (let modelPath of this.modelPaths) {
-      console.log(
-        `${modelPath} => \t ${this.expectedReward.get(modelPath)} (x${this.expectedRewardWeight.get(modelPath)})`
-      );
+    const modelData = this.modelPaths.map(
+      path => [path, this.expectedReward.get(path), this
+        .expectedRewardWeight.get(path)
+      ]);
+    modelData.sort((a, b) => b[1] - a[1]);
+    console.log('Population scores:');
+    for (let [path, reward, weight] of modelData) {
+      console.log(`${path} => \t ${reward} [weight ${weight}]`);
     }
   }
 
@@ -119,7 +123,7 @@ module.exports.Population = class Population {
 
   async asexualReproduction(sourceModelPath) {
     const newModel = await tf.loadGraphModel(sourceModelPath);
-    applyNoise(newModel);
+    applyNoise(newModel, 0.01);
     const newModelDir = this.generateModelDir();
     const newModelPath = `${newModelDir}/${GENERATED_MODELS_FILENAME}`;
     console.log(`Saving new model to ${newModelDir}...`);
