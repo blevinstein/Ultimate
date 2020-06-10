@@ -451,7 +451,11 @@ module.exports.Game = class Game {
       this.setState(STATES.Pickup);
       return;
     }
-    this.rewardPlayer(this.lastThrower, TURNOVER_PENALTY);
+    const movementTowardsGoal = magnitudeAlong2d(
+      sub2d(this.disc.position, this.lastThrowOrigin),
+      getVector(this.lastThrower.team.goalDirection));
+    this.rewardPlayer(this.lastThrower,
+      TURNOVER_PENALTY + PROGRESS_REWARD_PER_YARD * movementTowardsGoal);
     if (this.state === STATES.Pickup) {
       return;
     } else if (this.state !== STATES.Normal) {
