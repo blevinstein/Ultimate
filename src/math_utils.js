@@ -247,6 +247,20 @@ function acos(value) {
   return Math.acos(value);
 }
 
+function weightedChoice(values, weightFunc) {
+  const weights = values.map(weightFunc);
+  if (weights.some(w => w < 0)) {
+    throw new Error(`Negative weights are invalid: ${weights}`);
+  }
+  const totalWeight = weights.reduce((a, b) => a + b);
+  let randomWeight = Math.random() * totalWeight;
+  let chosenIndex = 0;
+  while (randomWeight > weights[chosenIndex]) {
+    randomWeight -= weights[chosenIndex++];
+  }
+  return values[chosenIndex];
+}
+
 const ALL_FUNCTIONS = [
   'acos',
   'linearInterpolate',
@@ -277,6 +291,7 @@ const ALL_FUNCTIONS = [
   'inverseProject2d',
   'zRotate3d',
   'check1d',
+  'weightedChoice',
   'installMathUtils',
 ];
 
