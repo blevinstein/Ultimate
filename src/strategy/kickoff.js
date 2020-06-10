@@ -34,15 +34,16 @@ module.exports.KickoffStrategy = class KickoffStrategy extends Strategy {
     }
 
     if (!this.team.hasDisc()) {
-      console.log('Cannot pull without the disc!');
+      throw new Error('Cannot pull without the disc!');
       // HACK: Fix the problem by transporting the disc to a random player.
+      /*
       const randomPlayer =
         this.team.players[Math.trunc(Math.random() * NUM_PLAYERS)];
       this.game.disc
         .setPlayer(randomPlayer)
         .setVelocity([0, 0, 0])
         .setPosition(randomPlayer.position.concat(ARM_HEIGHT));
-      return true;
+      */
     }
 
     const playerWithDisc = this.game.playerWithDisc();
