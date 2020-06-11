@@ -170,7 +170,7 @@ function trainParallel(numGames) {
     console.log(`Spawn worker: play ${numTasks} games`);
     const worker = new Worker(__filename, {
       workerData: {
-        numTasks: numTasks,
+        numTasks,
         enriched: flags.get('enriched')
       },
     });

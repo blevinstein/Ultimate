@@ -153,28 +153,39 @@ module.exports.Population = class Population {
     }
   }
 
+  async evaluateRewards(chosenModelPaths) {
+    const chosenModels = [];
+    for (let path of chosenModelPaths) {
+      chosenModels.push(await this.loadModel(path));
+    }
+    return playGame(chosenModels);
+  }
+
+  attributeRewards(modelPaths, rewards) {
+    if (modelPaths.length !== NUM_PLAYERS || rewards.length !==
+      NUM_PLAYERS) {
+      throw new Error('Unexpected input size');
+    }
+    for (let i = 0; i < NUM_PLAYERS; ++i) {
+      const modelPath = modelPaths[i];
+      const modelReward = rewards[i] || 0;
+      const prevReward = this.expectedReward.get(modelPath) || 0;
+      const prevWeight = this.expectedRewardWeight.get(modelPath) || 0;
+      const newReward = (prevReward * prevWeight + modelReward) / (
+        prevWeight + 1);
+      this.expectedReward.set(modelPath, newReward);
+      this.expectedRewardWeight.set(modelPath, prevWeight + 1);
+    }
+  }
+
   async evaluate(n = 1) {
     for (let e = 0; e < n; ++e) {
       const chosenModelPaths = [];
       for (let i = 0; i < NUM_PLAYERS; ++i) {
         chosenModelPaths.push(this.chooseModel());
       }
-      const chosenModels = [];
-      for (let path of chosenModelPaths) {
-        chosenModels.push(await this.loadModel(path));
-      }
-      const rewards = playGame(chosenModels);
-      for (let i = 0; i < NUM_PLAYERS; ++i) {
-        // Attribute reward to the relevant model.
-        const modelPath = chosenModelPaths[i];
-        const modelReward = rewards[i] || 0;
-        const prevReward = this.expectedReward.get(modelPath) || 0;
-        const prevWeight = this.expectedRewardWeight.get(modelPath) || 0;
-        const newReward = (prevReward * prevWeight + modelReward) / (
-          prevWeight + 1);
-        this.expectedReward.set(modelPath, newReward);
-        this.expectedRewardWeight.set(modelPath, prevWeight + 1);
-      }
+      const rewards = await this.evaluateRewards(chosenModelPaths);
+      this.attributeRewards(chosenModelPaths, rewards);
     }
   }
 
