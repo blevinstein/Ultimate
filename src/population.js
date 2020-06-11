@@ -44,6 +44,18 @@ function playGame(models) {
   return rewards;
 }
 
+function rmdirRecursive(path) {
+  return new Promise((resolve, reject) => {
+    fs.rmdir(path, {recursive: true}, (error) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
 // TODO: Cleanup poor (generated) models and delete from disk.
 module.exports.Population = class Population {
   constructor(modelPaths) {
@@ -180,7 +192,7 @@ module.exports.Population = class Population {
       this.modelPaths.splice(this.modelPaths.findIndex(path => path
         === chosenModelPath), 1);
       this.models.delete(chosenModelPath);
-      await fsPromises.rmdir(modelDir);
+      await rmdirRecursive(modelDir);
     }
   }
 
