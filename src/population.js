@@ -167,17 +167,20 @@ module.exports.Population = class Population {
   }
 
   async kill(n = 1) {
+    console.log(`Try to kill ${n} models`);
     for (let i = 0; i < n; ++i) {
       const chosenModelPath =
         this.chooseModel(false, /*minWeight=*/ 5, /*minChoices=*/ 20);
-      if (chosenModelPath) {
-        const modelDir = path.dirname(chosenModelPath);
-        console.log(`Deleting model from ${modelDir}`);
-        this.modelPaths.splice(this.modelPaths.findIndex(path => path
-          === chosenModelPath), 1);
-        this.models.delete(chosenModelPath);
-        await fsPromises.rmdir(modelDir);
+      if (!chosenModelPath) {
+        console.log('Shortcircuit due to insufficient weights');
+        break;
       }
+      const modelDir = path.dirname(chosenModelPath);
+      console.log(`Deleting model from ${modelDir}`);
+      this.modelPaths.splice(this.modelPaths.findIndex(path => path
+        === chosenModelPath), 1);
+      this.models.delete(chosenModelPath);
+      await fsPromises.rmdir(modelDir);
     }
   }
 
