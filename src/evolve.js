@@ -1,4 +1,5 @@
 const flags = require('flags')
+const fs = require('fs');
 
 const {
   Game
@@ -8,13 +9,13 @@ const {
 } = require('./population.js');
 
 const MODELS = [
-  'file://js_model/v1-1/model.json',
-  'file://js_model/v1-2/model.json',
-  'file://js_model/v1-3/model.json',
-  'file://js_model/v1-4/model.json',
-  'file://js_model/v1-5/model.json',
-  'file://js_model/v1-6/model.json',
-  'file://js_model/v1-7/model.json',
+  'js_model/v1-1/model.json',
+  'js_model/v1-2/model.json',
+  'js_model/v1-3/model.json',
+  'js_model/v1-4/model.json',
+  'js_model/v1-5/model.json',
+  'js_model/v1-6/model.json',
+  'js_model/v1-7/model.json',
 ];
 
 async function main() {
@@ -27,17 +28,25 @@ async function main() {
     'List of models to seed evolution.');
   flags.defineInteger('max_population_size', 300,
     'Max desired population size');
+  flags.defineString(
+    'reward_file', 'data/rewards.json',
+    'JSON file for persisting rewards between runs');
   flags.parse();
 
-  const population = new Population(flags.get('start_population').map(file =>
-    `file://${file}`));
   const maxPopulationSize = flags.get('max_population_size');
+  const rewardFile = flags.get('reward_file');
+
+  const population = new Population(flags.get('start_population'));
+  if (rewardFile && fs.existsSync(rewardFile)) {
+    await population.loadRewards(rewardFile);
+  }
 
   for (let i = 0; i < flags.get('rounds'); ++i) {
     for (let j = 0; j < flags.get('games_per_round'); ++j) {
       await population.evaluate();
     }
     population.summarize();
+    await population.saveRewards(rewardFile);
     if (population.size() > maxPopulationSize) {
       await population.kill(population.size() - maxPopulationSize);
     }

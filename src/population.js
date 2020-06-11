@@ -56,28 +56,60 @@ module.exports.Population = class Population {
     this.expectedRewardWeight = new Map;
   }
 
+  async saveRewards(path, overwrite = false) {
+    console.log(`Saving rewards to ${path}`);
+    if (fs.existsSync(path) && !overwrite) {
+      throw new Error(`Reward file already exists: ${path}`);
+    }
+    await fsPromises.writeFile(path, JSON.stringify([
+      Array.from(this.expectedReward.entries()),
+      Array.from(this.expectedRewardWeight.entries()),
+    ]));
+  }
+
+  async loadRewards(path) {
+    console.log(`Loading rewards from ${path}`);
+    if (!fs.existsSync(path)) {
+      throw new Error(`Reward file does not exist: ${path}`);
+    }
+    if (this.expectedReward.size > 0) {
+      // TODO: Support merging reward maps
+      throw new Error('Reward map already contains something!');
+    }
+    const [rewards, weights] = JSON.parse(await fsPromises.readFile(path));
+    this.expectedReward = new Map(rewards);
+    this.expectedRewardWeight = new Map(weights);
+  }
+
+  async saveModel(newModel, newModelDir) {
+    newModelDir = newModelDir || this.generateModelDir();
+    const newModelPath = `${newModelDir}/${GENERATED_MODELS_FILENAME}`;
+    console.log(`Saving new model to ${newModelDir}`);
+    await newModel.save(`file://${newModelDir}`);
+    return newModelPath;
+  }
+
   async loadModel(path) {
     if (!this.models.has(path)) {
       console.log(`Loading ${path}`);
-      this.models.set(path, await tf.loadGraphModel(path));
+      this.models.set(path, await tf.loadGraphModel(`file://${path}`));
     }
     return this.models.get(path);
   }
 
   // Choose between models with weight e^(expectedReward/k) if best = true, or
   // weight e^(-expectedReward/k) if best = false
-  chooseModel(best = true, minWeight = 0) {
+  chooseModel(best = true, minWeight = 0, minChoices = 1) {
+    const choices = this.modelPaths.filter(
+      path => (this.expectedRewardWeight.get(path) || 0) >= minWeight);
+    if (choices.length < minChoices) {
+      return undefined;
+    }
     return weightedChoice(
-      this.modelPaths,
-      path => {
-        const weight = this.expectedRewardWeight.get(path) || 0;
-        if (weight < minWeight) {
-          return 0;
-        }
-        const expectedReward = this.expectedReward.get(path) || 0;
-        return Math.exp(
-          (expectedReward * (best ? 1 : -1) / REWARD_FACTOR));
-      });
+      choices,
+      path => Math.exp(
+        ((this.expectedReward.get(path) || 0) * (best ? 1 : -1)
+          / REWARD_FACTOR)));
   }
 
   generateModelDir() {
@@ -85,7 +117,7 @@ module.exports.Population = class Population {
     while (fs.existsSync(`${GENERATED_MODELS_PREFIX}${i}`)) {
       i++;
     }
-    return `file://${GENERATED_MODELS_PREFIX}${i}`;
+    return `${GENERATED_MODELS_PREFIX}${i}`;
   }
 
   size() {
@@ -136,25 +168,23 @@ module.exports.Population = class Population {
 
   async kill(n = 1) {
     for (let i = 0; i < n; ++i) {
-      const chosenModelPath = this.chooseModel(false, /*minWeight=*/ 3);
-      if (!chosenModelPath) {
-        return;
+      const chosenModelPath =
+        this.chooseModel(false, /*minWeight=*/ 5, /*minChoices=*/ 20);
+      if (chosenModelPath) {
+        const modelDir = path.dirname(chosenModelPath);
+        console.log(`Deleting model from ${modelDir}`);
+        this.modelPaths.splice(this.modelPaths.findIndex(path => path
+          === chosenModelPath), 1);
+        this.models.delete(chosenModelPath);
+        await fsPromises.rmdir(modelDir);
       }
-      const modelDir = path.dirname(chosenModelPath);
-      console.log(`Deleting model from ${modelDir}`);
-      this.modelPaths.splice(this.modelPaths.findIndex(chosenModelPath), 1);
-      this.models.delete(chosenModelPath);
-      await fsPromises.rmdir(modelDir);
     }
   }
 
   async asexualReproduction(sourceModelPath) {
-    const newModel = await tf.loadGraphModel(sourceModelPath);
+    const newModel = await tf.loadGraphModel(`file://${sourceModelPath}`);
     applyNoise(newModel, 0.01);
-    const newModelDir = this.generateModelDir();
-    const newModelPath = `${newModelDir}/${GENERATED_MODELS_FILENAME}`;
-    console.log(`Saving new model to ${newModelDir}`);
-    await newModel.save(newModelDir);
+    const newModelPath = await this.saveModel(newModel);
     this.modelPaths.push(newModelPath);
     this.models.set(newModelPath, newModel);
   }
