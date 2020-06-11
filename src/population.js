@@ -129,7 +129,7 @@ module.exports.Population = class Population {
       path => [path, this.expectedReward.get(path), this
         .expectedRewardWeight.get(path)
       ]);
-    modelData.sort((a, b) => b[1] - a[1]);
+    modelData.sort((a, b) => (b[1] || 0) - (a[1] || 0));
     console.log(`Population (size=${this.size()}) scores:`);
     for (let [path, reward, weight] of modelData) {
       console.log(`${path} => \t ${reward} [weight ${weight}]`);
