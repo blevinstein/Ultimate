@@ -253,6 +253,9 @@ function weightedChoice(values, weightFunc) {
     throw new Error(`Negative weights are invalid: ${weights}`);
   }
   const totalWeight = weights.reduce((a, b) => a + b);
+  if (totalWeight === 0) {
+    return undefined;
+  }
   let randomWeight = Math.random() * totalWeight;
   let chosenIndex = 0;
   while (randomWeight > weights[chosenIndex]) {

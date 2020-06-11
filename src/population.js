@@ -1,7 +1,7 @@
-const tf = require('@tensorflow/tfjs-node');
-
 const fs = require('fs');
 const fsPromises = require('fs.promises');
+const path = require('path');
+const tf = require('@tensorflow/tfjs-node');
 
 const {
   weightedChoice
@@ -22,9 +22,9 @@ const {
   STATES
 } = require('./game_params.js');
 
-const GENERATED_MODELS_PREFIX = 'generated/model-';
+const GENERATED_MODELS_PREFIX = 'js_model/generated/model-';
 const GENERATED_MODELS_FILENAME = 'model.json';
-const REWARD_FACTOR = 500;
+const REWARD_FACTOR = 100;
 
 // Play a single game until completion, and return corresponding reward scores.
 function playGame(models) {
@@ -58,18 +58,26 @@ module.exports.Population = class Population {
 
   async loadModel(path) {
     if (!this.models.has(path)) {
-      console.log(`Loading ${path}...`);
+      console.log(`Loading ${path}`);
       this.models.set(path, await tf.loadGraphModel(path));
     }
     return this.models.get(path);
   }
 
-  // Choose between models with weight e^(expectedReward/k)
-  chooseModel() {
+  // Choose between models with weight e^(expectedReward/k) if best = true, or
+  // weight e^(-expectedReward/k) if best = false
+  chooseModel(best = true, minWeight = 0) {
     return weightedChoice(
       this.modelPaths,
-      path => Math.exp((this.expectedReward.get(path) || 0)
-        / REWARD_FACTOR));
+      path => {
+        const weight = this.expectedRewardWeight.get(path) || 0;
+        if (weight < minWeight) {
+          return 0;
+        }
+        const expectedReward = this.expectedReward.get(path) || 0;
+        return Math.exp(
+          (expectedReward * (best ? 1 : -1) / REWARD_FACTOR));
+      });
   }
 
   generateModelDir() {
@@ -80,13 +88,17 @@ module.exports.Population = class Population {
     return `file://${GENERATED_MODELS_PREFIX}${i}`;
   }
 
+  size() {
+    return this.modelPaths.length;
+  }
+
   summarize() {
     const modelData = this.modelPaths.map(
       path => [path, this.expectedReward.get(path), this
         .expectedRewardWeight.get(path)
       ]);
     modelData.sort((a, b) => b[1] - a[1]);
-    console.log('Population scores:');
+    console.log(`Population (size=${this.size()}) scores:`);
     for (let [path, reward, weight] of modelData) {
       console.log(`${path} => \t ${reward} [weight ${weight}]`);
     }
@@ -116,8 +128,23 @@ module.exports.Population = class Population {
   }
 
   async breed(n = 1) {
+    // TODO: add sexual reproduction
     for (let i = 0; i < n; ++i) {
       await this.asexualReproduction(this.chooseModel());
+    }
+  }
+
+  async kill(n = 1) {
+    for (let i = 0; i < n; ++i) {
+      const chosenModelPath = this.chooseModel(false, /*minWeight=*/ 3);
+      if (!chosenModelPath) {
+        return;
+      }
+      const modelDir = path.dirname(chosenModelPath);
+      console.log(`Deleting model from ${modelDir}`);
+      this.modelPaths.splice(this.modelPaths.findIndex(chosenModelPath), 1);
+      this.models.delete(chosenModelPath);
+      await fsPromises.rmdir(modelDir);
     }
   }
 
@@ -126,7 +153,7 @@ module.exports.Population = class Population {
     applyNoise(newModel, 0.01);
     const newModelDir = this.generateModelDir();
     const newModelPath = `${newModelDir}/${GENERATED_MODELS_FILENAME}`;
-    console.log(`Saving new model to ${newModelDir}...`);
+    console.log(`Saving new model to ${newModelDir}`);
     await newModel.save(newModelDir);
     this.modelPaths.push(newModelPath);
     this.models.set(newModelPath, newModel);
