@@ -46,7 +46,7 @@ async function main() {
       await population.evaluate();
     }
     population.summarize();
-    await population.saveRewards(rewardFile);
+    await population.saveRewards(rewardFile, true);
     if (population.size() > maxPopulationSize) {
       await population.kill(population.size() - maxPopulationSize);
     }
