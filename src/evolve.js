@@ -42,9 +42,7 @@ async function main() {
   }
 
   for (let i = 0; i < flags.get('rounds'); ++i) {
-    for (let j = 0; j < flags.get('games_per_round'); ++j) {
-      await population.evaluate();
-    }
+    await population.evaluate(flags.get('games_per_round'));
     population.summarize();
     await population.saveRewards(rewardFile, true);
     if (population.size() > maxPopulationSize) {

@@ -21,6 +21,9 @@ const {
 const {
   STATES
 } = require('./game_params.js');
+const {
+  NUM_PLAYERS
+} = require('./team.js');
 
 const GENERATED_MODELS_PREFIX = 'js_model/generated/model-';
 const GENERATED_MODELS_FILENAME = 'model.json';
@@ -38,7 +41,7 @@ function playGame(models) {
   }
 
   const rewards = [];
-  for (let i = 0; i < 7; ++i) {
+  for (let i = 0; i < NUM_PLAYERS; ++i) {
     rewards.push(game.reward.get(game.teams[1].players[i]));
   }
   return rewards;
@@ -46,7 +49,9 @@ function playGame(models) {
 
 function rmdirRecursive(path) {
   return new Promise((resolve, reject) => {
-    fs.rmdir(path, {recursive: true}, (error) => {
+    fs.rmdir(path, {
+      recursive: true
+    }, (error) => {
       if (error) {
         reject(error);
       } else {
@@ -148,26 +153,28 @@ module.exports.Population = class Population {
     }
   }
 
-  async evaluate() {
-    const chosenModelPaths = [];
-    for (let i = 0; i < 7; ++i) {
-      chosenModelPaths.push(this.chooseModel());
-    }
-    const chosenModels = [];
-    for (let path of chosenModelPaths) {
-      chosenModels.push(await this.loadModel(path));
-    }
-    const rewards = playGame(chosenModels);
-    for (let i = 0; i < 7; ++i) {
-      // Attribute reward to the relevant model.
-      const modelPath = chosenModelPaths[i];
-      const modelReward = rewards[i] || 0;
-      const prevReward = this.expectedReward.get(modelPath) || 0;
-      const prevWeight = this.expectedRewardWeight.get(modelPath) || 0;
-      const newReward = (prevReward * prevWeight + modelReward) / (
-        prevWeight + 1);
-      this.expectedReward.set(modelPath, newReward);
-      this.expectedRewardWeight.set(modelPath, prevWeight + 1);
+  async evaluate(n = 1) {
+    for (let e = 0; e < n; ++e) {
+      const chosenModelPaths = [];
+      for (let i = 0; i < NUM_PLAYERS; ++i) {
+        chosenModelPaths.push(this.chooseModel());
+      }
+      const chosenModels = [];
+      for (let path of chosenModelPaths) {
+        chosenModels.push(await this.loadModel(path));
+      }
+      const rewards = playGame(chosenModels);
+      for (let i = 0; i < NUM_PLAYERS; ++i) {
+        // Attribute reward to the relevant model.
+        const modelPath = chosenModelPaths[i];
+        const modelReward = rewards[i] || 0;
+        const prevReward = this.expectedReward.get(modelPath) || 0;
+        const prevWeight = this.expectedRewardWeight.get(modelPath) || 0;
+        const newReward = (prevReward * prevWeight + modelReward) / (
+          prevWeight + 1);
+        this.expectedReward.set(modelPath, newReward);
+        this.expectedRewardWeight.set(modelPath, prevWeight + 1);
+      }
     }
   }
 

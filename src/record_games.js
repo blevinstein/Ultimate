@@ -154,7 +154,6 @@ function trainParallel(numGames) {
   let headers;
   let data = [];
   let gamesPlayed = 0;
-  let workersAlive = numWorkers;
 
   const maybeWrite = () => {
     if (data.length > MAX_IN_MEMORY_SAMPLES || gamesPlayed === numGames) {
@@ -188,8 +187,6 @@ function trainParallel(numGames) {
       if (code !== 0) {
         console.log(`Worked stopped with code ${code}`);
       }
-      --workersAlive;
-      maybeWrite();
     });
   }
 }
