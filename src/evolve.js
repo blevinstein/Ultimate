@@ -44,11 +44,11 @@ async function main() {
   for (let i = 0; i < flags.get('rounds'); ++i) {
     await population.evaluate(flags.get('games_per_round'));
     population.summarize();
-    await population.saveRewards(rewardFile, true);
     if (population.size() > maxPopulationSize) {
       await population.kill(population.size() - maxPopulationSize);
     }
     await population.breed(flags.get('breeding_per_round'));
+    await population.saveRewards(rewardFile, true);
   }
 }
 

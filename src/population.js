@@ -162,8 +162,8 @@ module.exports.Population = class Population {
   }
 
   attributeRewards(modelPaths, rewards) {
-    if (modelPaths.length !== NUM_PLAYERS || rewards.length !==
-      NUM_PLAYERS) {
+    if (modelPaths.length !== NUM_PLAYERS || rewards.length
+      !== NUM_PLAYERS) {
       throw new Error('Unexpected input size');
     }
     for (let i = 0; i < NUM_PLAYERS; ++i) {
@@ -210,6 +210,8 @@ module.exports.Population = class Population {
       this.modelPaths.splice(this.modelPaths.findIndex(path => path
         === chosenModelPath), 1);
       this.models.delete(chosenModelPath);
+      this.expectedReward.delete(chosenModelPath);
+      this.expectedRewardWeight.delete(chosenModelPath);
       await rmdirRecursive(modelDir);
     }
   }
