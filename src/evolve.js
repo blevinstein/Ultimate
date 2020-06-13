@@ -20,13 +20,13 @@ const MODELS = [
 
 async function main() {
   flags.defineInteger('rounds', 100, 'Number of breeding rounds to simulate');
-  flags.defineInteger('games_per_round', 10,
+  flags.defineInteger('games_per_round', 20,
     'Number of games played per round to evaluate the current population.');
   flags.defineInteger('breeding_per_round', 5,
     'Number of new models to generate during each breeding round.');
   flags.defineStringList('start_population', MODELS,
     'List of models to seed evolution.');
-  flags.defineInteger('max_population_size', 300,
+  flags.defineInteger('max_population_size', 1000,
     'Max desired population size');
   flags.defineString(
     'reward_file', 'data/rewards.json',
