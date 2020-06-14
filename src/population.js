@@ -131,7 +131,8 @@ module.exports.Population = class Population {
   async saveModel(newModel, newModelDir) {
     newModelDir = newModelDir || this.generateModelDir();
     const newModelPath = path.join(newModelDir, GENERATED_MODELS_FILENAME);
-    console.log(`Saving new model to ${newModelDir}`);
+    console.log(
+      `Saving new model to ${path.join(this.populationDir, newModelDir)}`);
     await newModel.save(
       `file://${path.join(this.populationDir, newModelDir)}`);
     return newModelPath;
@@ -141,7 +142,8 @@ module.exports.Population = class Population {
   // loading from disc if necessary.
   async loadModel(modelFile) {
     if (!this.models.has(modelFile)) {
-      // DEBUG: console.log(`Loading model from ${modelFile}`);
+      // DEBUG: console.log(
+      //   `Loading model from ${path.join(this.populationDir, modelFile)}`);
       this.models.set(modelFile, await tf.loadGraphModel(
         `file://${path.join(this.populationDir, modelFile)}`));
     }
