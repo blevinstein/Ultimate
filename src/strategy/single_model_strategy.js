@@ -23,7 +23,8 @@ const {
 const INFERENCE_CYCLE = 14;
 const INFERENCE_STEP = 2;
 
-module.exports.ModelStrategy = class ModelStrategy extends Strategy {
+module.exports.SingleModelStrategy =
+class SingleModelStrategy extends Strategy {
   constructor(models, game, team) {
     super(game, team);
     this.models = models;
@@ -103,7 +104,8 @@ module.exports.ModelStrategy = class ModelStrategy extends Strategy {
     if (!models instanceof Array) {
       throw new Error(`Illegal input: ${models}`);
     }
-    const strategyPicker = (game, team) => new ModelStrategy(models, game,
+    const strategyPicker = (game, team) => new SingleModelStrategy(models,
+      game,
       team);
     // TODO: Use strategyPicker for kickoffStrategy as well
     return new Coach(strategyPicker, strategyPicker, strategyPicker);

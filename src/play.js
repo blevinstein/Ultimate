@@ -16,8 +16,8 @@ const {
   ManualOffenseStrategy
 } = require('./strategy/manual_offense.js');
 const {
-  ModelStrategy
-} = require('./strategy/model_strategy.js');
+  SingleModelStrategy
+} = require('./strategy/single_model_strategy.js');
 const {
   ZoneDefenseStrategy
 } = require('./strategy/zone_defense.js');
@@ -83,7 +83,7 @@ function start(responses) {
   const [resources, models] = responses;
   window.game = new Game(resources, document.getElementById('canvas'), [
     new Coach((game, team) => new ManualOffenseStrategy(game, team)),
-    ModelStrategy.coach(models),
+    SingleModelStrategy.coach(models),
   ]);
   window.game.start();
 }

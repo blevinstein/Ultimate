@@ -19,8 +19,8 @@ const {
   Game
 } = require('./game.js');
 const {
-  ModelStrategy
-} = require('./strategy/model_strategy.js');
+  SingleModelStrategy
+} = require('./strategy/single_model_strategy.js');
 const {
   STATES
 } = require('./game_params.js');
@@ -48,7 +48,7 @@ function filled(value, length) {
 function playGame(models) {
   const game = new Game(null, null, [
     new Coach(),
-    ModelStrategy.coach(models),
+    SingleModelStrategy.coach(models),
   ]);
 
   while (game.state != STATES.GameOver) {
