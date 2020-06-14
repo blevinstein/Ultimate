@@ -19,7 +19,8 @@ const MODELS = [
 ];
 
 async function main() {
-  flags.defineInteger('rounds', 100, 'Number of breeding rounds to simulate');
+  flags.defineInteger('rounds', 1000,
+  'Number of breeding rounds to simulate');
   flags.defineInteger('games_per_round', 20,
     'Number of games played per round to evaluate the current population.');
   flags.defineInteger('breeding_per_round', 5,
