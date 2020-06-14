@@ -7,7 +7,9 @@ const {
   weightedChoice
 } = require('./math_utils.js');
 const {
-  applyNoise
+  applyNoise,
+  sexAndNoise,
+  areCompatible
 } = require('./tensor_utils.js');
 const {
   Coach
@@ -28,6 +30,8 @@ const {
 const GENERATED_MODELS_PREFIX = 'js_model/generated/model-';
 const GENERATED_MODELS_FILENAME = 'model.json';
 const REWARD_FACTOR = 100;
+
+const SEX_PROBABILITY = 0.5;
 
 // Play a single game until completion, and return corresponding reward scores.
 function playGame(models) {
@@ -106,6 +110,8 @@ module.exports.Population = class Population {
     return newModelPath;
   }
 
+  // Loads a model located at 'path' by checking the cache (this.models) and
+  // loading from disc if necessary.
   async loadModel(path) {
     if (!this.models.has(path)) {
       console.log(`Loading ${path}`);
@@ -192,7 +198,15 @@ module.exports.Population = class Population {
   async breed(n = 1) {
     // TODO: add sexual reproduction
     for (let i = 0; i < n; ++i) {
-      await this.asexualReproduction(this.chooseModel());
+      if (Math.random() < SEX_PROBABILITY) {
+        const models = [this.chooseModel(), this.chooseModel()];
+        console.log(`Reproduce sexually (${models})`);
+        await this.sexualReproduction(models);
+      } else {
+        const model = this.chooseModel();
+        console.log(`Reproduce asexually (${model})`);
+        await this.asexualReproduction(model);
+      }
     }
   }
 
@@ -217,8 +231,34 @@ module.exports.Population = class Population {
   }
 
   async asexualReproduction(sourceModelPath) {
+    // Bypass loadModel to create a new model which will not be associated with
+    // 'sourceModelPath'.
     const newModel = await tf.loadGraphModel(`file://${sourceModelPath}`);
     applyNoise(newModel, 0.01);
+
+    // Choose a new model path, and save the model to disk.
+    const newModelPath = await this.saveModel(newModel);
+    this.modelPaths.push(newModelPath);
+    this.models.set(newModelPath, newModel);
+  }
+
+  async sexualReproduction(sourceModelPaths) {
+    if (sourceModelPaths.length !== 2) {
+      throw new Error('Unexpected input length');
+    }
+    const newModel = await tf.loadGraphModel(
+      `file://${sourceModelPaths[0]}`);
+    const otherModel = await this.loadModel(sourceModelPaths[1]);
+    if (areCompatible(newModel, otherModel)) {
+      sexAndNoise(newModel, otherModel, 0.01);
+    } else {
+      console.error(
+        `Reproduction failed! Incompatible models (${sourceModelPaths}).`);
+      console.error('Fallback to asexual reproduction.');
+      applyNoise(newModel, 0.01);
+    }
+
+    // Choose a new model path, and save the model to disk.
     const newModelPath = await this.saveModel(newModel);
     this.modelPaths.push(newModelPath);
     this.models.set(newModelPath, newModel);
