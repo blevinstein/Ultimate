@@ -69,7 +69,7 @@ function rmdirRecursive(path) {
 module.exports.Population = class Population {
   constructor(modelPaths) {
     // All model paths known
-    this.modelPaths = modelPaths;
+    this.modelPaths = modelPaths || [];
     // Models which are in memory, keyed by model path
     this.models = new Map;
     // Expected reward for each model path based on previous evaluations
