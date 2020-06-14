@@ -81,8 +81,8 @@ function recursiveAdd(a, b) {
 // Returns an array of two Tensors.
 function crossover(aTensor, bTensor, splitAxis,
   splitSize) {
-  const shape = a.shape;
-  if (!eqShape(shape, b.shape)) {
+  const shape = aTensor.shape;
+  if (!eqShape(shape, bTensor.shape)) {
     throw new Error('Cannot crossover differently shaped matrices!');
   }
 
@@ -139,21 +139,12 @@ function areCompatible(model, otherModel) {
       return false;
     }
     for (let i = 0; i < weights[layer].length; ++i) {
-      const shape = weights[layer][i];
-      if (Math.random() < CROSSOVER_PROBABILITY) {
-        // Crossover between different parent matrices, and take the first one.
-        weights[layer][i] =
-          crossover(weights[layer][i], otherWeights[layer][i])[0];
-      } else {
-        // No crossover, inherit from either parent.
-        weights[layer][i] =
-          Math.random() < 0.5 ? weights[layer][i] : otherWeights[layer][i];
+      if (!eqShape(weights[layer][i].shape, otherWeights[layer][i].shape)) {
+        return false;
       }
-      // Add noise
-      const noise = tf.truncatedNormal(shape, 0, stdDev, 'float32');
-      weights[layer][i] = tf.tensor(recursiveAdd(weights[layer][i], noise));
     }
   }
+  return true;
 }
 module.exports.areCompatible = areCompatible;
 
