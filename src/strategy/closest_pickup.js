@@ -23,6 +23,8 @@ const {
   Strategy
 } = require('./strategy.js');
 
+// TODO: Enable using a different behavior from 'chargeForward' for players not
+// drafted for pickup duty.
 module.exports.ClosestPickupStrategy =
   class ClosestPickupStrategy extends Strategy {
     update() {
