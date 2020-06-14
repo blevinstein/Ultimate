@@ -47,7 +47,7 @@ const ACTION_COLUMNS = [
 const MAX_IN_MEMORY_SAMPLES = 1e6;
 
 // Play a single game until completion, and return as a FrameTensor.
-function playGame(enriched = false) {
+function playGame() {
   let frameTensor = new FrameTensor();
   const game = new Game(null, null, [
     new Coach(),
@@ -72,26 +72,32 @@ function playGame(enriched = false) {
     actionMap.clear();
   }
 
-  if (enriched) {
-    frameTensor = frameTensor.filter(
-      frame => ACTION_COLUMNS.some(column => frame.get(column) === 'throw'));
-  }
-
   return frameTensor.getPermutedCsvData();
 }
 
-function writeOutput(headers, data) {
+function writeCutterOutput(headers, data) {
+  if (flags.get('cutter_output') !== '') {
+    writeOutput(flags.get('cutter_output'), headers, data);
+  } else {
+    console.log('Not writing cutter samples.');
+  }
+}
+
+function writeThrowerOutput(headers, data) {
+  if (flags.get('thrower_output') !== '') {
+    writeOutput(flags.get('thrower_output'), headers, data);
+  } else {
+    console.log('Not writing thrower samples.');
+  }
+}
+
+function writeOutput(file, headers, data) {
   if (data.length === 0) {
     return;
   }
-  if (flags.get('output') !== '') {
-    console.log(
-      `Writing data (shape ${data[0].length} x ${data.length}) `
-      + `to ${flags.get('output')}`);
-    writeToFile(flags.get('output'), headers, data);
-  } else {
-    console.log('Not writing examples.');
-  }
+  console.log(
+    `Writing data (shape ${data[0].length} x ${data.length}) to ${file}`);
+  writeToFile(file, headers, data);
 }
 
 async function main() {
@@ -108,13 +114,13 @@ async function main() {
     3,
     'Number of worker threads to use for processing');
   flags.defineString(
-    'output',
-    'data/examples.csv',
-    'File to store permuted agent training data in CSV format');
-  flags.defineBoolean(
-    'enriched',
-    false,
-    'Set to true for examples from throwing frames only.');
+    'cutter_output',
+    'data/cutter_examples.csv',
+    'File to store permuted cutter training data in CSV format');
+  flags.defineString(
+    'thrower_output',
+    'data/thrower_examples.csv',
+    'File to store permuted thrower training data in CSV format');
   flags.parse();
 
   const numGames = flags.get('games');
@@ -132,33 +138,45 @@ async function main() {
 
 function trainSerial(numGames) {
   let headers;
-  let data = [];
+  let cutterData = [];
+  let throwerData = [];
 
   for (let i = 0; i < numGames; ++i) {
-    const [newHeaders, newData] = playGame(flags.get('enriched'));
+    const [newHeaders, newCutterData, newThrowerData] = playGame();
     headers = headers || newHeaders;
-    data = data.concat(newData);
-    console.log(`Samples: ${data.length} \t (${newData.length} new)`);
-    if (data.length > MAX_IN_MEMORY_SAMPLES) {
-      writeOutput(headers, data);
-      data = [];
+    cutterData = cutterData.concat(newCutterData)
+    throwerData = throwerData.concat(newThrowerData);
+    console.log(
+      `Cutter: ${cutterData.length} \t (${newCutterData.length} new)`);
+    console.log(
+      `Thrower: ${throwerData.length} \t (${newThrowerData.length} new)`);
+    if (cutterData.length + throwerData.length > MAX_IN_MEMORY_SAMPLES) {
+      writeCutterOutput(headers, cutterData);
+      writeThrowerOutput(headers, throwerData);
+      cutterData = [];
+      throwerData = [];
     }
   }
 
-  writeOutput(headers, data);
+  writeCutterOutput(headers, cutterData);
+  writeThrowerOutput(headers, throwerData);
 }
 
 function trainParallel(numGames) {
   const numWorkers = flags.get('num_workers');
 
   let headers;
-  let data = [];
+  let cutterData = [];
+  let throwerData = [];
   let gamesPlayed = 0;
 
   const maybeWrite = () => {
-    if (data.length > MAX_IN_MEMORY_SAMPLES || gamesPlayed === numGames) {
-      writeOutput(headers, data);
-      data = [];
+    if (cutterData.length + throwerData.length > MAX_IN_MEMORY_SAMPLES
+      || gamesPlayed === numGames) {
+      writeCutterOutput(headers, cutterData);
+      writeThrowerOutput(headers, throwerData);
+      cutterData = [];
+      throwerData = [];
     }
   }
 
@@ -170,16 +188,20 @@ function trainParallel(numGames) {
     console.log(`Spawn worker: play ${numTasks} games`);
     const worker = new Worker(__filename, {
       workerData: {
-        numTasks,
-        enriched: flags.get('enriched')
+        numTasks
       },
     });
     worker.on('message', (newMessage) => {
       ++gamesPlayed;
-      const [newHeaders, newData] = newMessage;
+      const [newHeaders, newCutterData, newThrowerData] = newMessage;
       headers = headers || newHeaders;
-      data = data.concat(newData);
-      console.log(`Samples: ${data.length} \t (${newData.length} new)`);
+      cutterData = cutterData.concat(newCutterData)
+      throwerData = throwerData.concat(newThrowerData);
+      console.log(
+        `Cutter: ${cutterData.length} \t (${newCutterData.length} new)`);
+      console.log(
+        `Thrower: ${throwerData.length} \t (${newThrowerData.length} new)`
+        );
       maybeWrite();
     });
     worker.on('error', (e) => console.error(e));
@@ -193,7 +215,7 @@ function trainParallel(numGames) {
 
 function trainParallelWorker() {
   for (let i = 0; i < workerData.numTasks; ++i) {
-    parentPort.postMessage(playGame(workerData.enriched));
+    parentPort.postMessage(playGame());
   }
 }
 

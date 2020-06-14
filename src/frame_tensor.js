@@ -395,18 +395,20 @@ module.exports.FrameTensor = class FrameTensor {
 
   getPermutedCsvData() {
     const headers = this.allKeys(true);
-    const data = [];
+    const cutterData = [];
+    const throwerData = [];
     for (let permutation of this.generatePermutations()) {
       for (let i = 0; i < this.frames.length; i++) {
         const frame = this.frames[i];
+        const isThrower = this.frames[i].get('team_0_player_0_hasDisc');
         if (!this.isInteresting(frame.get('state'))) {
           continue;
         }
-        data.push(
+        (isThrower ? throwerData : cutterData).push(
           headers.map(h => this.renderCsvCell(frame, permutation.get(h))));
       }
     }
-    return [headers, data];
+    return [headers, cutterData, throwerData];
   }
 
   getFrameCsvData() {
