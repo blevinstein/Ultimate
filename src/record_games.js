@@ -208,7 +208,7 @@ function trainParallel(numGames) {
         throwerData = throwerData.concat(newThrowerData);
         console.log(
           `Thrower: ${throwerData.length} \t (${newThrowerData.length} new)`
-          );
+        );
       }
       maybeWrite();
     });
