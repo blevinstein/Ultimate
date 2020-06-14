@@ -30,6 +30,7 @@ const {
 const GENERATED_MODELS_PREFIX = 'js_model/generated/model-';
 const GENERATED_MODELS_FILENAME = 'model.json';
 const REWARD_FACTOR = 50;
+const WEIGHT_FACTOR = 10;
 
 const SEX_PROBABILITY = 0.5;
 
@@ -150,7 +151,8 @@ module.exports.Population = class Population {
   chooseUncertainModel() {
     return weightedChoice(
       this.modelPaths,
-      path => Math.exp(-(this.expectedRewardWeight.get(path) || 0)));
+      path => Math.exp(-(this.expectedRewardWeight.get(path) || 0) /
+        WEIGHT_FACTOR));
   }
 
   generateModelDir() {
@@ -204,8 +206,7 @@ module.exports.Population = class Population {
   async evaluate(n = 1) {
     for (let e = 0; e < n; ++e) {
       const chosenModelPaths = [];
-      const modelsPerTeam = 2;
-      for (let i = 0; i < modelsPerTeam; ++i) {
+      for (let i = 0; i < NUM_PLAYERS; ++i) {
         chosenModelPaths.push(this.chooseUncertainModel());
       }
       try {
