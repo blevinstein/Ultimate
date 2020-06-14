@@ -37,15 +37,15 @@ function eqShape(shapeA, shapeB) {
 
 // Given a nested Array or Tensor, determine its shape. This method will fail if
 // the shape is jagged.
-function guessShape(nestedArray) {
-  if (nestedArray instanceof tf.Tensor) {
-    throw new Error('Unnecessary call to guessShape for Tensor!');
-  } else if (typeof nestedArray === 'number') {
+function guessShape(arrayOrTensor) {
+  if (arrayOrTensor instanceof tf.Tensor) {
+    return arrayOrTensor.shape;
+  } else if (typeof arrayOrTensor === 'number') {
     return [];
-  } else if (nestedArray instanceof Array) {
-    return [nestedArray.length].concat(guessShape(nestedArray[0]));
+  } else if (arrayOrTensor instanceof Array) {
+    return [arrayOrTensor.length].concat(guessShape(arrayOrTensor[0]));
   } else {
-    throw new Error(`Unexpected input: ${nestedArray}`);
+    throw new Error(`Unexpected input: ${arrayOrTensor}`);
   }
 }
 
@@ -61,7 +61,7 @@ function recursiveAdd(a, b) {
     return a + b;
   } else if (a instanceof Array && b instanceof Array) {
     if (a.length !== b.length) {
-      throw new Error(`Shape mismatch! ${a.length} != ${b.length}`);
+      throw new Error(`Shape mismatch! ${guessShape(a)} != ${guessShape(b)}`);
     }
     const result = [];
     for (let i = 0; i < a.length; ++i) {
@@ -81,8 +81,8 @@ function recursiveAdd(a, b) {
 // Returns an array of two Tensors.
 function crossover(aTensor, bTensor, splitAxis,
   splitSize) {
-  const shape = aTensor.shape;
-  if (!eqShape(shape, bTensor.shape)) {
+  const shape = guessShape(aTensor);
+  if (!eqShape(shape, guessShape(bTensor))) {
     throw new Error('Cannot crossover differently shaped matrices!');
   }
 
@@ -120,7 +120,8 @@ function applyNoise(model, stdDev = 0.1) {
   for (let layer of Object.keys(weights)) {
     if (TRAINABLE.includes(getLastPart(layer))) {
       weights[layer] = weights[layer].map(mat => {
-        const noise = tf.truncatedNormal(mat.shape, 0, stdDev, 'float32');
+        const noise = tf.truncatedNormal(guessShape(mat), 0, stdDev,
+          'float32');
         return tf.tensor(recursiveAdd(mat, noise));
       });
     }
@@ -164,7 +165,6 @@ function sexAndNoise(model, otherModel, stdDev = 0.1) {
         console.error(`Layer shape is inconsistent: ${layer}`);
       }
       for (let i = 0; i < weights[layer].length; ++i) {
-        const shape = weights[layer][i];
         if (Math.random() < CROSSOVER_PROBABILITY) {
           // Crossover between different parent matrices.
           weights[layer][i] = crossover(weights[layer][i], otherWeights[layer]
@@ -175,7 +175,8 @@ function sexAndNoise(model, otherModel, stdDev = 0.1) {
             Math.random() < 0.5 ? weights[layer][i] : otherWeights[layer][i];
         }
         // Add noise
-        const noise = tf.truncatedNormal(shape, 0, stdDev, 'float32');
+        const noise = tf.truncatedNormal(guessShape(weights[layer][i]), 0,
+          stdDev, 'float32');
         weights[layer][i] = tf.tensor(recursiveAdd(weights[layer][i], noise));
       }
     }
