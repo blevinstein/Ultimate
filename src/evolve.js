@@ -21,7 +21,7 @@ const MODELS = [
 async function main() {
   flags.defineInteger('rounds', 1000,
     'Number of breeding rounds to simulate');
-  flags.defineInteger('games_per_round', 20,
+  flags.defineInteger('games_per_round', 10,
     'Number of games played per round to evaluate the current population.');
   flags.defineInteger('breeding_per_round', 5,
     'Number of new models to generate during each breeding round.');
@@ -42,6 +42,12 @@ async function main() {
     await population.loadRewards(rewardFile);
   }
 
+  let quitFlag = false;
+  process.on('SIGINT', () => {
+    console.log('Caught interrupt! Stopping after next round.');
+    quitFlag = true;
+  });
+
   for (let i = 0; i < flags.get('rounds'); ++i) {
     await population.evaluate(flags.get('games_per_round'));
     population.summarize();
@@ -50,6 +56,9 @@ async function main() {
     }
     await population.breed(flags.get('breeding_per_round'));
     await population.saveRewards(rewardFile, true);
+    if (quitFlag) {
+      process.exit(0);
+    }
   }
 }
 

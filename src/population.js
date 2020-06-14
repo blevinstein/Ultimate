@@ -192,6 +192,7 @@ module.exports.Population = class Population {
       let rewards;
       try {
         rewards = await this.evaluateRewards(chosenModelPaths);
+        console.log(`Rewards: ${rewards}`);
       } catch (e) {
         // TODO: Remove this hack after all bad models are removed.
         this.evaluateFailures = (this.evaluateFailures || 0) + 1;
