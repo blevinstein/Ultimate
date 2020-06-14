@@ -132,7 +132,8 @@ module.exports.Population = class Population {
     newModelDir = newModelDir || this.generateModelDir();
     const newModelPath = path.join(newModelDir, GENERATED_MODELS_FILENAME);
     console.log(`Saving new model to ${newModelDir}`);
-    await newModel.save(`file://${newModelDir}`);
+    await newModel.save(
+      `file://${path.join(this.populationDir, newModelDir)}`);
     return newModelPath;
   }
 
@@ -184,7 +185,7 @@ module.exports.Population = class Population {
         `${GENERATED_MODELS_PREFIX}${i}`))) {
       i++;
     }
-    return path.join(this.populationDir, `${GENERATED_MODELS_PREFIX}${i}`);
+    return `${GENERATED_MODELS_PREFIX}${i}`;
   }
 
   size() {
@@ -306,7 +307,7 @@ module.exports.Population = class Population {
       throw new Error('Unexpected input length');
     }
     const newModel = await tf.loadGraphModel(
-      `file://${file.join(this.populationDir, sourceModelPaths[0])}`);
+      `file://${path.join(this.populationDir, sourceModelPaths[0])}`);
     const otherModel = await this.loadModel(sourceModelPaths[1]);
 
     if (areCompatible(newModel, otherModel)) {

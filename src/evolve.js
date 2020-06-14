@@ -25,7 +25,7 @@ async function main() {
     'JSON file for persisting rewards between runs.');
   flags.defineString(
     'population_dir', 'js_model', 'Directory containing rewards and models.'
-    );
+  );
   flags.parse();
 
   const maxPopulationSize = flags.get('max_population_size');
