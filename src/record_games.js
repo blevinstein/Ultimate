@@ -144,12 +144,16 @@ function trainSerial(numGames) {
   for (let i = 0; i < numGames; ++i) {
     const [newHeaders, newCutterData, newThrowerData] = playGame();
     headers = headers || newHeaders;
-    cutterData = cutterData.concat(newCutterData)
-    throwerData = throwerData.concat(newThrowerData);
-    console.log(
-      `Cutter: ${cutterData.length} \t (${newCutterData.length} new)`);
-    console.log(
-      `Thrower: ${throwerData.length} \t (${newThrowerData.length} new)`);
+    if (flags.get('cutter_output') !== '') {
+      cutterData = cutterData.concat(newCutterData)
+      console.log(
+        `Cutter: ${cutterData.length} \t (${newCutterData.length} new)`);
+    }
+    if (flags.get('thrower_output') !== '') {
+      throwerData = throwerData.concat(newThrowerData);
+      console.log(
+        `Thrower: ${throwerData.length} \t (${newThrowerData.length} new)`);
+    }
     if (cutterData.length + throwerData.length > MAX_IN_MEMORY_SAMPLES) {
       writeCutterOutput(headers, cutterData);
       writeThrowerOutput(headers, throwerData);
@@ -195,13 +199,17 @@ function trainParallel(numGames) {
       ++gamesPlayed;
       const [newHeaders, newCutterData, newThrowerData] = newMessage;
       headers = headers || newHeaders;
-      cutterData = cutterData.concat(newCutterData)
-      throwerData = throwerData.concat(newThrowerData);
-      console.log(
-        `Cutter: ${cutterData.length} \t (${newCutterData.length} new)`);
-      console.log(
-        `Thrower: ${throwerData.length} \t (${newThrowerData.length} new)`
-        );
+      if (flags.get('cutter_output') !== '') {
+        cutterData = cutterData.concat(newCutterData)
+        console.log(
+          `Cutter: ${cutterData.length} \t (${newCutterData.length} new)`);
+      }
+      if (flags.get('thrower_output') !== '') {
+        throwerData = throwerData.concat(newThrowerData);
+        console.log(
+          `Thrower: ${throwerData.length} \t (${newThrowerData.length} new)`
+          );
+      }
       maybeWrite();
     });
     worker.on('error', (e) => console.error(e));
