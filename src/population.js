@@ -120,9 +120,17 @@ module.exports.Population = class Population {
     return this.models.get(path);
   }
 
-  // Choose between models with weight e^(expectedReward/k) if best = true, or
-  // weight e^(-expectedReward/k) if best = false
-  chooseModel(best = true, minWeight = 0, minChoices = 1) {
+  // Choose a good model based on expected reward.
+  chooseGoodModel() {
+    return weightedChoice(
+      this.modelPaths,
+      path => Math.exp((this.expectedReward.get(path) || 0) /
+        REWARD_FACTOR));
+  }
+
+  // Chose a model for deletion. Avoids low-weight models, and refuses to delete
+  // a model if the total pool of models with sufficient weight is too small.
+  chooseBadModel(minWeight = 0, minChoices = 1) {
     const choices = this.modelPaths.filter(
       path => (this.expectedRewardWeight.get(path) || 0) >= minWeight);
     if (choices.length < minChoices) {
@@ -130,9 +138,14 @@ module.exports.Population = class Population {
     }
     return weightedChoice(
       choices,
-      path => Math.exp(
-        ((this.expectedReward.get(path) || 0) * (best ? 1 : -1)
-          / REWARD_FACTOR)));
+      path => Math.exp(-(this.expectedReward.get(path) || 0) /
+        REWARD_FACTOR));
+  }
+
+  chooseUncertainModel() {
+    return weightedChoice(
+      this.modelPaths,
+      path => Math.exp(-(this.expectedRewardWeight.get(path) || 0)));
   }
 
   generateModelDir() {
@@ -155,7 +168,8 @@ module.exports.Population = class Population {
     modelData.sort((a, b) => (b[1] || 0) - (a[1] || 0));
     console.log(`Population (size=${this.size()}) scores:`);
     for (let [path, reward, weight] of modelData) {
-      console.log(`${path} => \t ${reward} [weight ${weight}]`);
+      console.log(
+        `${path} => \t ${(reward || 0).toFixed(2)} [weight ${weight}]`);
     }
   }
 
@@ -185,18 +199,19 @@ module.exports.Population = class Population {
   async evaluate(n = 1) {
     for (let e = 0; e < n; ++e) {
       const chosenModelPaths = [];
-      const modelsPerTeam = 3;
+      const modelsPerTeam = 2;
       for (let i = 0; i < modelsPerTeam; ++i) {
-        chosenModelPaths.push(this.chooseModel());
+        chosenModelPaths.push(this.chooseUncertainModel());
       }
       let rewards;
       try {
         rewards = await this.evaluateRewards(chosenModelPaths);
-        console.log(`Rewards: ${rewards}`);
+        console.log(`Rewards: ${rewards.map(r => (r || 0).toFixed(2))}`);
       } catch (e) {
-        // TODO: Remove this hack after all bad models are removed.
         this.evaluateFailures = (this.evaluateFailures || 0) + 1;
         console.error(`FAILURE! ${this.evaluateFailures}`);
+        console.error(e);
+        // TODO: Remove this hack after all bad models are removed.
         for (let chosenModelPath of chosenModelPaths) {
           this.deleteModel(chosenModelPath);
         }
@@ -210,11 +225,11 @@ module.exports.Population = class Population {
     // TODO: add sexual reproduction
     for (let i = 0; i < n; ++i) {
       if (Math.random() < SEX_PROBABILITY) {
-        const models = [this.chooseModel(), this.chooseModel()];
+        const models = [this.chooseGoodModel(), this.chooseGoodModel()];
         console.log(`Reproduce sexually (${models})`);
         await this.sexualReproduction(models);
       } else {
-        const model = this.chooseModel();
+        const model = this.chooseGoodModel();
         console.log(`Reproduce asexually (${model})`);
         await this.asexualReproduction(model);
       }
@@ -232,11 +247,11 @@ module.exports.Population = class Population {
     await rmdirRecursive(modelDir);
   }
 
-  async kill(n = 1) {
+  async kill(n = 1, minWeight = 5, minChoices = 50) {
     console.log(`Try to kill ${n} models`);
     for (let i = 0; i < n; ++i) {
-      const chosenModelPath =
-        this.chooseModel(false, /*minWeight=*/ 5, /*minChoices=*/ 20);
+      const chosenModelPath = this.chooseBadModel(false, minWeight,
+        minChoices);
       if (!chosenModelPath) {
         console.log('Shortcircuit due to insufficient weights');
         break;
@@ -255,6 +270,8 @@ module.exports.Population = class Population {
     const newModelPath = await this.saveModel(newModel);
     this.modelPaths.push(newModelPath);
     this.models.set(newModelPath, newModel);
+    this.expectedReward.set(newModelPath, 0);
+    this.expectedRewardWeight.set(newModelPath, 0);
   }
 
   async sexualReproduction(sourceModelPaths) {
@@ -277,5 +294,7 @@ module.exports.Population = class Population {
     const newModelPath = await this.saveModel(newModel);
     this.modelPaths.push(newModelPath);
     this.models.set(newModelPath, newModel);
+    this.expectedReward.set(newModelPath, 0);
+    this.expectedRewardWeight.set(newModelPath, 0);
   }
 }
