@@ -17,7 +17,7 @@ async function main() {
     'Number of new models to generate during each breeding round.');
   flags.defineStringList(
     'start_population', [], 'List of models to seed evolution.');
-  flags.defineInteger('max_population_size', 800,
+  flags.defineInteger('max_population_size', 1000,
     'Max desired population size');
   flags.defineString(
     'reward_file', 'data/rewards.json',

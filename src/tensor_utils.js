@@ -79,8 +79,7 @@ function recursiveAdd(a, b) {
 // If 'splitAxis' and 'splitSize' are not provided, they are chosen randomly.
 //
 // Returns an array of two Tensors.
-function crossover(aTensor, bTensor, splitAxis,
-  splitSize) {
+function crossover(aTensor, bTensor, splitAxis, splitSize) {
   const shape = guessShape(aTensor);
   if (!eqShape(shape, guessShape(bTensor))) {
     throw new Error('Cannot crossover differently shaped matrices!');
@@ -88,28 +87,32 @@ function crossover(aTensor, bTensor, splitAxis,
 
   // Choose an axis along which to split. Longer axes get more weight; axes of
   // length 1 get zero weight. (Optional)
-  splitAxis = splitAxis || weightedChoice(
-    Array.from(shape.keys()),
-    i => shape[i] - 1);
+  splitAxis = splitAxis
+    || weightedChoice(Array.from(shape.keys()), i => shape[i] - 1);
   // Chose a size for the split, between 0 and len(axis) EXCLUSIVE. (Optional)
-  splitSize = splitSize || Math.trunc(
-    1 + Math.random() * (shape[splitAxis] - 1));
+  splitSize = splitSize
+    || Math.trunc(1 + Math.random() * (shape[splitAxis] - 1));
 
   const aPart =
     tf.split(aTensor, [splitSize, shape[splitAxis] - splitSize], splitAxis);
   const bPart =
     tf.split(bTensor, [splitSize, shape[splitAxis] - splitSize], splitAxis);
-  return [tf.concat([aPart[0], bPart[1]], splitAxis),
+  const results = [tf.concat([aPart[0], bPart[1]], splitAxis),
     tf.concat([bPart[0], aPart[1]], splitAxis)
-  ]
+  ];
+
+  return results;
 }
 module.exports.crossover = crossover;
 
-function inspect(model) {
+function inspect(model, showValues = false) {
   for (let layer of Object.keys(model.weights)) {
-    if (TRAINABLE.includes(getLastPart(layer))) {
-      weights[layer].forEach(mat => mat.print());
-    }
+    model.weights[layer].forEach(mat => {
+      console.log(`Layer: ${layer} \t Shape: ${guessShape(mat)}`);
+      if (showValues) {
+        mat.print();
+      }
+    });
   }
 }
 module.exports.inspect = inspect;
@@ -166,17 +169,16 @@ function sexAndNoise(model, otherModel, stdDev = 0.1) {
       }
       for (let i = 0; i < weights[layer].length; ++i) {
         if (Math.random() < CROSSOVER_PROBABILITY) {
-          // Crossover between different parent matrices.
-          weights[layer][i] = crossover(weights[layer][i], otherWeights[layer]
-            [i]);
+          weights[layer][i] =
+            crossover(weights[layer][i], otherWeights[layer][i])[0];
         } else {
           // No crossover, inherit from either parent.
           weights[layer][i] =
             Math.random() < 0.5 ? weights[layer][i] : otherWeights[layer][i];
         }
         // Add noise
-        const noise = tf.truncatedNormal(guessShape(weights[layer][i]), 0,
-          stdDev, 'float32');
+        const noise = tf.truncatedNormal(
+          guessShape(weights[layer][i]), 0, stdDev, 'float32');
         weights[layer][i] = tf.tensor(recursiveAdd(weights[layer][i], noise));
       }
     }

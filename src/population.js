@@ -8,8 +8,9 @@ const {
 } = require('./math_utils.js');
 const {
   applyNoise,
-  sexAndNoise,
-  areCompatible
+  areCompatible,
+  inspect,
+  sexAndNoise
 } = require('./tensor_utils.js');
 const {
   Coach
@@ -33,7 +34,7 @@ const REWARD_FACTOR = 50;
 const WEIGHT_FACTOR = 10;
 const EXCEPTION_REWARD = -1e6;
 
-const SEX_PROBABILITY = 0.5;
+const SEX_PROBABILITY = 0.8;
 
 // Returns an array of length 'length' filled with elements of 'value'
 function filled(value, length) {
@@ -276,7 +277,7 @@ module.exports.Population = class Population {
     // Bypass loadModel to create a new model which will not be associated with
     // 'sourceModelPath'.
     const newModel = await tf.loadGraphModel(`file://${sourceModelPath}`);
-    applyNoise(newModel, 0.01);
+    applyNoise(newModel);
 
     // Choose a new model path, and save the model to disk.
     const newModelPath = await this.saveModel(newModel);
@@ -294,15 +295,20 @@ module.exports.Population = class Population {
       `file://${sourceModelPaths[0]}`);
     const otherModel = await this.loadModel(sourceModelPaths[1]);
     if (areCompatible(newModel, otherModel)) {
-      sexAndNoise(newModel, otherModel, 0.01);
+      sexAndNoise(newModel, otherModel);
     } else {
       console.error(
         `Reproduction failed! Incompatible models (${sourceModelPaths}).`);
       console.error('Fallback to asexual reproduction.');
-      applyNoise(newModel, 0.01);
+      applyNoise(newModel);
     }
 
     if (!areCompatible(newModel, otherModel)) {
+      // DEBUG
+      //console.log('********** otherModel');
+      //inspect(otherModel);
+      //console.log('********** newModel');
+      //inspect(newModel);
       throw new Error(
         'Reproduction failed! Produced an incompatible model.');
     }
