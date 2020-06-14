@@ -6,12 +6,6 @@ const {
   weightedChoice
 } = require('./math_utils.js');
 const {
-  applyNoise,
-  areCompatible,
-  inspect,
-  sexAndNoise
-} = require('./tensor_utils.js');
-const {
   Coach
 } = require('./coach.js');
 const {
@@ -59,26 +53,12 @@ function playGame(models) {
   return rewards;
 }
 
-function rmdirRecursive(dir) {
-  return new Promise((resolve, reject) => {
-    fs.rmdir(dir, {
-      recursive: true
-    }, (error) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
-
 // TODO: Cleanup poor (generated) models and delete from disk.
 module.exports.Population = class Population {
   constructor(populationDir) {
     this.populationDir = populationDir;
     // All models in the population
-    this.modelFiles = [];
+    this.modelKeys = [];
     // Models which are in memory, keyed by model path
     this.models = new Map;
     // Expected reward for each model path based on previous evaluations
@@ -86,9 +66,9 @@ module.exports.Population = class Population {
     this.expectedRewardWeight = new Map;
   }
 
-  addModels(modelFiles) {
-    if (modelFiles.length) {
-      this.modelFiles.push(...modelFiles);
+  addModels(modelKeys) {
+    if (modelKeys.length) {
+      this.modelKeys.push(...modelKeys);
     }
   }
 
@@ -118,114 +98,121 @@ module.exports.Population = class Population {
       rewardFile));
     this.expectedReward = new Map(rewards);
     this.expectedRewardWeight = new Map(weights);
-    for (let modelPath of this.expectedReward.keys()) {
-      if (!this.modelFiles.includes(modelPath)) {
-        this.modelFiles.push(modelPath);
+    for (let modelKey of this.expectedReward.keys()) {
+      if (!this.modelKeys.includes(modelKey)) {
+        this.modelKeys.push(modelKey);
       }
     }
   }
 
-  async registerNewModel(newModel, newModelDir) {
-    newModelDir = newModelDir || await this.generateModelDir();
-    console.log(`Saving new model to ${newModelDir}`);
-    await this.saveModel(newModel, newModelDir);
-    return newModelDir;
+  async registerNewModel(newModel, newModelKey) {
+    newModelKey = newModelKey || await this.generateModelKey();
+
+    console.log(`Saving new model to ${newModelKey}`);
+    await this.saveModel(newModel, newModelKey);
+
+    // Update model cache and rewards.
+    this.modelKeys.push(newModelKey);
+    this.models.set(newModelKey, newModel);
+    this.expectedReward.set(newModelKey, 0);
+    this.expectedRewardWeight.set(newModelKey, 0);
+    return newModelKey;
   }
 
-  // Loads a model 'modelFile' by checking the cache (this.models) or loading
+  // Loads a model 'modelKey' by checking the cache (this.models) or loading
   // from storage if necessary.
-  async getModel(modelFile) {
-    if (!this.models.has(modelFile)) {
-      // DEBUG: console.log(`Loading model from ${modelFile}`);
-      this.models.set(modelFile, await this.loadModel(modelFile));
+  async getModel(modelKey) {
+    if (!this.models.has(modelKey)) {
+      // DEBUG: console.log(`Loading model ${modelKey}`);
+      this.models.set(modelKey, await this.loadModel(modelKey));
     }
-    return this.models.get(modelFile);
+    return this.models.get(modelKey);
   }
 
   // Choose a good model based on expected reward.
   chooseGoodModel() {
     return weightedChoice(
-      this.modelFiles,
-      modelFile => Math.exp((this.expectedReward.get(modelFile) || 0)
+      this.modelKeys,
+      modelKey => Math.exp((this.expectedReward.get(modelKey) || 0)
         / REWARD_FACTOR));
   }
 
   // Chose a model for deletion. Avoids low-weight models, and refuses to delete
   // a model if the total pool of models with sufficient weight is too small.
   chooseBadModel(minWeight = 0, minChoices = 1) {
-    const choices = this.modelFiles.filter(
-      modelFile => (this.expectedRewardWeight.get(modelFile) || 0)
+    const choices = this.modelKeys.filter(
+      modelKey => (this.expectedRewardWeight.get(modelKey) || 0)
       >= minWeight);
     if (choices.length < minChoices) {
       return undefined;
     }
     return weightedChoice(
       choices,
-      modelFile => Math.exp(-(this.expectedReward.get(modelFile) || 0)
+      modelKey => Math.exp(-(this.expectedReward.get(modelKey) || 0)
         / REWARD_FACTOR));
   }
 
   chooseUncertainModel() {
     return weightedChoice(
-      this.modelFiles,
-      modelFile => Math.exp(-(this.expectedRewardWeight.get(modelFile)
+      this.modelKeys,
+      modelKey => Math.exp(-(this.expectedRewardWeight.get(modelKey)
           || 0)
         / WEIGHT_FACTOR));
   }
 
   size() {
-    return this.modelFiles.length;
+    return this.modelKeys.length;
   }
 
   summarize() {
-    const modelData = this.modelFiles.map(
-      modelFile => [modelFile, this.expectedReward.get(modelFile), this
-        .expectedRewardWeight.get(modelFile)
+    const modelData = this.modelKeys.map(
+      modelKey => [modelKey, this.expectedReward.get(modelKey), this
+        .expectedRewardWeight.get(modelKey)
       ]);
     modelData.sort((a, b) => (b[1] || 0) - (a[1] || 0));
     console.log(`Population (size=${this.size()}) scores:`);
-    for (let [modelFile, reward, weight] of modelData) {
+    for (let [modelKey, reward, weight] of modelData) {
       console.log(
-        `${modelFile} => \t ${(reward || 0).toFixed(2)} [weight ${weight}]`
+        `${modelKey} => \t ${(reward || 0).toFixed(2)} [weight ${weight}]`
       );
     }
   }
 
-  async evaluateRewards(rewardModelFiles) {
+  async evaluateRewards(rewardModelKeys) {
     const chosenModels = [];
-    for (let modelFile of rewardModelFiles) {
-      chosenModels.push(await this.getModel(modelFile));
+    for (let modelKey of rewardModelKeys) {
+      chosenModels.push(await this.getModel(modelKey));
     }
     console.log(
-      `Play game with these models: \n${rewardModelFiles.join('\n')}`);
+      `Play game with these models: \n${rewardModelKeys.join('\n')}`);
     return playGame(chosenModels);
   }
 
-  attributeRewards(rewardModelFiles, rewards) {
+  attributeRewards(rewardModelKeys, rewards) {
     for (let i = 0; i < NUM_PLAYERS; ++i) {
-      const modelFile = rewardModelFiles[i % rewardModelFiles.length];
+      const modelKey = rewardModelKeys[i % rewardModelKeys.length];
       const modelReward = rewards[i] || 0;
-      const prevReward = this.expectedReward.get(modelFile) || 0;
-      const prevWeight = this.expectedRewardWeight.get(modelFile) || 0;
+      const prevReward = this.expectedReward.get(modelKey) || 0;
+      const prevWeight = this.expectedRewardWeight.get(modelKey) || 0;
       const newReward = (prevReward * prevWeight + modelReward) / (
         prevWeight + 1);
-      this.expectedReward.set(modelFile, newReward);
-      this.expectedRewardWeight.set(modelFile, prevWeight + 1);
+      this.expectedReward.set(modelKey, newReward);
+      this.expectedRewardWeight.set(modelKey, prevWeight + 1);
     }
   }
 
   async evaluate(n = 1) {
-    if (!this.modelFiles.length) {
+    if (!this.modelKeys.length) {
       throw new Error('Cannot evaluate with no models!');
     }
     for (let e = 0; e < n; ++e) {
-      const evaluateModelFiles = [];
+      const evaluateModelKeys = [];
       for (let i = 0; i < NUM_PLAYERS; ++i) {
-        evaluateModelFiles.push(this.chooseUncertainModel());
+        evaluateModelKeys.push(this.chooseUncertainModel());
       }
       try {
-        const rewards = await this.evaluateRewards(evaluateModelFiles);
-        this.attributeRewards(evaluateModelFiles, rewards);
+        const rewards = await this.evaluateRewards(evaluateModelKeys);
+        this.attributeRewards(evaluateModelKeys, rewards);
         console.log(`Rewards: ${rewards.map(r => (r || 0).toFixed(2))}`);
       } catch (e) {
         throw new Error(`Failure to evaluate!\n${e}`);
@@ -248,73 +235,23 @@ module.exports.Population = class Population {
     }
   }
 
-  async deleteModel(modelFile) {
-    const modelDir = path.dirname(modelFile);
-    console.log(`Deleting model from ${modelDir}`);
-    this.modelFiles.splice(this.modelFiles.findIndex(file => file
-      === modelFile), 1);
-    this.models.delete(modelFile);
-    this.expectedReward.delete(modelFile);
-    this.expectedRewardWeight.delete(modelFile);
-    await rmdirRecursive(modelDir);
-  }
-
   async kill(n = 1, minWeight = 5, minChoices = 50) {
     console.log(`Try to kill ${n} models`);
     for (let i = 0; i < n; ++i) {
-      const killModelFile = this.chooseBadModel(false, minWeight,
+      const killModelKey = this.chooseBadModel(false, minWeight,
         minChoices);
-      if (!killModelFile) {
+      if (!killModelKey) {
         console.log('Shortcircuit due to insufficient weights');
         break;
       }
-      await this.deleteModel(killModelFile);
+
+      console.log(`Deleting model ${killModelKey}`);
+      await this.deleteModel(killModelKey);
+      this.modelKeys.splice(this.modelKeys.findIndex(file => file
+        === killModelKey), 1);
+      this.models.delete(killModelKey);
+      this.expectedReward.delete(killModelKey);
+      this.expectedRewardWeight.delete(killModelKey);
     }
-  }
-
-  async asexualReproduction(sourceModelPath) {
-    // Bypass getModel to create a new model which will not be associated with
-    // 'sourceModelPath'.
-    const newModel = await this.loadModel(sourceModelPath);
-    applyNoise(newModel);
-
-    const newModelPath = await this.registerNewModel(newModel);
-    this.modelFiles.push(newModelPath);
-    this.models.set(newModelPath, newModel);
-    this.expectedReward.set(newModelPath, 0);
-    this.expectedRewardWeight.set(newModelPath, 0);
-  }
-
-  async sexualReproduction(sourceModelPaths) {
-    if (sourceModelPaths.length !== 2) {
-      throw new Error('Unexpected input length');
-    }
-    const newModel = await this.loadModel(sourceModelPaths[0]);
-    const otherModel = await this.getModel(sourceModelPaths[1]);
-
-    if (areCompatible(newModel, otherModel)) {
-      sexAndNoise(newModel, otherModel);
-    } else {
-      console.error(
-        `Reproduction failed! Incompatible models (${sourceModelPaths}).`);
-      console.error('Fallback to asexual reproduction.');
-      applyNoise(newModel);
-    }
-
-    if (!areCompatible(newModel, otherModel)) {
-      // DEBUG
-      //console.log('********** otherModel');
-      //inspect(otherModel);
-      //console.log('********** newModel');
-      //inspect(newModel);
-      throw new Error(
-        'Reproduction failed! Produced an incompatible model.');
-    }
-
-    const newModelPath = await this.registerNewModel(newModel);
-    this.modelFiles.push(newModelPath);
-    this.models.set(newModelPath, newModel);
-    this.expectedReward.set(newModelPath, 0);
-    this.expectedRewardWeight.set(newModelPath, 0);
   }
 }
