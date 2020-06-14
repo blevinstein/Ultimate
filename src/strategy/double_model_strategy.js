@@ -23,9 +23,6 @@ const {
 const INFERENCE_CYCLE = 14;
 const INFERENCE_STEP = 2;
 
-const CUTTER_INDEX = 0;
-const THROWER_INDEX = 1;
-
 module.exports.DoubleModelStrategy =
   class DoubleModelStrategy extends Strategy {
     constructor(modelPairs, game, team) {
@@ -62,9 +59,8 @@ module.exports.DoubleModelStrategy =
 
           if (player.hasDisc) {
             if (player.canThrow()) {
-              const model = this.modelPairs[p % this.modelPairs.length][
-                THROWER_INDEX
-              ];
+              const model = this.modelPairs[p % this.modelPairs.length]
+                .thrower;
               const prediction = model.predict(inputs[p]);
               const [
                 throwAction,
@@ -81,9 +77,7 @@ module.exports.DoubleModelStrategy =
               player.rest();
             }
           } else {
-            const model = this.modelPairs[p % this.modelPairs.length][
-              CUTTER_INDEX
-            ];
+            const model = this.modelPairs[p % this.modelPairs.length].cutter;
             const prediction = model.predict(inputs[p]);
             const [moveX, moveY] = prediction.as1D().arraySync();
             const moveTarget = snapToBounds(

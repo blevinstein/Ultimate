@@ -33,11 +33,9 @@ module.exports.ModelPopulation = class ModelPopulation extends Population {
     super(populationDir);
   }
 
-  // Loads a model located at 'modelFile' by checking the cache (this.models) and
-  // loading from disc if necessary.
-  async loadModel(modelFile) {
-    return await tf.loadGraphModel(
-      `file://${path.join(this.populationDir, modelFile, GENERATED_MODELS_FILENAME)}`
+  async loadModel(modelKey) {
+    return await tf.loadGraphModel('file://'
+      + path.join(this.populationDir, modelKey, GENERATED_MODELS_FILENAME)
     );
   }
 
@@ -48,16 +46,16 @@ module.exports.ModelPopulation = class ModelPopulation extends Population {
   }
 
   async deleteModel(modelKey) {
-    await rmdirRecursive(modelKey);
+    await rmdirRecursive(path.join(this.populationDir, modelKey));
   }
 
   async generateModelKey() {
     let i = 0;
     while (fs.existsSync(path.join(this.populationDir,
-        `${GENERATED_MODELS_PREFIX}${i}`))) {
+        GENERATED_MODELS_PREFIX + i))) {
       i++;
     }
-    return `${GENERATED_MODELS_PREFIX}${i}`;
+    return GENERATED_MODELS_PREFIX + i;
   }
 
   async asexualReproduction(modelKey) {
@@ -77,10 +75,8 @@ module.exports.ModelPopulation = class ModelPopulation extends Population {
     if (areCompatible(newModel, otherModel)) {
       sexAndNoise(newModel, otherModel);
     } else {
-      console.error(
+      throw new Error(
         `Reproduction failed! Incompatible models (${modelKeys}).`);
-      console.error('Fallback to asexual reproduction.');
-      applyNoise(newModel);
     }
 
     if (!areCompatible(newModel, otherModel)) {
