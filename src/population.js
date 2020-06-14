@@ -29,7 +29,7 @@ const {
 
 const GENERATED_MODELS_PREFIX = 'js_model/generated/model-';
 const GENERATED_MODELS_FILENAME = 'model.json';
-const REWARD_FACTOR = 100;
+const REWARD_FACTOR = 50;
 
 const SEX_PROBABILITY = 0.5;
 
@@ -241,7 +241,7 @@ module.exports.Population = class Population {
         console.log('Shortcircuit due to insufficient weights');
         break;
       }
-      await deleteModel(chosenModelPath);
+      await this.deleteModel(chosenModelPath);
     }
   }
 
