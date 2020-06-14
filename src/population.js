@@ -224,12 +224,7 @@ module.exports.Population = class Population {
         this.attributeRewards(chosenModelPaths, rewards);
         console.log(`Rewards: ${rewards.map(r => (r || 0).toFixed(2))}`);
       } catch (e) {
-        console.error(`Failure to evaluate!\n${e}`);
-        // TODO: Remove this hack after all bad models are removed.
-        this.attributeRewards(
-          chosenModelPaths,
-          filled(EXCEPTION_REWARD, NUM_PLAYERS));
-        continue;
+        throw new Error(`Failure to evaluate!\n${e}`);
       }
     }
   }

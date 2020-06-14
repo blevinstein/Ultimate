@@ -170,8 +170,8 @@ function sexAndNoise(model, otherModel, stdDev = 0.1) {
       for (let i = 0; i < weights[layer].length; ++i) {
         if (Math.random() < CROSSOVER_PROBABILITY) {
           weights[layer][i] =
-            crossover(weights[layer][i], otherWeights[layer][i])[Math.random() <
-              0.5 ? 1 : 0];
+            crossover(weights[layer][i], otherWeights[layer][i])[Math.random()
+              < 0.5 ? 1 : 0];
         } else {
           // No crossover, inherit from either parent.
           weights[layer][i] =
