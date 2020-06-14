@@ -79,7 +79,7 @@ function recursiveAdd(a, b) {
 // If 'splitAxis' and 'splitSize' are not provided, they are chosen randomly.
 //
 // Returns an array of two Tensors.
-module.exports.crossover = function crossover(aTensor, bTensor, splitAxis,
+function crossover(aTensor, bTensor, splitAxis,
   splitSize) {
   const shape = a.shape;
   if (!eqShape(shape, b.shape)) {
@@ -103,30 +103,32 @@ module.exports.crossover = function crossover(aTensor, bTensor, splitAxis,
     tf.concat([bPart[0], aPart[1]], splitAxis)
   ]
 }
+module.exports.crossover = crossover;
 
-module.exports.inspect = function inspect(model) {
+function inspect(model) {
   for (let layer of Object.keys(model.weights)) {
     if (TRAINABLE.includes(getLastPart(layer))) {
       weights[layer].forEach(mat => mat.print());
     }
   }
 }
+module.exports.inspect = inspect;
 
 // Apply truncated gaussian normal noise.
-module.exports.applyNoise = function applyNoise(model, stdDev = 0.1) {
+function applyNoise(model, stdDev = 0.1) {
   const weights = model.weights;
   for (let layer of Object.keys(weights)) {
     if (TRAINABLE.includes(getLastPart(layer))) {
       weights[layer] = weights[layer].map(mat => {
-        const shape = guessShape(mat);
-        const noise = tf.truncatedNormal(shape, 0, stdDev, 'float32');
+        const noise = tf.truncatedNormal(mat.shape, 0, stdDev, 'float32');
         return tf.tensor(recursiveAdd(mat, noise));
       });
     }
   }
 }
+module.exports.applyNoise = applyNoise;
 
-module.exports.areCompatible = function areCompatible(model, otherModel) {
+function areCompatible(model, otherModel) {
   const weights = model.weights;
   const otherWeights = otherModel.weights;
   for (let layer of Object.keys(weights)) {
@@ -153,13 +155,13 @@ module.exports.areCompatible = function areCompatible(model, otherModel) {
     }
   }
 }
+module.exports.areCompatible = areCompatible;
 
 // Combine two models, treating each weight matrix roughly as a 'chromosome'.
 // Perform crossover and random perturbation.
 //
 // This function modifies 'model' in-place.
-module.exports.sexAndNoise = function sexAndNoise(model, otherModel, stdDev =
-  0.1) {
+function sexAndNoise(model, otherModel, stdDev = 0.1) {
   const weights = model.weights;
   const otherWeights = otherModel.weights;
   for (let layer of Object.keys(weights)) {
@@ -188,3 +190,4 @@ module.exports.sexAndNoise = function sexAndNoise(model, otherModel, stdDev =
     }
   }
 }
+module.exports.sexAndNoise = sexAndNoise;
