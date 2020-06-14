@@ -28,7 +28,7 @@ const {
   NUM_PLAYERS
 } = require('./team.js');
 
-const GENERATED_MODELS_PREFIX = 'js_model/generated/model-';
+const GENERATED_MODELS_PREFIX = 'generated/model-';
 const GENERATED_MODELS_FILENAME = 'model.json';
 const REWARD_FACTOR = 50;
 const WEIGHT_FACTOR = 10;
@@ -62,9 +62,9 @@ function playGame(models) {
   return rewards;
 }
 
-function rmdirRecursive(path) {
+function rmdirRecursive(dir) {
   return new Promise((resolve, reject) => {
-    fs.rmdir(path, {
+    fs.rmdir(dir, {
       recursive: true
     }, (error) => {
       if (error) {
@@ -78,9 +78,10 @@ function rmdirRecursive(path) {
 
 // TODO: Cleanup poor (generated) models and delete from disk.
 module.exports.Population = class Population {
-  constructor(modelPaths) {
-    // All model paths known
-    this.modelPaths = modelPaths || [];
+  constructor(populationDir) {
+    this.populationDir = populationDir;
+    // All models in the population
+    this.modelFiles = [];
     // Models which are in memory, keyed by model path
     this.models = new Map;
     // Expected reward for each model path based on previous evaluations
@@ -88,140 +89,157 @@ module.exports.Population = class Population {
     this.expectedRewardWeight = new Map;
   }
 
-  async saveRewards(path, overwrite = false) {
-    console.log(`Saving rewards to ${path}`);
-    if (fs.existsSync(path) && !overwrite) {
-      throw new Error(`Reward file already exists: ${path}`);
+  addModels(modelFiles) {
+    if (modelFiles.length) {
+      this.modelFiles.push(...modelFiles);
     }
-    await fsPromises.writeFile(path, JSON.stringify([
+  }
+
+  async saveRewards(relativeRewardFile, overwrite = false) {
+    const rewardFile = path.join(this.populationDir, relativeRewardFile);
+    console.log(`Saving rewards to ${rewardFile}`);
+    if (fs.existsSync(rewardFile) && !overwrite) {
+      throw new Error(`Reward file already exists: ${rewardFile}`);
+    }
+    await fsPromises.writeFile(rewardFile, JSON.stringify([
       Array.from(this.expectedReward.entries()),
       Array.from(this.expectedRewardWeight.entries()),
     ]));
   }
 
-  async loadRewards(path) {
-    console.log(`Loading rewards from ${path}`);
-    if (!fs.existsSync(path)) {
-      throw new Error(`Reward file does not exist: ${path}`);
+  async loadRewards(relativeRewardFile) {
+    const rewardFile = path.join(this.populationDir, relativeRewardFile);
+    console.log(`Loading rewards from ${rewardFile}`);
+    if (!fs.existsSync(rewardFile)) {
+      throw new Error(`Reward file does not exist: ${rewardFile}`);
     }
     if (this.expectedReward.size > 0) {
       // TODO: Support merging reward maps
       throw new Error('Reward map already contains something!');
     }
-    const [rewards, weights] = JSON.parse(await fsPromises.readFile(path));
+    const [rewards, weights] = JSON.parse(await fsPromises.readFile(
+      rewardFile));
     this.expectedReward = new Map(rewards);
     this.expectedRewardWeight = new Map(weights);
     for (let modelPath of this.expectedReward.keys()) {
-      if (!this.modelPaths.includes(modelPath)) {
-        this.modelPaths.push(modelPath);
+      if (!this.modelFiles.includes(modelPath)) {
+        this.modelFiles.push(modelPath);
       }
     }
   }
 
   async saveModel(newModel, newModelDir) {
     newModelDir = newModelDir || this.generateModelDir();
-    const newModelPath = `${newModelDir}/${GENERATED_MODELS_FILENAME}`;
+    const newModelPath = path.join(newModelDir, GENERATED_MODELS_FILENAME);
     console.log(`Saving new model to ${newModelDir}`);
     await newModel.save(`file://${newModelDir}`);
     return newModelPath;
   }
 
-  // Loads a model located at 'path' by checking the cache (this.models) and
+  // Loads a model located at 'modelFile' by checking the cache (this.models) and
   // loading from disc if necessary.
-  async loadModel(path) {
-    if (!this.models.has(path)) {
-      // DEBUG: console.log(`Loading model from ${path}`);
-      this.models.set(path, await tf.loadGraphModel(`file://${path}`));
+  async loadModel(modelFile) {
+    if (!this.models.has(modelFile)) {
+      // DEBUG: console.log(`Loading model from ${modelFile}`);
+      this.models.set(modelFile, await tf.loadGraphModel(
+        `file://${path.join(this.populationDir, modelFile)}`));
     }
-    return this.models.get(path);
+    return this.models.get(modelFile);
   }
 
   // Choose a good model based on expected reward.
   chooseGoodModel() {
     return weightedChoice(
-      this.modelPaths,
-      path => Math.exp((this.expectedReward.get(path) || 0)
+      this.modelFiles,
+      modelFile => Math.exp((this.expectedReward.get(modelFile) || 0)
         / REWARD_FACTOR));
   }
 
   // Chose a model for deletion. Avoids low-weight models, and refuses to delete
   // a model if the total pool of models with sufficient weight is too small.
   chooseBadModel(minWeight = 0, minChoices = 1) {
-    const choices = this.modelPaths.filter(
-      path => (this.expectedRewardWeight.get(path) || 0) >= minWeight);
+    const choices = this.modelFiles.filter(
+      modelFile => (this.expectedRewardWeight.get(modelFile) || 0)
+      >= minWeight);
     if (choices.length < minChoices) {
       return undefined;
     }
     return weightedChoice(
       choices,
-      path => Math.exp(-(this.expectedReward.get(path) || 0)
+      modelFile => Math.exp(-(this.expectedReward.get(modelFile) || 0)
         / REWARD_FACTOR));
   }
 
   chooseUncertainModel() {
     return weightedChoice(
-      this.modelPaths,
-      path => Math.exp(-(this.expectedRewardWeight.get(path) || 0)
+      this.modelFiles,
+      modelFile => Math.exp(-(this.expectedRewardWeight.get(modelFile)
+          || 0)
         / WEIGHT_FACTOR));
   }
 
   generateModelDir() {
     let i = 0;
-    while (fs.existsSync(`${GENERATED_MODELS_PREFIX}${i}`)) {
+    while (fs.existsSync(path.join(this.populationDir,
+        `${GENERATED_MODELS_PREFIX}${i}`))) {
       i++;
     }
-    return `${GENERATED_MODELS_PREFIX}${i}`;
+    return path.join(this.populationDir, `${GENERATED_MODELS_PREFIX}${i}`);
   }
 
   size() {
-    return this.modelPaths.length;
+    return this.modelFiles.length;
   }
 
   summarize() {
-    const modelData = this.modelPaths.map(
-      path => [path, this.expectedReward.get(path), this
-        .expectedRewardWeight.get(path)
+    const modelData = this.modelFiles.map(
+      modelFile => [modelFile, this.expectedReward.get(modelFile), this
+        .expectedRewardWeight.get(modelFile)
       ]);
     modelData.sort((a, b) => (b[1] || 0) - (a[1] || 0));
     console.log(`Population (size=${this.size()}) scores:`);
-    for (let [path, reward, weight] of modelData) {
+    for (let [modelFile, reward, weight] of modelData) {
       console.log(
-        `${path} => \t ${(reward || 0).toFixed(2)} [weight ${weight}]`);
+        `${modelFile} => \t ${(reward || 0).toFixed(2)} [weight ${weight}]`
+      );
     }
   }
 
-  async evaluateRewards(chosenModelPaths) {
+  async evaluateRewards(rewardModelFiles) {
     const chosenModels = [];
-    for (let path of chosenModelPaths) {
-      chosenModels.push(await this.loadModel(path));
+    for (let modelFile of rewardModelFiles) {
+      chosenModels.push(await this.loadModel(modelFile));
     }
     console.log(
-      `Play game with these models: \n${chosenModelPaths.join('\n')}`);
+      `Play game with these models: \n${rewardModelFiles.join('\n')}`);
     return playGame(chosenModels);
   }
 
-  attributeRewards(modelPaths, rewards) {
+  attributeRewards(rewardModelFiles, rewards) {
     for (let i = 0; i < NUM_PLAYERS; ++i) {
-      const modelPath = modelPaths[i % modelPaths.length];
+      const modelFile = rewardModelFiles[i % rewardModelFiles.length];
       const modelReward = rewards[i] || 0;
-      const prevReward = this.expectedReward.get(modelPath) || 0;
-      const prevWeight = this.expectedRewardWeight.get(modelPath) || 0;
+      const prevReward = this.expectedReward.get(modelFile) || 0;
+      const prevWeight = this.expectedRewardWeight.get(modelFile) || 0;
       const newReward = (prevReward * prevWeight + modelReward) / (
         prevWeight + 1);
-      this.expectedReward.set(modelPath, newReward);
-      this.expectedRewardWeight.set(modelPath, prevWeight + 1);
+      this.expectedReward.set(modelFile, newReward);
+      this.expectedRewardWeight.set(modelFile, prevWeight + 1);
     }
   }
 
   async evaluate(n = 1) {
+    if (!this.modelFiles.length) {
+      throw new Error('Cannot evaluate with no models!');
+    }
     for (let e = 0; e < n; ++e) {
-      const chosenModelPaths = [];
+      const evaluateModelFiles = [];
       for (let i = 0; i < NUM_PLAYERS; ++i) {
-        chosenModelPaths.push(this.chooseUncertainModel());
+        evaluateModelFiles.push(this.chooseUncertainModel());
       }
       try {
-        const rewards = await this.evaluateRewards(chosenModelPaths);
-        this.attributeRewards(chosenModelPaths, rewards);
+        const rewards = await this.evaluateRewards(evaluateModelFiles);
+        this.attributeRewards(evaluateModelFiles, rewards);
         console.log(`Rewards: ${rewards.map(r => (r || 0).toFixed(2))}`);
       } catch (e) {
         throw new Error(`Failure to evaluate!\n${e}`);
@@ -244,39 +262,40 @@ module.exports.Population = class Population {
     }
   }
 
-  async deleteModel(modelPath) {
-    const modelDir = path.dirname(modelPath);
+  async deleteModel(modelFile) {
+    const modelDir = path.dirname(modelFile);
     console.log(`Deleting model from ${modelDir}`);
-    this.modelPaths.splice(this.modelPaths.findIndex(path => path
-      === modelPath), 1);
-    this.models.delete(modelPath);
-    this.expectedReward.delete(modelPath);
-    this.expectedRewardWeight.delete(modelPath);
+    this.modelFiles.splice(this.modelFiles.findIndex(file => file
+      === modelFile), 1);
+    this.models.delete(modelFile);
+    this.expectedReward.delete(modelFile);
+    this.expectedRewardWeight.delete(modelFile);
     await rmdirRecursive(modelDir);
   }
 
   async kill(n = 1, minWeight = 5, minChoices = 50) {
     console.log(`Try to kill ${n} models`);
     for (let i = 0; i < n; ++i) {
-      const chosenModelPath = this.chooseBadModel(false, minWeight,
+      const killModelFile = this.chooseBadModel(false, minWeight,
         minChoices);
-      if (!chosenModelPath) {
+      if (!killModelFile) {
         console.log('Shortcircuit due to insufficient weights');
         break;
       }
-      await this.deleteModel(chosenModelPath);
+      await this.deleteModel(killModelFile);
     }
   }
 
   async asexualReproduction(sourceModelPath) {
     // Bypass loadModel to create a new model which will not be associated with
     // 'sourceModelPath'.
-    const newModel = await tf.loadGraphModel(`file://${sourceModelPath}`);
+    const newModel = await tf.loadGraphModel(
+      `file://${path.join(this.populationDir, sourceModelPath)}`);
     applyNoise(newModel);
 
     // Choose a new model path, and save the model to disk.
     const newModelPath = await this.saveModel(newModel);
-    this.modelPaths.push(newModelPath);
+    this.modelFiles.push(newModelPath);
     this.models.set(newModelPath, newModel);
     this.expectedReward.set(newModelPath, 0);
     this.expectedRewardWeight.set(newModelPath, 0);
@@ -287,8 +306,9 @@ module.exports.Population = class Population {
       throw new Error('Unexpected input length');
     }
     const newModel = await tf.loadGraphModel(
-      `file://${sourceModelPaths[0]}`);
+      `file://${file.join(this.populationDir, sourceModelPaths[0])}`);
     const otherModel = await this.loadModel(sourceModelPaths[1]);
+
     if (areCompatible(newModel, otherModel)) {
       sexAndNoise(newModel, otherModel);
     } else {
@@ -310,7 +330,7 @@ module.exports.Population = class Population {
 
     // Choose a new model path, and save the model to disk.
     const newModelPath = await this.saveModel(newModel);
-    this.modelPaths.push(newModelPath);
+    this.modelFiles.push(newModelPath);
     this.models.set(newModelPath, newModel);
     this.expectedReward.set(newModelPath, 0);
     this.expectedRewardWeight.set(newModelPath, 0);
