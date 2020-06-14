@@ -114,7 +114,7 @@ module.exports.Population = class Population {
   // loading from disc if necessary.
   async loadModel(path) {
     if (!this.models.has(path)) {
-      console.log(`Loading ${path}`);
+      // DEBUG: console.log(`Loading model from ${path}`);
       this.models.set(path, await tf.loadGraphModel(`file://${path}`));
     }
     return this.models.get(path);
@@ -164,16 +164,14 @@ module.exports.Population = class Population {
     for (let path of chosenModelPaths) {
       chosenModels.push(await this.loadModel(path));
     }
+    console.log(
+      `Play game with these models: \n${chosenModelPaths.join('\n')}`);
     return playGame(chosenModels);
   }
 
   attributeRewards(modelPaths, rewards) {
-    if (modelPaths.length !== NUM_PLAYERS || rewards.length
-      !== NUM_PLAYERS) {
-      throw new Error('Unexpected input size');
-    }
     for (let i = 0; i < NUM_PLAYERS; ++i) {
-      const modelPath = modelPaths[i];
+      const modelPath = modelPaths[i % modelPaths.length];
       const modelReward = rewards[i] || 0;
       const prevReward = this.expectedReward.get(modelPath) || 0;
       const prevWeight = this.expectedRewardWeight.get(modelPath) || 0;
@@ -187,10 +185,22 @@ module.exports.Population = class Population {
   async evaluate(n = 1) {
     for (let e = 0; e < n; ++e) {
       const chosenModelPaths = [];
-      for (let i = 0; i < NUM_PLAYERS; ++i) {
+      const modelsPerTeam = 3;
+      for (let i = 0; i < modelsPerTeam; ++i) {
         chosenModelPaths.push(this.chooseModel());
       }
-      const rewards = await this.evaluateRewards(chosenModelPaths);
+      let rewards;
+      try {
+        rewards = await this.evaluateRewards(chosenModelPaths);
+      } catch (e) {
+        // TODO: Remove this hack after all bad models are removed.
+        this.evaluateFailures = (this.evaluateFailures || 0) + 1;
+        console.error(`FAILURE! ${this.evaluateFailures}`);
+        for (let chosenModelPath of chosenModelPaths) {
+          this.deleteModel(chosenModelPath);
+        }
+        continue;
+      }
       this.attributeRewards(chosenModelPaths, rewards);
     }
   }
@@ -210,6 +220,17 @@ module.exports.Population = class Population {
     }
   }
 
+  async deleteModel(modelPath) {
+    const modelDir = path.dirname(modelPath);
+    console.log(`Deleting model from ${modelDir}`);
+    this.modelPaths.splice(this.modelPaths.findIndex(path => path
+      === modelPath), 1);
+    this.models.delete(modelPath);
+    this.expectedReward.delete(modelPath);
+    this.expectedRewardWeight.delete(modelPath);
+    await rmdirRecursive(modelDir);
+  }
+
   async kill(n = 1) {
     console.log(`Try to kill ${n} models`);
     for (let i = 0; i < n; ++i) {
@@ -219,14 +240,7 @@ module.exports.Population = class Population {
         console.log('Shortcircuit due to insufficient weights');
         break;
       }
-      const modelDir = path.dirname(chosenModelPath);
-      console.log(`Deleting model from ${modelDir}`);
-      this.modelPaths.splice(this.modelPaths.findIndex(path => path
-        === chosenModelPath), 1);
-      this.models.delete(chosenModelPath);
-      this.expectedReward.delete(chosenModelPath);
-      this.expectedRewardWeight.delete(chosenModelPath);
-      await rmdirRecursive(modelDir);
+      await deleteModel(chosenModelPath);
     }
   }
 
