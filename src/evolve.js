@@ -6,8 +6,8 @@ const {
   Game
 } = require('./game.js');
 const {
-  Population
-} = require('./population.js');
+  ModelPopulation
+} = require('./model_population.js');
 
 async function main() {
   flags.defineInteger('rounds', 1000,
@@ -32,7 +32,7 @@ async function main() {
   const populationDir = flags.get('population_dir');
   const rewardFile = flags.get('reward_file');
 
-  const population = new Population(populationDir);
+  const population = new ModelPopulation(populationDir);
   population.addModels(flags.get('start_population'));
   if (rewardFile && fs.existsSync(path.join(populationDir, rewardFile))) {
     await population.loadRewards(rewardFile);

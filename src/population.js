@@ -1,7 +1,6 @@
 const fs = require('fs');
 const fsPromises = require('fs.promises');
 const path = require('path');
-const tf = require('@tensorflow/tfjs-node');
 
 const {
   weightedChoice
@@ -28,8 +27,6 @@ const {
   NUM_PLAYERS
 } = require('./team.js');
 
-const GENERATED_MODELS_PREFIX = 'generated/model-';
-const GENERATED_MODELS_FILENAME = 'model.json';
 const REWARD_FACTOR = 50;
 const WEIGHT_FACTOR = 10;
 const EXCEPTION_REWARD = -1e6;
@@ -128,24 +125,19 @@ module.exports.Population = class Population {
     }
   }
 
-  async saveModel(newModel, newModelDir) {
-    newModelDir = newModelDir || this.generateModelDir();
-    const newModelPath = path.join(newModelDir, GENERATED_MODELS_FILENAME);
-    console.log(
-      `Saving new model to ${path.join(this.populationDir, newModelDir)}`);
-    await newModel.save(
-      `file://${path.join(this.populationDir, newModelDir)}`);
-    return newModelPath;
+  async registerNewModel(newModel, newModelDir) {
+    newModelDir = newModelDir || await this.generateModelDir();
+    console.log(`Saving new model to ${newModelDir}`);
+    await this.saveModel(newModel, newModelDir);
+    return newModelDir;
   }
 
-  // Loads a model located at 'modelFile' by checking the cache (this.models) and
-  // loading from disc if necessary.
-  async loadModel(modelFile) {
+  // Loads a model 'modelFile' by checking the cache (this.models) or loading
+  // from storage if necessary.
+  async getModel(modelFile) {
     if (!this.models.has(modelFile)) {
-      // DEBUG: console.log(
-      //   `Loading model from ${path.join(this.populationDir, modelFile)}`);
-      this.models.set(modelFile, await tf.loadGraphModel(
-        `file://${path.join(this.populationDir, modelFile)}`));
+      // DEBUG: console.log(`Loading model from ${modelFile}`);
+      this.models.set(modelFile, await this.loadModel(modelFile));
     }
     return this.models.get(modelFile);
   }
@@ -181,15 +173,6 @@ module.exports.Population = class Population {
         / WEIGHT_FACTOR));
   }
 
-  generateModelDir() {
-    let i = 0;
-    while (fs.existsSync(path.join(this.populationDir,
-        `${GENERATED_MODELS_PREFIX}${i}`))) {
-      i++;
-    }
-    return `${GENERATED_MODELS_PREFIX}${i}`;
-  }
-
   size() {
     return this.modelFiles.length;
   }
@@ -211,7 +194,7 @@ module.exports.Population = class Population {
   async evaluateRewards(rewardModelFiles) {
     const chosenModels = [];
     for (let modelFile of rewardModelFiles) {
-      chosenModels.push(await this.loadModel(modelFile));
+      chosenModels.push(await this.getModel(modelFile));
     }
     console.log(
       `Play game with these models: \n${rewardModelFiles.join('\n')}`);
@@ -290,14 +273,12 @@ module.exports.Population = class Population {
   }
 
   async asexualReproduction(sourceModelPath) {
-    // Bypass loadModel to create a new model which will not be associated with
+    // Bypass getModel to create a new model which will not be associated with
     // 'sourceModelPath'.
-    const newModel = await tf.loadGraphModel(
-      `file://${path.join(this.populationDir, sourceModelPath)}`);
+    const newModel = await this.loadModel(sourceModelPath);
     applyNoise(newModel);
 
-    // Choose a new model path, and save the model to disk.
-    const newModelPath = await this.saveModel(newModel);
+    const newModelPath = await this.registerNewModel(newModel);
     this.modelFiles.push(newModelPath);
     this.models.set(newModelPath, newModel);
     this.expectedReward.set(newModelPath, 0);
@@ -308,9 +289,8 @@ module.exports.Population = class Population {
     if (sourceModelPaths.length !== 2) {
       throw new Error('Unexpected input length');
     }
-    const newModel = await tf.loadGraphModel(
-      `file://${path.join(this.populationDir, sourceModelPaths[0])}`);
-    const otherModel = await this.loadModel(sourceModelPaths[1]);
+    const newModel = await this.loadModel(sourceModelPaths[0]);
+    const otherModel = await this.getModel(sourceModelPaths[1]);
 
     if (areCompatible(newModel, otherModel)) {
       sexAndNoise(newModel, otherModel);
@@ -331,8 +311,7 @@ module.exports.Population = class Population {
         'Reproduction failed! Produced an incompatible model.');
     }
 
-    // Choose a new model path, and save the model to disk.
-    const newModelPath = await this.saveModel(newModel);
+    const newModelPath = await this.registerNewModel(newModel);
     this.modelFiles.push(newModelPath);
     this.models.set(newModelPath, newModel);
     this.expectedReward.set(newModelPath, 0);
