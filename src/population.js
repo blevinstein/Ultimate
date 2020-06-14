@@ -100,6 +100,11 @@ module.exports.Population = class Population {
     const [rewards, weights] = JSON.parse(await fsPromises.readFile(path));
     this.expectedReward = new Map(rewards);
     this.expectedRewardWeight = new Map(weights);
+    for (let modelPath of this.expectedReward.keys()) {
+      if (!this.modelPaths.includes(modelPath)) {
+        this.modelPaths.push(modelPath);
+      }
+    }
   }
 
   async saveModel(newModel, newModelDir) {
@@ -124,8 +129,8 @@ module.exports.Population = class Population {
   chooseGoodModel() {
     return weightedChoice(
       this.modelPaths,
-      path => Math.exp((this.expectedReward.get(path) || 0) /
-        REWARD_FACTOR));
+      path => Math.exp((this.expectedReward.get(path) || 0)
+        / REWARD_FACTOR));
   }
 
   // Chose a model for deletion. Avoids low-weight models, and refuses to delete
@@ -138,8 +143,8 @@ module.exports.Population = class Population {
     }
     return weightedChoice(
       choices,
-      path => Math.exp(-(this.expectedReward.get(path) || 0) /
-        REWARD_FACTOR));
+      path => Math.exp(-(this.expectedReward.get(path) || 0)
+        / REWARD_FACTOR));
   }
 
   chooseUncertainModel() {
@@ -203,21 +208,18 @@ module.exports.Population = class Population {
       for (let i = 0; i < modelsPerTeam; ++i) {
         chosenModelPaths.push(this.chooseUncertainModel());
       }
-      let rewards;
       try {
-        rewards = await this.evaluateRewards(chosenModelPaths);
+        const rewards = await this.evaluateRewards(chosenModelPaths);
+        this.attributeRewards(chosenModelPaths, rewards);
         console.log(`Rewards: ${rewards.map(r => (r || 0).toFixed(2))}`);
       } catch (e) {
-        this.evaluateFailures = (this.evaluateFailures || 0) + 1;
-        console.error(`FAILURE! ${this.evaluateFailures}`);
-        console.error(e);
+        console.error(`Failure to evaluate!\n${e}`);
         // TODO: Remove this hack after all bad models are removed.
-        for (let chosenModelPath of chosenModelPaths) {
-          this.deleteModel(chosenModelPath);
-        }
+        this.attributeRewards(
+          chosenModelPaths,
+          [-1e6, -1e6, -1e6, -1e6, -1e6, -1e6, -1e6]);
         continue;
       }
-      this.attributeRewards(chosenModelPaths, rewards);
     }
   }
 
