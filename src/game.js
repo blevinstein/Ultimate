@@ -141,6 +141,8 @@ module.exports.Game = class Game {
       .setPosition(player.position.concat(ARM_HEIGHT));
     this.toastService = new ToastService();
     this.setState(STATES.Kickoff);
+    this.cutterReward = new Map;
+    this.throwerReward = new Map;
     this.reward = new Map;
   }
 
@@ -237,12 +239,6 @@ module.exports.Game = class Game {
         this.frameTime = this.frameTime === FAST_FORWARD_MS
           ? FRAME_TIME_MS
           : FAST_FORWARD_MS;
-      } else if (event.key.toUpperCase() === 'Z') {
-        // DEBUG
-        console.log('Rewards:');
-        for (let p of this.reward.keys()) {
-          console.log(`player ${p} => ${this.reward.get(p)}`);
-        }
       }
     };
   }
@@ -376,7 +372,7 @@ module.exports.Game = class Game {
         // TODO: Only increment stallCount when a defender is in stall range
         this.stallCount += FRAME_TIME_MS / 1000;
         if (this.stallCount >= 10) {
-          this.rewardPlayer(playerWithDisc, TURNOVER_PENALTY);
+          this.rewardPlayer(playerWithDisc, TURNOVER_PENALTY, true);
           playerWithDisc.drop();
           this.setOffensiveTeam(this.defensiveTeam());
           this.setState(STATES.Pickup);
@@ -455,7 +451,8 @@ module.exports.Game = class Game {
       sub2d(this.disc.position, this.lastThrowOrigin),
       getVector(this.lastThrower.team.goalDirection));
     this.rewardPlayer(this.lastThrower,
-      TURNOVER_PENALTY + PROGRESS_REWARD_PER_YARD * movementTowardsGoal);
+      TURNOVER_PENALTY + PROGRESS_REWARD_PER_YARD * movementTowardsGoal,
+      true);
     if (this.state === STATES.Pickup) {
       return;
     } else if (this.state !== STATES.Normal) {
@@ -494,25 +491,25 @@ module.exports.Game = class Game {
     this.stallCount = 0;
     const interception = !player.team.onOffense;
     if (interception) {
-      this.rewardPlayer(this.lastThrower, TURNOVER_PENALTY);
-      this.rewardPlayer(player, INTERCEPTION_REWARD);
+      this.rewardPlayer(this.lastThrower, TURNOVER_PENALTY, true);
+      this.rewardPlayer(player, INTERCEPTION_REWARD, false);
     } else {
       const movementTowardsGoal = magnitudeAlong2d(
         sub2d(this.disc.position, this.lastThrowOrigin),
         getVector(player.team.goalDirection));
       const totalReward =
         COMPLETION_REWARD + PROGRESS_REWARD_PER_YARD * movementTowardsGoal;
-      this.rewardPlayer(this.lastThrower, totalReward);
-      this.rewardPlayer(player, totalReward);
+      this.rewardPlayer(this.lastThrower, totalReward, true);
+      this.rewardPlayer(player, totalReward, false);
     }
     if (boundsCheck(player.position, FIELD_BOUNDS)) {
       if ((player.team.goalDirection === 'E' && player.position[0] > 90)
         || (player.team.goalDirection === 'W' && player.position[0] < 20)) {
-        this.rewardPlayer(player, SCORE_REWARD);
+        this.rewardPlayer(player, SCORE_REWARD, false);
         if (!interception) {
           // Only reward the thrower if they are on the same team as the
           // receiver.
-          this.rewardPlayer(this.lastThrower, SCORE_REWARD);
+          this.rewardPlayer(this.lastThrower, SCORE_REWARD, true);
         }
         player.team.score++;
         this.toastService.addToast((interception ? 'Callahan!!' : 'Score!')
@@ -561,9 +558,16 @@ module.exports.Game = class Game {
     this.stallCount = 0;
   }
 
-  rewardPlayer(player, amount) {
+  rewardPlayer(player, amount, asThrower) {
     if (!player) {
       throw new Error(`Invalid player: ${player}`);
+    }
+    if (asThrower) {
+      this.throwerReward.set(player, (this.throwerReward.get(player) || 0)
+        + amount);
+    } else {
+      this.cutterReward.set(player, (this.cutterReward.get(player) || 0)
+        + amount);
     }
     this.reward.set(player, (this.reward.get(player) || 0) + amount);
   }
