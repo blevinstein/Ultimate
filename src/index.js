@@ -10,23 +10,25 @@ const {
   Game
 } = require('./game.js');
 const {
+  NUM_PLAYERS
+} = require('./team.js');
+const {
   ModelStrategy
 } = require('./strategy/model_strategy.js');
 const {
   ZoneDefenseStrategy
 } = require('./strategy/zone_defense.js');
 
-const ALL_MODELS = [
-  'v1-1/model.json',
-  'v1-2/model.json',
-  'v1-3/model.json',
-  'v1-4/model.json',
-  'v1-5/model.json',
-  'v1-6/model.json',
-  'v1-7/model.json',
-];
+const modelRewards = require('../data/rewards.json');
 
 let initialized = false;
+
+function chooseModels() {
+  const [rewards, weights] = modelRewards;
+  rewards.sort((a, b) => b[1] - a[1]);
+  const fullPaths = rewards.slice(0, NUM_PLAYERS).map(r => r[0]);
+  return fullPaths.map(fullPath => fullPath.slice('js_model/'.length));
+}
 
 // Returns Promise<Array<Model>>
 function loadModels(paths) {
@@ -37,7 +39,7 @@ function loadModels(paths) {
 window.initialize = () => {
   console.log('Initializing...');
 
-  Promise.all([Game.loadResources(), loadModels(ALL_MODELS)])
+  Promise.all([Game.loadResources(), loadModels(chooseModels())])
     .then(
       (responses) => {
         initialized = true;
