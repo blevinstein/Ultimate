@@ -8,16 +8,6 @@ const {
   Population
 } = require('./population.js');
 
-const MODELS = [
-  'js_model/v1-1/model.json',
-  'js_model/v1-2/model.json',
-  'js_model/v1-3/model.json',
-  'js_model/v1-4/model.json',
-  'js_model/v1-5/model.json',
-  'js_model/v1-6/model.json',
-  'js_model/v1-7/model.json',
-];
-
 async function main() {
   flags.defineInteger('rounds', 1000,
     'Number of breeding rounds to simulate');
@@ -25,8 +15,8 @@ async function main() {
     'Number of games played per round to evaluate the current population.');
   flags.defineInteger('breeding_per_round', 2,
     'Number of new models to generate during each breeding round.');
-  flags.defineStringList('start_population', MODELS,
-    'List of models to seed evolution.');
+  flags.defineStringList(
+    'start_population', [], 'List of models to seed evolution.');
   flags.defineInteger('max_population_size', 1000,
     'Max desired population size');
   flags.defineString(
