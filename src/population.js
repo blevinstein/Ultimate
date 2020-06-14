@@ -31,8 +31,17 @@ const GENERATED_MODELS_PREFIX = 'js_model/generated/model-';
 const GENERATED_MODELS_FILENAME = 'model.json';
 const REWARD_FACTOR = 50;
 const WEIGHT_FACTOR = 10;
+const EXCEPTION_REWARD = -1e6;
 
 const SEX_PROBABILITY = 0.5;
+
+// Returns an array of length 'length' filled with elements of 'value'
+function filled(value, length) {
+  const array = [];
+  array.length = length;
+  array.fill(value);
+  return array;
+}
 
 // Play a single game until completion, and return corresponding reward scores.
 function playGame(models) {
@@ -151,8 +160,8 @@ module.exports.Population = class Population {
   chooseUncertainModel() {
     return weightedChoice(
       this.modelPaths,
-      path => Math.exp(-(this.expectedRewardWeight.get(path) || 0) /
-        WEIGHT_FACTOR));
+      path => Math.exp(-(this.expectedRewardWeight.get(path) || 0)
+        / WEIGHT_FACTOR));
   }
 
   generateModelDir() {
@@ -218,7 +227,7 @@ module.exports.Population = class Population {
         // TODO: Remove this hack after all bad models are removed.
         this.attributeRewards(
           chosenModelPaths,
-          [-1e6, -1e6, -1e6, -1e6, -1e6, -1e6, -1e6]);
+          filled(EXCEPTION_REWARD, NUM_PLAYERS));
         continue;
       }
     }
@@ -291,6 +300,11 @@ module.exports.Population = class Population {
         `Reproduction failed! Incompatible models (${sourceModelPaths}).`);
       console.error('Fallback to asexual reproduction.');
       applyNoise(newModel, 0.01);
+    }
+
+    if (!areCompatible(newModel, otherModel)) {
+      throw new Error(
+        'Reproduction failed! Produced an incompatible model.');
     }
 
     // Choose a new model path, and save the model to disk.
