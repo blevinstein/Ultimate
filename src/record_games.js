@@ -44,7 +44,7 @@ const ACTION_COLUMNS = [
   'team_1_player_5_action',
   'team_1_player_6_action',
 ];
-const MAX_IN_MEMORY_SAMPLES = 500e3;
+const MAX_IN_MEMORY_SAMPLES = 200e3;
 
 // Play a single game until completion, and return as a FrameTensor.
 function playGame() {
