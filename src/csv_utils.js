@@ -6,7 +6,6 @@ const stringify = require('csv-stringify');
 const PRECISION = 3;
 
 module.exports.writeToFile = (filename, headers, data) => {
-  const lines = [];
   const stringifier = stringify({
     delimiter: ',',
     cast: {
@@ -18,29 +17,26 @@ module.exports.writeToFile = (filename, headers, data) => {
   if (appendMode) {
     console.log('Appending to existing output file...');
   }
-  fsPromises.open(filename, 'a').then(file => {
-    stringifier.on('readable', async () => {
-      const lines = [];
-      let row;
-      while (row = stringifier.read()) {
-        lines.push(row);
-      }
-      for (let line of lines) {
-        await file.appendFile(line);
-      }
-    });
-    stringifier.on('error', (e) => {
-      console.error(e.message);
-    });
-    stringifier.on('finish', () => {});
-    if (!appendMode) {
-      stringifier.write(headers);
+  const lines = [];
+  stringifier.on('readable', () => {
+    let row;
+    while (row = stringifier.read()) {
+      lines.push(row);
     }
-    for (let i = 0; i < data.length; i++) {
-      stringifier.write(data[i]);
-    }
-    stringifier.end();
   });
+  stringifier.on('error', (e) => {
+    console.error(e.message);
+  });
+  stringifier.on('finish', () => {
+    fs.appendFileSync(filename, lines.join(''));
+  });
+  if (!appendMode) {
+    stringifier.write(headers);
+  }
+  for (let i = 0; i < data.length; i++) {
+    stringifier.write(data[i]);
+  }
+  stringifier.end();
 };
 
 module.exports.readFromFile = (filename, cast = undefined) => {
