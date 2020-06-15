@@ -400,7 +400,9 @@ module.exports.FrameTensor = class FrameTensor {
     for (let permutation of this.generatePermutations()) {
       for (let i = 0; i < this.frames.length; i++) {
         const frame = this.frames[i];
-        const isThrower = this.frames[i].get('team_0_player_0_hasDisc');
+        const isThrower =
+          this.frames[i].get(permutation.get('team_0_player_0_hasDisc')) ===
+          1;
         if (!this.isInteresting(frame.get('state'))) {
           continue;
         }
