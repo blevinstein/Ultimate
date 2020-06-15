@@ -19,15 +19,15 @@ const {
   ZoneDefenseStrategy
 } = require('./strategy/zone_defense.js');
 
-const modelRewards = require('../data/rewards.json');
-
 let initialized = false;
+
+
+const modelRewards = require('../js_model/v1/rewards.json');
 
 function chooseModels() {
   const [rewards, weights] = modelRewards;
   rewards.sort((a, b) => b[1] - a[1]);
-  const fullPaths = rewards.slice(0, NUM_PLAYERS).map(r => r[0]);
-  return fullPaths.map(fullPath => fullPath.slice('js_model/'.length));
+  return rewards.slice(0, NUM_PLAYERS).map(r => 'v1/' + r[0] + '/model.json');
 }
 
 // Returns Promise<Array<Model>>
