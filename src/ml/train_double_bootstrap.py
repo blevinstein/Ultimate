@@ -182,6 +182,7 @@ DEFAULTS_MAP = {
 CUTTER_DEFAULTS = list(map(lambda c: DEFAULTS_MAP[c], SELECTED_COLUMNS))
 THROWER_DEFAULTS = list(map(lambda c: DEFAULTS_MAP[c], SELECTED_COLUMNS))
 
+ACTION_WEIGHT = 50
 def thrower_loss(y, y_pred):
   y_pred = tf.reshape(y_pred, tf.shape(y))
 
@@ -190,7 +191,7 @@ def thrower_loss(y, y_pred):
 
   # Binary crossentropy loss for throw action
   # MSE loss for numeric parameters
-  return tf.keras.losses.binary_crossentropy(action, action_pred) \
+  return tf.keras.losses.binary_crossentropy(action, action_pred) * ACTION_WEIGHT \
       + tf.compat.v1.losses.mean_squared_error(params, params_pred)
 
 class FullyConnectedModel(tf.keras.Model):
@@ -249,20 +250,22 @@ class ConvolutionModel(tf.keras.Model):
 
 def build_cutter_model():
   model = ConvolutionModel(2)
-  model.compile(loss = tf.keras.losses.MeanSquaredError(), optimizer = 'adam')
+  model.compile(loss = tf.keras.losses.MeanSquaredError(), optimizer = 'adam', metrics =
+      ['accuracy'])
   return model
 
 def reload_cutter_model(model):
-  model.compile(loss = tf.keras.losses.MeanSquaredError(), optimizer = 'adam')
+  model.compile(loss = tf.keras.losses.MeanSquaredError(), optimizer = 'adam', metrics =
+      ['accuracy'])
   return model
 
 def build_thrower_model():
   model = ConvolutionModel(6)
-  model.compile(loss = thrower_loss, optimizer = 'adam')
+  model.compile(loss = thrower_loss, optimizer = 'adam', metrics = ['accuracy'])
   return model
 
 def reload_thrower_model(model):
-  model.compile(loss = thrower_loss, optimizer = 'adam')
+  model.compile(loss = thrower_loss, optimizer = 'adam', metrics = ['accuracy'])
   return model
 
 # Merges input features into a single tensor
