@@ -2,6 +2,7 @@ const {
   FrameBuffer
 } = require('../frame_buffer.js');
 const {
+  STATES,
   FIELD_BOUNDS
 } = require('../game_params.js');
 const {
@@ -42,6 +43,9 @@ module.exports.Strategy = class Strategy {
   }
 
   throwDisc(player, params) {
+    if (!player.hasDisc) {
+      throw new Error('Throwing without disc');
+    }
     if (this.onThrow) {
       this.onThrow(player, params);
     }
@@ -50,6 +54,9 @@ module.exports.Strategy = class Strategy {
 
   // Move player exactly to 'destination'
   move(player, destination) {
+    if (player.hasDisc && this.game.state === STATES.Normal) {
+      throw new Error('Moving with disc');
+    }
     if (this.onMove) {
       this.onMove(player, sub2d(destination, player.position));
     }
