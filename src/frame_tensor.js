@@ -312,9 +312,6 @@ module.exports.FrameTensor = class FrameTensor {
             this.record(`team_${t}_player_${p}_move_x`, detail[0]);
             this.record(`team_${t}_player_${p}_move_y`, detail[1]);
           } else {
-            if (!this.frameValues.get(`team_${t}_player_${p}_hasDisc`)) {
-              throw new Error('Sanity check! throwing without disc');
-            }
             const [velocity, angleOfAttack, tiltAngle] = detail;
             this.record(`team_${t}_player_${p}_throw_x`, velocity[0]);
             this.record(`team_${t}_player_${p}_throw_y`, velocity[1]);
