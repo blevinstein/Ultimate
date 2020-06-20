@@ -3,8 +3,20 @@ const tf = require('@tensorflow/tfjs-node');
 const path = require('path');
 
 const {
+  Coach
+} = require('./coach.js');
+const {
+  Game
+} = require('./game.js');
+const {
+  STATES
+} = require('./game_params.js');
+const {
   Population
 } = require('./population.js');
+const {
+  SingleModelStrategy
+} = require('./strategy/single_model_strategy.js');
 const {
   applyNoise,
   areCompatible,
@@ -26,6 +38,24 @@ function rmdirRecursive(dir) {
       }
     });
   });
+}
+
+// Play a single game until completion, and return corresponding reward scores.
+function playGame(models) {
+  const game = new Game(null, null, [
+    new Coach(),
+    SingleModelStrategy.coach(models),
+  ]);
+
+  while (game.state != STATES.GameOver) {
+    game.update();
+  }
+
+  const rewards = [];
+  for (let i = 0; i < NUM_PLAYERS; ++i) {
+    rewards.push(game.reward.get(game.teams[1].players[i]));
+  }
+  return rewards;
 }
 
 module.exports.ModelPopulation = class ModelPopulation extends Population {
@@ -56,6 +86,16 @@ module.exports.ModelPopulation = class ModelPopulation extends Population {
       i++;
     }
     return GENERATED_MODELS_PREFIX + i;
+  }
+
+  async evaluateRewards(rewardModelKeys) {
+    const chosenModels = [];
+    for (let modelKey of rewardModelKeys) {
+      chosenModels.push(await this.getModel(modelKey));
+    }
+    console.log(
+      `Play game with these models: \n${rewardModelKeys.join('\n')}`);
+    return playGame(chosenModels);
   }
 
   async asexualReproduction(modelKey) {

@@ -6,6 +6,9 @@ const {
   Game
 } = require('./game.js');
 const {
+  DoubleModelPopulation
+} = require('./double_model_population.js');
+const {
   ModelPopulation
 } = require('./model_population.js');
 
@@ -23,6 +26,8 @@ async function main() {
   flags.defineString(
     'reward_file', 'rewards.json',
     'JSON file for persisting rewards between runs.');
+  flags.defineBoolean('double_model', false,
+    'Set to true for separate cutter and thrower models.');
   flags.defineString(
     'population_dir', 'js_model', 'Directory containing rewards and models.'
   );
@@ -32,7 +37,9 @@ async function main() {
   const populationDir = flags.get('population_dir');
   const rewardFile = flags.get('reward_file');
 
-  const population = new ModelPopulation(populationDir);
+  const population = flags.get('double_model')
+    ? new DoubleModelPopulation(populationDir)
+    : new ModelPopulation(populationDir);
   population.addModels(flags.get('start_population'));
   if (rewardFile && fs.existsSync(path.join(populationDir, rewardFile))) {
     await population.loadRewards(rewardFile);

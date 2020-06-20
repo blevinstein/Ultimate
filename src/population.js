@@ -6,52 +6,12 @@ const {
   weightedChoice
 } = require('./math_utils.js');
 const {
-  Coach
-} = require('./coach.js');
-const {
-  Game
-} = require('./game.js');
-const {
-  SingleModelStrategy
-} = require('./strategy/single_model_strategy.js');
-const {
-  STATES
-} = require('./game_params.js');
-const {
   NUM_PLAYERS
 } = require('./team.js');
 
 const REWARD_FACTOR = 50;
 const WEIGHT_FACTOR = 10;
-const EXCEPTION_REWARD = -1e6;
-
 const SEX_PROBABILITY = 0.8;
-
-// Returns an array of length 'length' filled with elements of 'value'
-function filled(value, length) {
-  const array = [];
-  array.length = length;
-  array.fill(value);
-  return array;
-}
-
-// Play a single game until completion, and return corresponding reward scores.
-function playGame(models) {
-  const game = new Game(null, null, [
-    new Coach(),
-    SingleModelStrategy.coach(models),
-  ]);
-
-  while (game.state != STATES.GameOver) {
-    game.update();
-  }
-
-  const rewards = [];
-  for (let i = 0; i < NUM_PLAYERS; ++i) {
-    rewards.push(game.reward.get(game.teams[1].players[i]));
-  }
-  return rewards;
-}
 
 // TODO: Cleanup poor (generated) models and delete from disk.
 module.exports.Population = class Population {
@@ -176,16 +136,6 @@ module.exports.Population = class Population {
         `${modelKey} => \t ${(reward || 0).toFixed(2)} [weight ${weight}]`
       );
     }
-  }
-
-  async evaluateRewards(rewardModelKeys) {
-    const chosenModels = [];
-    for (let modelKey of rewardModelKeys) {
-      chosenModels.push(await this.getModel(modelKey));
-    }
-    console.log(
-      `Play game with these models: \n${rewardModelKeys.join('\n')}`);
-    return playGame(chosenModels);
   }
 
   attributeRewards(rewardModelKeys, rewards) {

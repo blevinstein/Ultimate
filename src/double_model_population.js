@@ -1,15 +1,31 @@
 const fs = require('fs');
+const fsPromises = require('fs.promises');
 const tf = require('@tensorflow/tfjs-node');
 const path = require('path');
 
 const {
+  Coach
+} = require('./coach.js');
+const {
+  Game
+} = require('./game.js');
+const {
+  STATES
+} = require('./game_params.js');
+const {
   Population
 } = require('./population.js');
+const {
+  DoubleModelStrategy
+} = require('./strategy/double_model_strategy.js');
 const {
   applyNoise,
   areCompatible,
   sexAndNoise
 } = require('./tensor_utils.js');
+const {
+  NUM_PLAYERS
+} = require('./team.js');
 
 const CUTTER_MODEL_DIR = 'cutter';
 const CUTTER_MODEL_FILE = 'cutter/model.json';
@@ -33,6 +49,24 @@ function rmdirRecursive(dir) {
   });
 }
 
+// Play a single game until completion, and return corresponding reward scores.
+function playGame(models) {
+  const game = new Game(null, null, [
+    new Coach(),
+    DoubleModelStrategy.coach(models),
+  ]);
+
+  while (game.state != STATES.GameOver) {
+    game.update();
+  }
+
+  const rewards = [];
+  for (let i = 0; i < NUM_PLAYERS; ++i) {
+    rewards.push(game.reward.get(game.teams[1].players[i]));
+  }
+  return rewards;
+}
+
 module.exports.DoubleModelPopulation =
   class DoubleModelPopulation extends Population {
 
@@ -53,6 +87,9 @@ module.exports.DoubleModelPopulation =
 
     // Saves a model to 'modelKey'
     async saveModel(newModel, modelKey) {
+      await fsPromises.mkdir(path.join(this.populationDir, modelKey), {
+        recursive: true
+      });
       await newModel.cutter.save(
         'file://' + path.join(this.populationDir, modelKey,
           CUTTER_MODEL_DIR));
@@ -72,6 +109,16 @@ module.exports.DoubleModelPopulation =
         i++;
       }
       return GENERATED_MODELS_PREFIX + i;
+    }
+
+    async evaluateRewards(rewardModelKeys) {
+      const chosenModels = [];
+      for (let modelKey of rewardModelKeys) {
+        chosenModels.push(await this.getModel(modelKey));
+      }
+      console.log(
+        `Play game with these models: \n${rewardModelKeys.join('\n')}`);
+      return playGame(chosenModels);
     }
 
     async asexualReproduction(modelKey) {

@@ -25,9 +25,9 @@ const INFERENCE_STEP = 2;
 
 module.exports.DoubleModelStrategy =
   class DoubleModelStrategy extends Strategy {
-    constructor(modelPairs, game, team) {
+    constructor(models, game, team) {
       super(game, team);
-      this.modelPairs = modelPairs;
+      this.models = models;
       this.teamNumber = this.team === this.game.teams[1] ? 1 : 0;
       this.frameTensor = new FrameTensor();
 
@@ -40,10 +40,12 @@ module.exports.DoubleModelStrategy =
       this.frameTensor.nextFrame();
       this.frameTensor.clearFrames();
 
-      for (let modelPair of modelPairs) {
-        if (modelPair.length !== 2
-          || modelPair.some(model => !(model instanceof tf.GraphModel))) {
-          throw new Error(`Invalid model pair input: ${modelPair}`);
+      for (let model of models) {
+        if (!model.cutter instanceof tf.GraphModel) {
+          throw new Error(`Invalid cutter model: ${model.cutter}`);
+        }
+        if (!model.thrower instanceof tf.GraphModel) {
+          throw new Error(`Invalid thrower model: ${model.thrower}`);
         }
       }
     }
@@ -59,7 +61,7 @@ module.exports.DoubleModelStrategy =
 
           if (player.hasDisc) {
             if (player.canThrow()) {
-              const model = this.modelPairs[p % this.modelPairs.length]
+              const model = this.models[p % this.models.length]
                 .thrower;
               const prediction = model.predict(inputs[p]);
               const [
@@ -77,7 +79,7 @@ module.exports.DoubleModelStrategy =
               player.rest();
             }
           } else {
-            const model = this.modelPairs[p % this.modelPairs.length].cutter;
+            const model = this.models[p % this.models.length].cutter;
             const prediction = model.predict(inputs[p]);
             const [moveX, moveY] = prediction.as1D().arraySync();
             const moveTarget = snapToBounds(
@@ -89,7 +91,7 @@ module.exports.DoubleModelStrategy =
           // Replay actions from previous model evaluation.
           if (this.actionMap.has(player)) {
             const [previousAction, params] = this.actionMap.get(player);
-            if (previousAction === 'move') {
+            if (previousAction === 'move' && !player.hasDisc) {
               const moveTarget =
                 snapToBounds(add2d(player.position, params), FIELD_BOUNDS);
               this.move(player, moveTarget);
@@ -105,12 +107,12 @@ module.exports.DoubleModelStrategy =
       this.frameTensor.nextFrame();
     }
 
-    static coach(modelPairs) {
-      if (!modelPairs instanceof Array) {
-        throw new Error(`Illegal input: ${modelPairs}`);
+    static coach(models) {
+      if (!models instanceof Array) {
+        throw new Error(`Illegal input: ${models}`);
       }
       const strategyPicker = (game, team) =>
-        new DoubleModelStrategy(modelPairs, game, team);
+        new DoubleModelStrategy(models, game, team);
       // TODO: Use strategyPicker for kickoffStrategy as well
       return new Coach(strategyPicker, strategyPicker, strategyPicker);
     }
