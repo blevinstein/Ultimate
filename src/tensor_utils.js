@@ -105,7 +105,10 @@ function crossover(aTensor, bTensor, splitAxis, splitSize) {
 }
 module.exports.crossover = crossover;
 
-function inspect(model, showValues = false) {
+function inspectModel(model, showValues = false) {
+  if (!(model instanceof tf.GraphModel)) {
+    throw new Error(`Invalid model: ${model}`);
+  }
   for (let layer of Object.keys(model.weights)) {
     model.weights[layer].forEach(mat => {
       console.log(`Layer: ${layer} \t Shape: ${guessShape(mat)}`);
@@ -115,7 +118,7 @@ function inspect(model, showValues = false) {
     });
   }
 }
-module.exports.inspect = inspect;
+module.exports.inspectModel = inspectModel;
 
 // Apply truncated gaussian normal noise.
 function applyNoise(model, stdDev = 0.1) {

@@ -1,6 +1,6 @@
 const fs = require('fs');
-const tf = require('@tensorflow/tfjs-node');
 const path = require('path');
+const tf = require('@tensorflow/tfjs-node');
 
 const {
   Coach
