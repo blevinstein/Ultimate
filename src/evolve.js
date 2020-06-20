@@ -54,7 +54,9 @@ async function main() {
   });
 
   for (let i = 0; i < flags.get('rounds'); ++i) {
-    await population.evaluate(flags.get('games_per_round'));
+    for (let j = 0; j < flags.get('games_per_round') && !quitFlag; ++j) {
+      await population.evaluate();
+    }
     population.summarize();
     if (population.size() > maxPopulationSize) {
       await population.kill(population.size() - maxPopulationSize);
