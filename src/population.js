@@ -133,7 +133,7 @@ module.exports.Population = class Population {
     console.log(`Population (size=${this.size()}) scores:`);
     for (let [modelKey, reward, weight] of modelData) {
       console.log(
-        `${modelKey} => \t ${(reward || 0).toFixed(2)} [weight ${weight}]`
+        `\t ${modelKey} => \t ${(reward || 0).toFixed(2)} [weight ${weight}]`
       );
     }
   }
