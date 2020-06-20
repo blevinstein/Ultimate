@@ -117,7 +117,7 @@ module.exports.DoubleModelPopulation =
         chosenModels.push(await this.getModel(modelKey));
       }
       console.log(
-        `Play game with these models: \n${rewardModelKeys.join('\n')}`);
+        `Play game with these models: \n${rewardModelKeys.join(',')}`);
       return playGame(chosenModels);
     }
 
