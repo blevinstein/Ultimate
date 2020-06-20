@@ -74,8 +74,8 @@ THROWER_MODEL_NUMERIC_OUTPUTS = [
 THROWER_MODEL_OUTPUTS = ['throw_action'] + THROWER_MODEL_NUMERIC_OUTPUTS
 
 NUMERIC_MODEL_OUTPUTS = [
-    'move_x', 'move_y', 'throw_x', 'throw_y', 'throw_z',
-    'throw_angleOfAttack', 'throw_tiltAngle',
+    'move_x', 'move_y',
+    'throw_x', 'throw_y', 'throw_z', 'throw_angleOfAttack', 'throw_tiltAngle',
 ]
 MODEL_OUTPUTS = ['action'] + NUMERIC_MODEL_OUTPUTS
 
