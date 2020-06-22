@@ -396,6 +396,23 @@ module.exports.FrameTensor = class FrameTensor {
     return newFrame;
   }
 
+  getOffsetFrame(frame) {
+    const origin = [frame.get('team_0_player_0_x'), frame.get(
+      'team_0_player_0_y')];
+    const newFrame = new Map;
+    for (let column of frame.keys()) {
+      if (getLastPart(column) === 'x' && column !== 'team_0_player_0_x') {
+        newFrame.set(column, frame.get(column) - origin[0]);
+      } else if (getLastPart(column) === 'y' && column
+        !== 'team_0_player_0_y') {
+        newFrame.set(column, frame.get(column) - origin[1]);
+      } else {
+        newFrame.set(column, frame.get(column));
+      }
+    }
+    return newFrame;
+  }
+
   // Returns an array of tf.Tensor where element i is the world as perceived
   // by player number i on team number 'team'.
   getPermutedInputs(team) {
@@ -403,8 +420,10 @@ module.exports.FrameTensor = class FrameTensor {
     const permutedInputs = [];
     for (let permutation of this.generatePermutations([team])) {
       const frame =
-        this.getPermutedFrame(this.frameValues, headers, permutation);
-      const inputs = headers.flatMap(h => this.encodeInputs(h, frame));
+        this.getOffsetFrame(this.getPermutedFrame(this.frameValues, headers,
+          permutation));
+      const inputs = headers.flatMap(h => this.encodeInputs(h, frame.get(
+        h)));
       permutedInputs.push(tf.tensor(inputs, [1, inputs.length]));
     }
     return permutedInputs;
@@ -416,8 +435,9 @@ module.exports.FrameTensor = class FrameTensor {
     const throwerData = [];
     for (let permutation of this.generatePermutations()) {
       for (let i = 0; i < this.frames.length; i++) {
-        const frame = this.getPermutedFrame(this.frames[i], headers,
-          permutation);
+        const frame = this.getOffsetFrame(this.getPermutedFrame(this.frames[
+            i], headers,
+          permutation));
         const isThrower = frame.get('team_0_player_0_hasDisc');
         if (!this.isInteresting(frame.get('state'))) {
           continue;
