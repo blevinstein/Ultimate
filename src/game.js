@@ -144,6 +144,7 @@ module.exports.Game = class Game {
     this.cutterReward = new Map;
     this.throwerReward = new Map;
     this.reward = new Map;
+    this.totalTicks = 0;
   }
 
   start() {
@@ -280,6 +281,7 @@ module.exports.Game = class Game {
   }
 
   update() {
+    this.totalTicks++;
     this.stateTime += FRAME_TIME_MS / 1000.0;
     // Each team executes its strategy
     for (let team of this.teams) {

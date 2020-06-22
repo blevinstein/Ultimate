@@ -35,6 +35,8 @@ const THROWER_MODEL_FILE = 'thrower/model.json';
 
 const GENERATED_MODELS_PREFIX = 'generated/model-';
 
+const REWARD_CONST = 1e4;
+
 function rmdirRecursive(dir) {
   return new Promise((resolve, reject) => {
     fs.rmdir(dir, {
@@ -62,7 +64,9 @@ function playGame(models) {
 
   const rewards = [];
   for (let i = 0; i < NUM_PLAYERS; ++i) {
-    rewards.push(game.reward.get(game.teams[1].players[i]));
+    rewards.push(
+      game.reward.get(game.teams[1].players[i]) * REWARD_CONST
+      / game.totalTicks);
   }
   return rewards;
 }
