@@ -413,15 +413,6 @@ module.exports.FrameTensor = class FrameTensor {
     return [headers, cutterData, throwerData];
   }
 
-  getFrameCsvData() {
-    const headers = this.allKeys(false);
-    const data = [];
-    for (let i = 0; i < this.frames.length; i++) {
-      data.push(headers.map(h => this.renderCsvCell(this.frames[i], h)));
-    }
-    return [headers, data];
-  }
-
   filter(condition) {
     const newTensor = new FrameTensor();
     newTensor.frames = this.frames.filter(condition);

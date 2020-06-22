@@ -147,7 +147,7 @@ module.exports.Player = class Player {
 
   // Move with deceleration to avoid overshoot
   moveTo(target) {
-    check2d(target);
+    check2d(target, 'at moveTo');
     let vector = sub2d(target, this.position);
 
     if (mag2d(vector) === 0) {
@@ -184,7 +184,7 @@ module.exports.Player = class Player {
 
   // Move without deceleration
   moveThrough(target) {
-    check2d(target);
+    check2d(target, 'at moveThrough');
     let vector = sub2d(target, this.position);
 
     if (mag2d(vector) === 0) {

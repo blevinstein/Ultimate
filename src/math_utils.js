@@ -145,10 +145,10 @@ function norm2d(vector) {
   return mul2d(vector, 1 / mag);
 }
 
-function check2d(vector) {
+function check2d(vector, message = '') {
   if (vector.length < 2 || vector.some(elem => isNaN(elem) || !isFinite(elem)
       || typeof elem !== 'number')) {
-    throw new Error('Invalid 2d vector: ' + vector);
+    throw new Error(`Invalid 2d vector: ${vector} ${message}`);
   }
   return vector;
 }

@@ -9,6 +9,7 @@ const {
   snapToBounds
 } = require('../game_utils.js');
 const {
+  check2d,
   getVector,
   add2d,
   dist2d,
@@ -54,6 +55,7 @@ module.exports.Strategy = class Strategy {
 
   // Move player exactly to 'destination'
   move(player, destination) {
+    check2d(destination, 'at Strategy.move');
     if (player.hasDisc && this.game.state === STATES.Normal) {
       throw new Error('Moving with disc');
     }

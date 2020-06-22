@@ -1,7 +1,10 @@
 const tf = require('@tensorflow/tfjs');
 
 const {
-  add2d
+  add2d,
+  check1d,
+  check2d,
+  check3d,
 } = require('../math_utils.js');
 const {
   Coach
@@ -71,7 +74,9 @@ module.exports.DoubleModelStrategy =
                 throwTiltAngle
               ] = prediction.as1D().arraySync();
               const throwParams = [
-                [throwX, throwY, throwZ], throwAngleOfAttack, throwTiltAngle
+                check3d([throwX, throwY, throwZ]),
+                check1d(throwAngleOfAttack),
+                check1d(throwTiltAngle)
               ];
               this.throwDisc(player, throwParams);
               this.actionMap.set(player, ['throw', throwParams]);
@@ -81,9 +86,12 @@ module.exports.DoubleModelStrategy =
           } else {
             const model = this.models[p % this.models.length].cutter;
             const prediction = model.predict(inputs[p]);
-            const [moveX, moveY] = prediction.as1D().arraySync();
+
+            const [moveX, moveY] = check2d(prediction.as1D().arraySync(),
+              'at move predict');
             const moveTarget = snapToBounds(
               add2d(player.position, [moveX, moveY]), FIELD_BOUNDS);
+
             this.move(player, moveTarget);
             this.actionMap.set(player, ['move', [moveX, moveY]]);
           }
