@@ -348,10 +348,6 @@ module.exports.FrameTensor = class FrameTensor {
     this.frames = [];
   }
 
-  isInteresting(gameState) {
-    return INTERESTING_STATES.includes(gameState);
-  }
-
   // Returns a format suitable for saving to a CSV. Enum values are stored in a
   // single cell of output, as a numeric value.
   renderCsvCell(frame, column) {
@@ -439,7 +435,7 @@ module.exports.FrameTensor = class FrameTensor {
             i], headers,
           permutation));
         const isThrower = frame.get('team_0_player_0_hasDisc');
-        if (!this.isInteresting(frame.get('state'))) {
+        if (!INTERESTING_STATES.includes(frame.get('state'))) {
           continue;
         }
         (isThrower ? throwerData : cutterData).push(
