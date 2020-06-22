@@ -7,7 +7,7 @@ const {
 // In models exported from Python tensorflow, these are the dense and conv1d
 // network weights.
 const TRAINABLE = ['ReadVariableOp', 'ExpandDims_1'];
-const CROSSOVER_PROBABILITY = 0.2;
+const CROSSOVER_PROBABILITY = 0.1;
 
 function getLastPart(node, separator = '/') {
   if (!node) {
