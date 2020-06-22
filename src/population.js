@@ -29,6 +29,10 @@ module.exports.Population = class Population {
   addModels(modelKeys) {
     if (modelKeys.length) {
       this.modelKeys.push(...modelKeys);
+      for (let newModelKey of modelKeys) {
+        this.expectedReward.set(newModelKey, 0);
+        this.expectedRewardWeight.set(newModelKey, 0);
+      }
     }
   }
 
