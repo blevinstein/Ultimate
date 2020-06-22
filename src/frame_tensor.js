@@ -411,38 +411,38 @@ module.exports.FrameTensor = class FrameTensor {
 
   // Returns an array of tf.Tensor where element i is the world as perceived
   // by player number i on team number 'team'.
-  getPermutedInputs(team) {
-    const headers = this.allKeys(true);
+  getPermutedInputs(team, columns) {
+    columns = columns || this.allKeys(true);
     const permutedInputs = [];
     for (let permutation of this.generatePermutations([team])) {
       const frame =
-        this.getOffsetFrame(this.getPermutedFrame(this.frameValues, headers,
+        this.getOffsetFrame(this.getPermutedFrame(this.frameValues, columns,
           permutation));
-      const inputs = headers.flatMap(h => this.encodeInputs(h, frame.get(
-        h)));
+      const inputs = columns.flatMap(col => this.encodeInputs(col, frame
+        .get(col)));
       permutedInputs.push(tf.tensor(inputs, [1, inputs.length]));
     }
     return permutedInputs;
   }
 
-  getPermutedCsvData() {
-    const headers = this.allKeys(true);
+  getPermutedCsvData(team = [0, 1], columns) {
+    columns = columns || this.allKeys(true);
     const cutterData = [];
     const throwerData = [];
     for (let permutation of this.generatePermutations()) {
       for (let i = 0; i < this.frames.length; i++) {
         const frame = this.getOffsetFrame(this.getPermutedFrame(this.frames[
-            i], headers,
+            i], columns,
           permutation));
         const isThrower = frame.get('team_0_player_0_hasDisc');
         if (!INTERESTING_STATES.includes(frame.get('state'))) {
           continue;
         }
-        (isThrower ? throwerData : cutterData).push(
-          headers.map(h => this.renderCsvCell(frame, h)));
+        (isThrower ? throwerData : cutterData).push(columns.map(col => this
+          .renderCsvCell(frame, col)));
       }
     }
-    return [headers, cutterData, throwerData];
+    return [columns, cutterData, throwerData];
   }
 
   filter(condition) {
