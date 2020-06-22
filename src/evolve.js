@@ -54,7 +54,7 @@ async function main() {
   });
 
   for (let i = 0; i < flags.get('rounds'); ++i) {
-    for (let j = 0; j < flags.get('games_per_round') && !quitFlag; ++j) {
+    for (let j = 0; j < flags.get('games_per_round'); ++j) {
       await population.evaluate();
     }
     population.summarize();

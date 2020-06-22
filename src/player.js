@@ -238,9 +238,8 @@ module.exports.Player = class Player {
     // angleOfAttack + ' tiltAngle=' + tiltAngle);
     check3d(velocity);
     if (mag3d(velocity) > MAX_THROW_SPEED) {
-      console.log(
-        `Tried to throw too fast: ${mag3d(velocity)} > ${MAX_THROW_SPEED}`
-      );
+      // DEBUG: console.log(
+      //  `Tried to throw too fast: ${mag3d(velocity)} > ${MAX_THROW_SPEED}`);
       velocity = mul3d(norm3d(velocity), MAX_THROW_SPEED);
     }
     if (!this.hasDisc) {

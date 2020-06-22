@@ -21,6 +21,10 @@ const {
 const {
   FIELD_BOUNDS
 } = require('../game_params.js');
+const {
+  MAX_THROW_SPEED,
+} =
+require('../player_params.js');
 
 // Run inference once every STEP, start over every CYCLE.
 const INFERENCE_CYCLE = 14;
