@@ -28,7 +28,7 @@ const VOCABULARIES = new Map([
 const NONE_VALUE = '';
 
 // Encodes a value using a list of enum values.
-function encodeValue(value, vocab) {
+function encodeEnumValue(value, vocab) {
   const index = vocab.findIndex(v => v === value);
   if (index < 0) {
     throw new Error(`Unexpected value: ${value} (expected ${vocab})`);
@@ -37,7 +37,7 @@ function encodeValue(value, vocab) {
 }
 
 function encodeOneHot(value, vocab) {
-  const index = value ? encodeValue(value, vocab) : -1;
+  const index = value ? encodeEnumValue(value, vocab) : -1;
   let result = [];
   for (let i = 0; i < vocab.length; ++i) {
     result.push(i === index ? 1 : 0);
@@ -57,15 +57,6 @@ function getLastPart(column, separator = '_') {
     lastPart = column;
   }
   return lastPart;
-}
-
-// Enumerated values are encoded based on the contents of VOCABULARIES.
-function getEncoding(column) {
-  // Infers encoding vocabulary from the last part of the column name.
-  const encodingKey = getLastPart(column);
-  return VOCABULARIES.has(encodingKey)
-    ? value => encodeValue(value, VOCABULARIES.get(encodingKey))
-    : (value => value);
 }
 
 // Stores a tensor representing individual frames of action from a recorded
@@ -361,11 +352,18 @@ module.exports.FrameTensor = class FrameTensor {
     return INTERESTING_STATES.includes(gameState);
   }
 
+  // Returns a format suitable for saving to a CSV. Enum values are stored in a
+  // single cell of output, as a numeric value.
   renderCsvCell(frame, column) {
-    const encoding = getEncoding(column);
+    const encodingKey = getLastPart(column);
+    const encoding = VOCABULARIES.has(encodingKey)
+      ? value => encodeEnumValue(value, VOCABULARIES.get(encodingKey))
+      : (value => value);
     return frame.has(column) ? encoding(frame.get(column)) : NONE_VALUE;
   }
 
+  // Returns a format suitable for sending directly to a model. Enum values are
+  // expanded into a one-hot vector.
   encodeInputs(column, value) {
     if (OUTPUT_ONLY_COLUMNS.includes(column)) {
       return [];
@@ -374,10 +372,28 @@ module.exports.FrameTensor = class FrameTensor {
     if (ONE_HOT_COLUMNS.includes(encodingKey)) {
       return encodeOneHot(value, VOCABULARIES.get(encodingKey));
     } else if (BINARY_COLUMNS.includes(encodingKey)) {
-      return encodeValue(value, VOCABULARIES.get(encodingKey));
+      return [encodeEnumValue(value, VOCABULARIES.get(encodingKey))];
     } else {
-      return value || 0;
+      return [value || 0];
     }
+  }
+
+  getPermutedFrame(frame, columns, permutation) {
+    if (!(frame instanceof Map)) {
+      throw new Error('Invalid frame input');
+    } else if (!(permutation instanceof Map)) {
+      throw new Error('Invalid permutation input');
+    }
+    const newFrame = new Map;
+    for (let column of columns) {
+      if (!permutation.has(column)) {
+        throw new Error('Incomplete permutation');
+      }
+      if (frame.has(permutation.get(column))) {
+        newFrame.set(column, frame.get(permutation.get(column)));
+      }
+    }
+    return newFrame;
   }
 
   // Returns an array of tf.Tensor where element i is the world as perceived
@@ -386,8 +402,9 @@ module.exports.FrameTensor = class FrameTensor {
     const headers = this.allKeys(true);
     const permutedInputs = [];
     for (let permutation of this.generatePermutations([team])) {
-      const inputs = headers.flatMap(h =>
-        this.encodeInputs(h, this.frameValues.get(permutation.get(h))));
+      const frame =
+        this.getPermutedFrame(this.frameValues, headers, permutation);
+      const inputs = headers.flatMap(h => this.encodeInputs(h, frame));
       permutedInputs.push(tf.tensor(inputs, [1, inputs.length]));
     }
     return permutedInputs;
@@ -399,15 +416,14 @@ module.exports.FrameTensor = class FrameTensor {
     const throwerData = [];
     for (let permutation of this.generatePermutations()) {
       for (let i = 0; i < this.frames.length; i++) {
-        const frame = this.frames[i];
-        const isThrower =
-          this.frames[i].get(permutation.get('team_0_player_0_hasDisc'))
-          === 1;
+        const frame = this.getPermutedFrame(this.frames[i], headers,
+          permutation);
+        const isThrower = frame.get('team_0_player_0_hasDisc');
         if (!this.isInteresting(frame.get('state'))) {
           continue;
         }
         (isThrower ? throwerData : cutterData).push(
-          headers.map(h => this.renderCsvCell(frame, permutation.get(h))));
+          headers.map(h => this.renderCsvCell(frame, h)));
       }
     }
     return [headers, cutterData, throwerData];
