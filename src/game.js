@@ -104,6 +104,7 @@ const SCORE_REWARD = 100;
 const PROGRESS_REWARD_PER_YARD = 2;
 const COMPLETION_REWARD = 20;
 const INTERCEPTION_REWARD = 50;
+const RECEIVER_MULTIPLIER = 10;
 
 module.exports.Game = class Game {
   constructor(resources, canvas, coaches = [new Coach(), new Coach()]) {
@@ -571,7 +572,8 @@ module.exports.Game = class Game {
       this.cutterReward.set(player, (this.cutterReward.get(player) || 0)
         + amount);
     }
-    this.reward.set(player, (this.reward.get(player) || 0) + amount);
+    this.reward.set(player, (this.reward.get(player) || 0) + amount * (
+      asThrower ? 1 : RECEIVER_MULTIPLIER));
   }
 
   // Registers callbacks so that actions will be record in 'actionMap'
