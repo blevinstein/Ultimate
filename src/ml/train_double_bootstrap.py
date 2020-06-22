@@ -231,8 +231,9 @@ class ConvolutionModel(tf.keras.Model):
     self.flattenTeamConvolution = tf.keras.layers.Flatten()
     self.flattenEnemyConvolution = tf.keras.layers.Flatten()
     self.mergeConvolution = tf.keras.layers.Concatenate(axis=1)
-    self.hidden1 = tf.keras.layers.Dense(30, activation='relu')
-    self.hidden2 = tf.keras.layers.Dense(20, activation='relu')
+    self.hidden1 = tf.keras.layers.Dense(80, activation='relu')
+    self.hidden2 = tf.keras.layers.Dense(60, activation='relu')
+    self.hidden3 = tf.keras.layers.Dense(30)
     self.outputLayer = tf.keras.layers.Dense(num_outputs);
 
   def call(self, inputs, training=False):
@@ -246,7 +247,8 @@ class ConvolutionModel(tf.keras.Model):
         self.enemyConvolution(self.reshapeEnemyConvolution(enemyState)))
     d = self.hidden1(self.mergeConvolution([a, b, c]))
     e = self.hidden2(d)
-    return self.outputLayer(e)
+    f = self.hidden3(e)
+    return self.outputLayer(f)
 
 def build_cutter_model():
   model = ConvolutionModel(2)
