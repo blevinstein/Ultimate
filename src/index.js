@@ -1,4 +1,6 @@
 const tf = require('@tensorflow/tfjs');
+const jsonp = require('jsonp');
+const path = require('path');
 
 const {
   Coach
@@ -13,33 +15,45 @@ const {
   NUM_PLAYERS
 } = require('./team.js');
 const {
-  SingleModelStrategy
-} = require('./strategy/single_model_strategy.js');
+  DoubleModelStrategy
+} = require('./strategy/double_model_strategy.js');
 const {
-  ZoneDefenseStrategy
-} = require('./strategy/zone_defense.js');
+  DoubleModelPopulation
+} = require('./double_model_population.js');
 
 let initialized = false;
 
-
-const modelRewards = require('../js_model/v1/rewards.json');
-
-function chooseModels() {
-  const [rewards, weights] = modelRewards;
-  rewards.sort((a, b) => b[1] - a[1]);
-  return rewards.slice(0, NUM_PLAYERS).map(r => 'v1/' + r[0] + '/model.json');
+async function loadRewards(population, rewardFile) {
+  const jsonResponse = await fetch(path.join(population.populationDir,
+    rewardFile));
+  if (!jsonResponse.ok) {
+    console.error(response.status);
+  }
+  const [rewards, weights] = JSON.parse(await jsonResponse.text());
+  population.expectedReward = new Map(rewards);
+  population.expectedRewardWeight = new Map(weights);
+  for (let modelKey of population.expectedReward.keys()) {
+    if (!population.modelKeys.includes(modelKey)) {
+      population.modelKeys.push(modelKey);
+    }
+  }
 }
 
 // Returns Promise<Array<Model>>
-function loadModels(paths) {
+async function loadModels(paths) {
+  const population = new DoubleModelPopulation('v4');
+  await loadRewards(population, 'rewards.json');
   return Promise.all(
-    paths.map(path => tf.loadGraphModel(path)));
+    population.getBestModels(3).map(key => {
+      console.log(`Loading ${key}`);
+      return population.loadModel(key, '');
+    }));
 }
 
 window.initialize = () => {
   console.log('Initializing...');
 
-  Promise.all([Game.loadResources(), loadModels(chooseModels())])
+  Promise.all([Game.loadResources(), loadModels()])
     .then(
       (responses) => {
         initialized = true;
@@ -56,7 +70,7 @@ function start(responses) {
   const [resources, models] = responses;
   window.game = new Game(resources, document.getElementById('canvas'), [
     new Coach(),
-    SingleModelStrategy.coach(models),
+    DoubleModelStrategy.coach(models),
   ]);
   window.game.start();
 }

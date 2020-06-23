@@ -1,6 +1,4 @@
-const fs = require('fs');
-const fsPromises = require('fs.promises');
-const tf = require('@tensorflow/tfjs-node');
+const tf = require('@tensorflow/tfjs');
 const path = require('path');
 
 const {
@@ -27,29 +25,10 @@ const {
   NUM_PLAYERS
 } = require('./team.js');
 
-const CUTTER_MODEL_DIR = 'cutter';
 const CUTTER_MODEL_FILE = 'cutter/model.json';
-
-const THROWER_MODEL_DIR = 'thrower';
 const THROWER_MODEL_FILE = 'thrower/model.json';
 
-const GENERATED_MODELS_PREFIX = 'generated/model-';
-
 const REWARD_CONST = 1e4;
-
-function rmdirRecursive(dir) {
-  return new Promise((resolve, reject) => {
-    fs.rmdir(dir, {
-      recursive: true
-    }, (error) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
 
 // Play a single game until completion, and return corresponding reward scores.
 function playGame(models) {
@@ -79,41 +58,28 @@ module.exports.DoubleModelPopulation =
       this.populationDir = populationDir;
     }
 
-    async loadModel(modelKey) {
+    // These methods are not implemented in this file, so that we can support
+    // browserify. If you want these methods locally, use
+    // LocalDoubleModelPopulation.
+    async saveModel(newModel, modelKey) {
+      throw new Error('saveModel is not supported');
+    }
+    async deleteModel(modelKey) {
+      throw new Error('deleteModel is not supported');
+    }
+    async generateModelKey() {
+      throw new Error('generateModelKey is not supported');
+    }
+
+    async loadModel(modelKey, prefix = 'file://') {
       return {
         cutter: await tf.loadGraphModel(
-          'file://' + path.join(this.populationDir, modelKey,
+          prefix + path.join(this.populationDir, modelKey,
             CUTTER_MODEL_FILE)),
         thrower: await tf.loadGraphModel(
-          'file://' + path.join(this.populationDir, modelKey,
+          prefix + path.join(this.populationDir, modelKey,
             THROWER_MODEL_FILE)),
       };
-    }
-
-    // Saves a model to 'modelKey'
-    async saveModel(newModel, modelKey) {
-      await fsPromises.mkdir(path.join(this.populationDir, modelKey), {
-        recursive: true
-      });
-      await newModel.cutter.save(
-        'file://' + path.join(this.populationDir, modelKey,
-          CUTTER_MODEL_DIR));
-      await newModel.thrower.save(
-        'file://' + path.join(this.populationDir, modelKey,
-          THROWER_MODEL_DIR));
-    }
-
-    async deleteModel(modelKey) {
-      await rmdirRecursive(path.join(this.populationDir, modelKey));
-    }
-
-    async generateModelKey() {
-      let i = 0;
-      while (fs.existsSync(path.join(this.populationDir,
-          GENERATED_MODELS_PREFIX + i))) {
-        i++;
-      }
-      return GENERATED_MODELS_PREFIX + i;
     }
 
     async evaluateRewards(rewardModelKeys) {

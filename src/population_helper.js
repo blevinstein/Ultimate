@@ -8,7 +8,7 @@ const path = require('path');
 module.exports.saveRewards = async function saveRewards(
   population, relativeRewardFile, overwrite = false) {
   const rewardFile = path.join(population.populationDir,
-  relativeRewardFile);
+    relativeRewardFile);
   console.log(`Saving rewards to ${rewardFile}`);
   if (fs.existsSync(rewardFile) && !overwrite) {
     throw new Error(`Reward file already exists: ${rewardFile}`);
@@ -22,7 +22,7 @@ module.exports.saveRewards = async function saveRewards(
 module.exports.loadRewards = async function loadRewards(
   population, relativeRewardFile) {
   const rewardFile = path.join(population.populationDir,
-  relativeRewardFile);
+    relativeRewardFile);
   console.log(`Loading rewards from ${rewardFile}`);
   if (!fs.existsSync(rewardFile)) {
     throw new Error(`Reward file does not exist: ${rewardFile}`);

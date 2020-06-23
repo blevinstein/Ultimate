@@ -6,8 +6,8 @@ const {
   Game
 } = require('./game.js');
 const {
-  DoubleModelPopulation
-} = require('./double_model_population.js');
+  LocalDoubleModelPopulation
+} = require('./local_double_model_population.js');
 const {
   ModelPopulation
 } = require('./model_population.js');
@@ -42,7 +42,7 @@ async function main() {
   const rewardFile = flags.get('reward_file');
 
   const population = flags.get('double_model')
-    ? new DoubleModelPopulation(populationDir)
+    ? new LocalDoubleModelPopulation(populationDir)
     : new ModelPopulation(populationDir);
   population.addModels(flags.get('start_population'));
   if (rewardFile && fs.existsSync(path.join(populationDir, rewardFile))) {
