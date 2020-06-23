@@ -104,7 +104,7 @@ const SCORE_REWARD = 100;
 const PROGRESS_REWARD_PER_YARD = 2;
 const COMPLETION_REWARD = 20;
 const INTERCEPTION_REWARD = 50;
-const RECEIVER_MULTIPLIER = 5;
+const RECEIVER_MULTIPLIER = 2;
 
 module.exports.Game = class Game {
   constructor(resources, canvas, coaches = [new Coach(), new Coach()]) {
