@@ -1,7 +1,3 @@
-const fs = require('fs');
-const fsPromises = require('fs.promises');
-const path = require('path');
-
 const {
   weightedChoice
 } = require('./math_utils.js');
@@ -13,10 +9,8 @@ const REWARD_FACTOR = 50;
 const WEIGHT_FACTOR = 10;
 const SEX_PROBABILITY = 0.8;
 
-// TODO: Cleanup poor (generated) models and delete from disk.
 module.exports.Population = class Population {
-  constructor(populationDir) {
-    this.populationDir = populationDir;
+  constructor() {
     // All models in the population
     this.modelKeys = [];
     // Models which are in memory, keyed by model path
@@ -32,39 +26,6 @@ module.exports.Population = class Population {
       for (let newModelKey of modelKeys) {
         this.expectedReward.set(newModelKey, 0);
         this.expectedRewardWeight.set(newModelKey, 0);
-      }
-    }
-  }
-
-  async saveRewards(relativeRewardFile, overwrite = false) {
-    const rewardFile = path.join(this.populationDir, relativeRewardFile);
-    console.log(`Saving rewards to ${rewardFile}`);
-    if (fs.existsSync(rewardFile) && !overwrite) {
-      throw new Error(`Reward file already exists: ${rewardFile}`);
-    }
-    await fsPromises.writeFile(rewardFile, JSON.stringify([
-      Array.from(this.expectedReward.entries()),
-      Array.from(this.expectedRewardWeight.entries()),
-    ]));
-  }
-
-  async loadRewards(relativeRewardFile) {
-    const rewardFile = path.join(this.populationDir, relativeRewardFile);
-    console.log(`Loading rewards from ${rewardFile}`);
-    if (!fs.existsSync(rewardFile)) {
-      throw new Error(`Reward file does not exist: ${rewardFile}`);
-    }
-    if (this.expectedReward.size > 0) {
-      // TODO: Support merging reward maps
-      throw new Error('Reward map already contains something!');
-    }
-    const [rewards, weights] = JSON.parse(await fsPromises.readFile(
-      rewardFile));
-    this.expectedReward = new Map(rewards);
-    this.expectedRewardWeight = new Map(weights);
-    for (let modelKey of this.expectedReward.keys()) {
-      if (!this.modelKeys.includes(modelKey)) {
-        this.modelKeys.push(modelKey);
       }
     }
   }
@@ -140,6 +101,15 @@ module.exports.Population = class Population {
         `\t ${modelKey} => \t ${(reward || 0).toFixed(2)} [weight ${weight}]`
       );
     }
+  }
+
+  getBestModels(n = 1) {
+    // Copy modelKeys and sort by expected reward.
+    const modelData = this.modelKeys.slice();
+    modelData.sort((a, b) =>
+      this.expectedReward.get(b) - this.expectedReward.get(a));
+
+    return modelData.slice(0, n);
   }
 
   attributeRewards(rewardModelKeys, rewards) {

@@ -75,7 +75,8 @@ module.exports.DoubleModelPopulation =
   class DoubleModelPopulation extends Population {
 
     constructor(populationDir) {
-      super(populationDir);
+      super();
+      this.populationDir = populationDir;
     }
 
     async loadModel(modelKey) {

@@ -11,6 +11,10 @@ const {
 const {
   ModelPopulation
 } = require('./model_population.js');
+const {
+  saveRewards,
+  loadRewards
+} = require('./population_helper.js');
 
 async function main() {
   flags.defineInteger('rounds', 1000,
@@ -42,7 +46,7 @@ async function main() {
     : new ModelPopulation(populationDir);
   population.addModels(flags.get('start_population'));
   if (rewardFile && fs.existsSync(path.join(populationDir, rewardFile))) {
-    await population.loadRewards(rewardFile);
+    await loadRewards(population, rewardFile);
   } else {
     console.log(`Warning: reward file does not exist [${rewardFile}]`);
   }
@@ -62,7 +66,7 @@ async function main() {
       await population.kill(population.size() - maxPopulationSize);
     }
     await population.breed(flags.get('breeding_per_round'));
-    await population.saveRewards(rewardFile, true);
+    await saveRewards(population, rewardFile, true);
     if (quitFlag) {
       process.exit(0);
     }

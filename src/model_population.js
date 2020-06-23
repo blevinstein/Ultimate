@@ -60,7 +60,8 @@ function playGame(models) {
 
 module.exports.ModelPopulation = class ModelPopulation extends Population {
   constructor(populationDir) {
-    super(populationDir);
+    super();
+    this.populationDir = populationDir;
   }
 
   async loadModel(modelKey) {
