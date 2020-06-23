@@ -46,15 +46,6 @@ module.exports.DoubleModelStrategy =
       this.frameTensor.recordActions(this.game, this.actionMap);
       this.frameTensor.nextFrame();
       this.frameTensor.clearFrames();
-
-      for (let model of models) {
-        if (!model.cutter instanceof tf.GraphModel) {
-          throw new Error(`Invalid cutter model: ${model.cutter}`);
-        }
-        if (!model.thrower instanceof tf.GraphModel) {
-          throw new Error(`Invalid thrower model: ${model.thrower}`);
-        }
-      }
     }
 
     update() {
@@ -123,6 +114,18 @@ module.exports.DoubleModelStrategy =
       if (!models instanceof Array) {
         throw new Error(`Illegal input: ${models}`);
       }
+      for (let model of models) {
+        if (!model) {
+          throw new Error(`Invalid double model: ${model}`);
+        }
+        if (!model.cutter instanceof tf.GraphModel) {
+          throw new Error(`Invalid cutter model: ${model.cutter}`);
+        }
+        if (!model.thrower instanceof tf.GraphModel) {
+          throw new Error(`Invalid thrower model: ${model.thrower}`);
+        }
+      }
+
       const strategyPicker = (game, team) =>
         new DoubleModelStrategy(models, game, team);
       // TODO: Use strategyPicker for kickoffStrategy as well
