@@ -9,7 +9,8 @@ flags.parse();
 const app = express()
 const port = flags.get('port');
 const browserifyOptions = {
-  watch: true
+  watch: true,
+  precompile: true,
 };
 
 app.use(express.static('static/'));
