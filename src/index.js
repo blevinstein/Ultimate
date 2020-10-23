@@ -1,5 +1,4 @@
 const tf = require('@tensorflow/tfjs');
-const jsonp = require('jsonp');
 const path = require('path');
 
 const {
@@ -23,27 +22,11 @@ const {
 
 let initialized = false;
 
-async function loadRewards(population, rewardFile) {
-  const jsonResponse = await fetch(path.join(population.populationDir,
-    rewardFile));
-  if (!jsonResponse.ok) {
-    console.error(response.status);
-  }
-  const [rewards, weights] = JSON.parse(await jsonResponse.text());
-  population.expectedReward = new Map(rewards);
-  population.expectedRewardWeight = new Map(weights);
-  for (let modelKey of population.expectedReward.keys()) {
-    if (!population.modelKeys.includes(modelKey)) {
-      population.modelKeys.push(modelKey);
-    }
-  }
-}
-
-async function loadModels(paths) {
+async function loadModels(n = 3) {
   const population = new DoubleModelPopulation('v4');
-  await loadRewards(population, 'rewards.json');
+  await population.loadRewardsAndModels()
   return Promise.all(
-    population.getBestModels(3).map(key => {
+    population.getBestModels(n).map(key => {
       console.log(`Loading ${key}`);
       return population.loadModel(key, '');
     }));

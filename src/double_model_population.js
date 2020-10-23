@@ -25,6 +25,7 @@ const {
   NUM_PLAYERS
 } = require('./team.js');
 
+const REWARDS_FILE = 'rewards.json';
 const CUTTER_MODEL_FILE = 'cutter/model.json';
 const THROWER_MODEL_FILE = 'thrower/model.json';
 
@@ -69,6 +70,23 @@ module.exports.DoubleModelPopulation =
     }
     async generateModelKey() {
       throw new Error('generateModelKey is not supported');
+    }
+
+    // Intended for use in a browser.
+    async loadRewardsAndModels() {
+      const jsonResponse = await fetch(path.join(this.populationDir,
+        REWARDS_FILE));
+      if (!jsonResponse.ok) {
+        console.error(response.status);
+      }
+      const [rewards, weights] = JSON.parse(await jsonResponse.text());
+      population.expectedReward = new Map(rewards);
+      population.expectedRewardWeight = new Map(weights);
+      for (let modelKey of population.expectedReward.keys()) {
+        if (!population.modelKeys.includes(modelKey)) {
+          population.modelKeys.push(modelKey);
+        }
+      }
     }
 
     async loadModel(modelKey, prefix = 'file://') {
