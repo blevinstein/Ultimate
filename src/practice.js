@@ -43,6 +43,10 @@ const GREEN_COLORS = [
   [HAIR],
 ];
 
+/**
+ * Simple Game with competitive elements (e.g. scoring) stripped out. Useful as
+ * a practice venue.
+ */
 class Practice extends Game {
   constructor(resources, canvas) {
     super(resources, canvas);

@@ -39,7 +39,6 @@ async function loadRewards(population, rewardFile) {
   }
 }
 
-// Returns Promise<Array<Model>>
 async function loadModels(paths) {
   const population = new DoubleModelPopulation('v4');
   await loadRewards(population, 'rewards.json');
