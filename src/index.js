@@ -1,4 +1,3 @@
-const tf = require('@tensorflow/tfjs');
 const path = require('path');
 
 const {
@@ -8,20 +7,14 @@ const {
   Disc
 } = require('./disc.js');
 const {
-  Game
-} = require('./game.js');
+  GameBuilder
+} = require('./game_builder.js');
 const {
   NUM_PLAYERS
 } = require('./team.js');
-const {
-  DoubleModelStrategy
-} = require('./strategy/double_model_strategy.js');
-const {
-  DoubleModelPopulation
-} = require('./double_model_population.js');
 
-let initialized = false;
 
+/*
 async function loadModels(n = 3) {
   const population = new DoubleModelPopulation('v4');
   await population.loadRewardsAndModels()
@@ -31,28 +24,10 @@ async function loadModels(n = 3) {
       return population.loadModel(key, '');
     }));
 }
+*/
 
-window.initialize = () => {
-  console.log('Initializing...');
-
-  Promise.all([Game.loadResources(), loadModels()])
-    .then(
-      (responses) => {
-        initialized = true;
-        console.log('Initialized.');
-        start(responses);
-      },
-      (error) => {
-        console.log('Failed to initialize.');
-        console.log(error);
-      });
-};
-
-function start(responses) {
-  const [resources, models] = responses;
-  window.game = new Game(resources, document.getElementById('canvas'), [
-    new Coach(),
-    DoubleModelStrategy.coach(models),
-  ]);
-  window.game.start();
-}
+window.initialize = GameBuilder.defaultBuilder().defaultInitialize(
+    fetch('./index-config.json')
+        .then((jsonResponse) => jsonResponse.text())
+        .then((jsonText) => JSON.parse(jsonText)),
+    document.getElementById('canvas'));

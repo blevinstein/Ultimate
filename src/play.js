@@ -1,5 +1,3 @@
-const tf = require('@tensorflow/tfjs');
-
 const {
   Coach
 } = require('./coach.js');
@@ -7,8 +5,8 @@ const {
   Disc
 } = require('./disc.js');
 const {
-  Game
-} = require('./game.js');
+  GameBuilder
+} = require('./game_builder.js');
 const {
   MAX_THROW_SPEED
 } = require('./player.js');
@@ -16,15 +14,13 @@ const {
   ManualOffenseStrategy
 } = require('./strategy/manual_offense.js');
 const {
-  SingleModelStrategy
-} = require('./strategy/single_model_strategy.js');
-const {
   ZoneDefenseStrategy
 } = require('./strategy/zone_defense.js');
 const {
   Team
 } = require('./team.js');
 
+/*
 const ALL_MODELS = [
   'v1-1/model.json',
   'v1-2/model.json',
@@ -61,29 +57,10 @@ function makeModel() {
   });
   return Promise.resolve(model);
 }
+*/
 
-window.initialize =
-  () => {
-    console.log('Initializing...');
-
-    Promise.all([Game.loadResources(), loadModels(ALL_MODELS)])
-      .then(
-        (responses) => {
-          initialized = true;
-          console.log('Initialized.');
-          start(responses);
-        },
-        (error) => {
-          console.log('Failed to initialize.');
-          console.log(error);
-        });
-  }
-
-function start(responses) {
-  const [resources, models] = responses;
-  window.game = new Game(resources, document.getElementById('canvas'), [
-    new Coach((game, team) => new ManualOffenseStrategy(game, team)),
-    SingleModelStrategy.coach(models),
-  ]);
-  window.game.start();
-}
+window.initialize = GameBuilder.defaultBuilder().defaultInitialize(
+    fetch('./play-config.json')
+        .then((jsonResponse) => jsonResponse.text())
+        .then((jsonText) => JSON.parse(jsonText)),
+    document.getElementById('canvas'));

@@ -1,0 +1,12 @@
+{
+  "coach": [
+    {
+      "type": "static",
+      "strategy": ["ManualOffense", "ManToManDefense"]
+    },
+    {
+      "type": "static",
+      "strategy": ["RandomOffense", "ManToManDefense"]
+    }
+  ]
+}
