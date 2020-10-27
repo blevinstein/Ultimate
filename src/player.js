@@ -269,7 +269,7 @@ module.exports.Player = class Player {
     this.hasDisc = hasDisc;
   }
 
-  // return time to reach the location
+  // Return time (in simulation steps) to reach the location
   static simulateRunTime(location, initialVelocity, goalRadius = 1) {
     const player = new Player(null, [0, 0]);
     player.velocity = initialVelocity;

@@ -284,6 +284,7 @@ module.exports.Game = class Game {
       // Pick a strategy if we don't have one active
       if (!team.strategy) {
         team.strategy = team.coach.pickStrategy(this, team);
+        console.log(`Team ${team.id} chooses strategy ${team.strategy}`);
         if (this.onNewStrategy) {
           this.onNewStrategy(team.strategy);
         }

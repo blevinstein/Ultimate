@@ -90,4 +90,8 @@ module.exports.Strategy = class Strategy {
     this.frameBuffer.drawScene(context);
     this.frameBuffer.clear();
   }
+
+  toString() {
+    return this.constructor.name;
+  }
 };

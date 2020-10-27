@@ -31,6 +31,7 @@ const {
 } = require('./strategy.js');
 
 const GOAL_RADIUS = 2;
+const REACTION_TIME = 2;
 
 // Totally uncoordinated scramble. Players look for open areas of the field,
 // from 10m behind the handler to back of the endzone. Handler throws when and
@@ -67,7 +68,7 @@ module.exports.ManualOffenseStrategy =
 
           let [closestReceiver, closestReceiverDistance] = getClosestPlayer(
             this.team.players.filter(p => p != player), this.throwTarget);
-          let runTime = Player.simulateRunTime(
+          let runTime = REACTION_TIME + Player.simulateRunTime(
             sub2d(this.throwTarget, closestReceiver.position),
             closestReceiver.velocity);
           let throwParams = player.rangeFinder.getThrowParams(
