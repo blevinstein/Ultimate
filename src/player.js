@@ -29,8 +29,7 @@ const {
 const {
   ARM_HEIGHT,
   ARM_LENGTH,
-  MAX_THROW_SPEED,
-  STEP_SIZE
+  MAX_THROW_SPEED
 } =
 require('./player_params.js');
 
@@ -76,8 +75,7 @@ module.exports.Player = class Player {
     this.moving = false;
     this.frame = Math.random() * ANIMATION_FRAMES;
     this.hasDisc = false;
-    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED,
-      STEP_SIZE);
+    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED);
   }
 
   toString() {
