@@ -29,19 +29,19 @@ const MIN_RANGE = 3;
 const RANGE_TOLERANCE = 1;
 
 class RangeFinder {
-  constructor(maxSpeed, stepSize) {
+  constructor(maxSpeed, speedStepSize, angleStepSize) {
     this.maxSpeed = maxSpeed;
     this.samples = [];
     this.samplesOmitted = 0;
 
     for (let launchAngle = MIN_LAUNCH_ANGLE; launchAngle
       <= MAX_LAUNCH_ANGLE; launchAngle +=
-      stepSize) {
-      for (let speed = MIN_SPEED; speed <= maxSpeed; speed += stepSize) {
+      angleStepSize) {
+      for (let speed = MIN_SPEED; speed <= maxSpeed; speed += speedStepSize) {
         for (let angleOfAttack = MIN_ANGLE_OF_ATTACK; angleOfAttack
-          <= MAX_ANGLE_OF_ATTACK; angleOfAttack += stepSize) {
+          <= MAX_ANGLE_OF_ATTACK; angleOfAttack += angleStepSize) {
           for (let tiltAngle = MIN_TILT; tiltAngle <= MAX_TILT; tiltAngle +=
-            stepSize) {
+            angleStepSize) {
             const velocity = [
               speed * Math.cos(launchAngle), 0, speed * Math.sin(
                 launchAngle)
@@ -58,10 +58,10 @@ class RangeFinder {
                 tiltAngle
               }));
             const {
-              finalPosition: groundedPosition,
-              finalTime: groundedTime
+              finalPosition: uncatchablePosition,
+              finalTime: uncatchableTime
             } =
-            Disc.simulateUntilGrounded(
+            Disc.simulateUntilUncatchable(
               [0, 0, ARM_HEIGHT + 0.01], velocity,
               Disc.createUpVector({
                 velocity,
@@ -69,20 +69,20 @@ class RangeFinder {
                 tiltAngle
               }));
 
-            // Rotate everything by groundedAngle such that
-            // rotatedGroundedPosition[1] ~ 0
-            const groundedAngle = angle2d(groundedPosition);
+            // Rotate everything by uncatchableAngle such that
+            // rotatedUncatchablePosition[1] ~ 0
+            const uncatchableAngle = angle2d(uncatchablePosition);
             const rotatedCatchablePosition =
-              zRotate3d(catchablePosition, -groundedAngle);
+              zRotate3d(catchablePosition, -uncatchableAngle);
 
-            const rotatedVelocity = zRotate3d(velocity, -groundedAngle);
+            const rotatedVelocity = zRotate3d(velocity, -uncatchableAngle);
 
-            const rotatedGroundedPosition =
-              zRotate3d(groundedPosition, -groundedAngle);
-            if (Math.abs(rotatedGroundedPosition[1]) > 0.001) {
+            const rotatedUncatchablePosition =
+              zRotate3d(uncatchablePosition, -uncatchableAngle);
+            if (Math.abs(rotatedUncatchablePosition[1]) > 0.001) {
               throw new Error('Failed to rotate point onto x-axis!');
             }
-            if (rotatedGroundedPosition[0] > MIN_RANGE) {
+            if (rotatedUncatchablePosition[0] > MIN_RANGE) {
               this.samples.push({
                 input: {
                   velocity: rotatedVelocity,
@@ -93,9 +93,9 @@ class RangeFinder {
                   position: rotatedCatchablePosition,
                   time: catchableTime
                 },
-                grounded: {
-                  position: rotatedGroundedPosition,
-                  time: groundedTime
+                uncatchable: {
+                  position: rotatedUncatchablePosition,
+                  time: uncatchableTime
                 },
               });
             } else {
@@ -106,20 +106,20 @@ class RangeFinder {
       }
     }
     this.samples.sort((a, b) =>
-      a.grounded.position[0] - b.grounded.position[0]);
+      a.uncatchable.position[0] - b.uncatchable.position[0]);
     console.log(
       `Range finder ready. samples = ${this.samples.length}, omitted = ${
             this.samplesOmitted}, maxDistance = ${this.getMaxDistance()}`);
   }
 
-  // Return the index of the closest sample with grounded distance at least
+  // Return the index of the closest sample with uncatchable distance at least
   // 'distance'
   binarySearch(samples, distance) {
     let min = 0;
     let max = samples.length - 1;
     while (max - min > 1) {
       let mid = Math.trunc((min + max) / 2);
-      if (samples[mid].grounded.position[0] > distance) {
+      if (samples[mid].uncatchable.position[0] > distance) {
         max = mid;
       } else {
         min = mid;
@@ -135,8 +135,8 @@ class RangeFinder {
         `distanceRange is in the wrong order: ${distanceRange}`);
     }
     // Ensure our desired distance is in the range covered by our samples.
-    if (this.samples[0].grounded.position[0] > distanceRange[1]
-      || this.samples[this.samples.length - 1].grounded.position[0]
+    if (this.samples[0].uncatchable.position[0] > distanceRange[1]
+      || this.samples[this.samples.length - 1].uncatchable.position[0]
       < distanceRange[0]) {
       return null;
     }
@@ -146,7 +146,7 @@ class RangeFinder {
     // Filter to samples which give the runner sufficient time to reach the
     // disc.
     const filteredSamples = this.samples.slice(minSample, maxSample)
-      .filter(s => s.grounded.time > minRunTime);
+      .filter(s => s.uncatchable.time > minRunTime);
     if (filteredSamples.length === 0) {
       return null;
     }
@@ -155,7 +155,7 @@ class RangeFinder {
     let bestFloatTime;
     for (let i = 0; i < filteredSamples.length; ++i) {
       const floatTime =
-        filteredSamples[i].grounded.time - filteredSamples[i].catchable.time;
+        filteredSamples[i].uncatchable.time - filteredSamples[i].catchable.time;
       if (bestFloat === null || floatTime > bestFloat) {
         bestFloat = i;
         bestFloatTime = floatTime;
@@ -165,7 +165,7 @@ class RangeFinder {
   }
 
   getMaxDistance() {
-    return this.samples[this.samples.length - 1].grounded.position[0];
+    return this.samples[this.samples.length - 1].uncatchable.position[0];
   }
 
   getThrowParams(vector2d, minRunTime) {
@@ -207,14 +207,14 @@ class RangeFinder {
 }
 
 class RangeFinderFactory {
-  static create(maxSpeed, stepSize = 0.1) {
+  static create(maxSpeed, speedStepSize = 0.3, angleStepSize = 0.05) {
     RangeFinderFactory.registry = RangeFinderFactory.registry || new Map;
-    let key = `maxSpeed=${maxSpeed},stepSize=${stepSize}`;
+    let key = `maxSpeed=${maxSpeed},speedStepSize=${speedStepSize},angleStepSize=${angleStepSize}`;
     let existing = RangeFinderFactory.registry.get(key);
     if (existing) {
       return existing;
     } else {
-      let rangeFinder = new RangeFinder(maxSpeed, stepSize);
+      let rangeFinder = new RangeFinder(maxSpeed, speedStepSize, angleStepSize);
       RangeFinderFactory.registry.set(key, rangeFinder);
       return rangeFinder;
     }

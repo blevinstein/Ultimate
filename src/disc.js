@@ -412,6 +412,12 @@ class Disc {
       disc => disc.grounded, returnPath);
   }
 
+  static simulateUntilUncatchable(initialPosition, initialVelocity, upVector,
+    returnPath = false) {
+    return Disc.simulateUntil(initialPosition, initialVelocity, upVector,
+      disc => disc.position[2] <= (ARM_HEIGHT - ARM_LENGTH), returnPath);
+  }
+
   static simulateUntilCatchable(initialPosition, initialVelocity, upVector,
     returnPath = false) {
     return Disc.simulateUntil(initialPosition, initialVelocity, upVector,
