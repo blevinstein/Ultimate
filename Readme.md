@@ -18,6 +18,8 @@ Known Bugs
 Backlog
 -------
 
+- Different throws, e.g. forehand vs backhand, huck vs toss, hammer?
+- Add precession to allow S-shaped paths
 - Better manual throwing control (e.g. mouse wheel for angleOfAttack, mouse position for velocity)
 - Better route to incoming disk
 - Better behavior than "charge" when teammate is picking up disk
