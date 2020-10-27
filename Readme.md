@@ -8,9 +8,18 @@ ML TODO
 
 - Enrich with throwing examples
 
+Known Bugs
+----------
+
+- Throwing the disk then trying to catch it yourself (RandomOffense + ClosestPickup)
+- Poor routes to incoming disk
+- Poor interception prediction (should incorporate velocity), offense + defense
+
 Backlog
 -------
 
+- Better route to incoming disk
+- Better behavior than "charge" when teammate is picking up disk
 - Stack (vert, ho)
 - Visual improvements
   - Add permanent scoreboard, game over message
