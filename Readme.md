@@ -18,6 +18,7 @@ Known Bugs
 Backlog
 -------
 
+- Better manual throwing control (e.g. mouse wheel for angleOfAttack, mouse position for velocity)
 - Better route to incoming disk
 - Better behavior than "charge" when teammate is picking up disk
 - Stack (vert, ho)
