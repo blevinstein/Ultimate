@@ -15,8 +15,8 @@ const {
 const MAX_LAUNCH_ANGLE = 1.5;
 const MIN_LAUNCH_ANGLE = -1.0;
 
-const MIN_ANGLE_OF_ATTACK = -0.5;
-const MAX_ANGLE_OF_ATTACK = 1.5;
+const MIN_ANGLE_OF_ATTACK = -1.0;
+const MAX_ANGLE_OF_ATTACK = 1.0;
 
 const MIN_TILT = 0.0;
 const MAX_TILT = 0.0;
@@ -207,7 +207,7 @@ class RangeFinder {
 }
 
 class RangeFinderFactory {
-  static create(maxSpeed, speedStepSize = 0.3, angleStepSize = 0.05) {
+  static create(maxSpeed, speedStepSize = 0.6, angleStepSize = 0.05) {
     RangeFinderFactory.registry = RangeFinderFactory.registry || new Map;
     let key = `maxSpeed=${maxSpeed},speedStepSize=${speedStepSize},angleStepSize=${angleStepSize}`;
     let existing = RangeFinderFactory.registry.get(key);

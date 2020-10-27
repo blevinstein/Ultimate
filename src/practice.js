@@ -30,8 +30,8 @@ const {
   ToastService
 } = require('./toast_service.js');
 
-const MAX_DISCS = 100;
-const THROW_EVERY_N_STEPS = 5;
+const MAX_DISCS = 1000;
+const THROW_EVERY_N_STEPS = 2;
 
 const GREEN_COLORS = [
   [BG],
@@ -106,7 +106,7 @@ class Practice extends Game {
     if (++this.step % THROW_EVERY_N_STEPS === 0
       && this.throwCount < this.rangeFinder.samples.length) {
       const sprinklerAngle =
-        0.5 * Math.sin(++this.throwCount * 2 * Math.PI / 30);
+        0.5 * Math.sin(++this.throwCount * 2 * 3.1 / 30);
       const throwParams =
         this.rangeFinder
         .samples[this.rangeFinder.samples.length - this.throwCount]
