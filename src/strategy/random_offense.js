@@ -32,6 +32,7 @@ const NUM_CANDIDATE_THROWS = 1;
 const GOAL_RADIUS = 2;
 const MIN_PROGRESS = 5;
 const REACTION_TIME = 2;
+const MIN_THROW_STALL_COUNT = 1.5;
 
 // Totally uncoordinated scramble. Players look for open areas of the field,
 // from 10m behind the handler to back of the endzone.
@@ -51,7 +52,7 @@ module.exports.RandomOffenseStrategy =
       for (let player of this.team.players) {
         if (player.hasDisc) {
           // Thrower behavior
-          if (!player.canThrow()) {
+          if (!player.canThrow() || this.game.stallCount < MIN_THROW_STALL_COUNT) {
             player.rest(getVector(this.team.goalDirection));
             continue;
           }
