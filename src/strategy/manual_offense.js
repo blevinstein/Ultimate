@@ -67,7 +67,6 @@ module.exports.ManualOffenseStrategy =
 
           let throwParams = player.rangeFinder.getThrowParams(
             sub2d(this.throwTarget, player.position), /*minRunTime=*/ 0);
-          let catchable = !!throwParams;
           if (!throwParams) {
             throwParams = player.rangeFinder.getThrowParams(
               sub2d(this.throwTarget, player.position));
@@ -84,7 +83,7 @@ module.exports.ManualOffenseStrategy =
               this.game.disc.position, throwParams.velocity,
               Disc.createUpVector(throwParams), true)
             .path;
-          drawPath(this.frameBuffer, path, 1, catchable ? '#49ff29' : 'red');
+          drawPath(this.frameBuffer, path, 1);
           if (this.throwConfirmed) {
             this.throwDisc(player, [
               throwParams.velocity, throwParams.angleOfAttack,

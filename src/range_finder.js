@@ -50,7 +50,7 @@ class RangeFinder {
               finalTime: catchableTime
             } =
             Disc.simulateUntilCatchable(
-              [0, 0, ARM_HEIGHT + 0.01], velocity,
+              [0, 0, ARM_HEIGHT], velocity,
               Disc.createUpVector({
                 velocity,
                 angleOfAttack,
@@ -58,15 +58,17 @@ class RangeFinder {
               }));
             const {
               finalPosition: uncatchablePosition,
-              finalTime: uncatchableTime
+              finalTime: uncatchableTime,
+              path
             } =
-            Disc.simulateUntilUncatchable(
-              [0, 0, ARM_HEIGHT + 0.01], velocity,
+            Disc.simulateUntilGrounded(
+              [0, 0, ARM_HEIGHT], velocity,
               Disc.createUpVector({
                 velocity,
                 angleOfAttack,
                 tiltAngle
-              }));
+              }),
+              true);
 
             // Rotate everything by uncatchableAngle such that
             // rotatedUncatchablePosition[1] ~ 0
@@ -96,6 +98,7 @@ class RangeFinder {
                   position: rotatedUncatchablePosition,
                   time: uncatchableTime
                 },
+                path
               });
             } else {
               ++this.samplesOmitted;
@@ -108,9 +111,10 @@ class RangeFinder {
     // across all samples.
     this.minDistance = this.samples.reduce(
         (minDist, sample) => Math.min(minDist, sample.catchable.position[0]),
-        this.samples[0].uncatchable.position[0]);
+        this.samples[0].catchable.position[0]);
     this.maxDistance = this.samples.reduce(
-        (maxDist, sample) => Math.max(maxDist, sample.uncatchable.position[0]));
+        (maxDist, sample) => Math.max(maxDist, sample.uncatchable.position[0]),
+        this.samples[0].uncatchable.position[0]);
 
     console.log(
       `Range finder ready. samples = ${this.samples.length}, omitted = ${
@@ -144,19 +148,20 @@ class RangeFinder {
         sample.uncatchable.time >= minRunTime);
     console.log(
       `Found ${filteredSamples.length} candidate samples for distance=${distance}, minRunTime=${minRunTime}`);
+    if (!filteredSamples) {
+      return null;
+    }
 
-    // Choose the throw that will float the longest.
-    let bestFloat = null;
-    let bestFloatTime;
-    for (let i = 0; i < filteredSamples.length; ++i) {
-      const floatTime =
-        filteredSamples[i].uncatchable.time - filteredSamples[i].catchable.time;
-      if (bestFloat === null || floatTime > bestFloat) {
-        bestFloat = i;
-        bestFloatTime = floatTime;
+    let highestSample = null;
+    let highestHeight = 0;
+    for (let sample of filteredSamples) {
+      const maxHeight = sample.path.reduce((maxHeight, point) => Math.max(maxHeight, point.position[2]), 0);
+      if (highestSample === null || maxHeight > highestHeight) {
+        highestSample = sample;
+        highestHeight = maxHeight;
       }
     }
-    return filteredSamples[bestFloat];
+    return highestSample;
   }
 
   getThrowParams(vector2d, minRunTime) {

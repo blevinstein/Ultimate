@@ -105,14 +105,13 @@ class Practice extends Game {
   update() {
     if (++this.step % THROW_EVERY_N_STEPS === 0
       && this.throwCount < this.rangeFinder.samples.length) {
-      const sprinklerAngle =
-        0.5 * Math.sin(++this.throwCount * 2 * 3.1 / 30);
+      const sprinklerAngle = 0.5 * Math.sin(this.throwCount * 2 * 3.1 / 30);
+      this.rangeFinder.samples.sort((a, b) => b.uncatchable.position[0] - a.uncatchable.position[0]);
       const throwParams =
-        this.rangeFinder
-        .samples[this.rangeFinder.samples.length - this.throwCount]
-        .input;
+        this.rangeFinder.samples[this.throwCount].input;
       this.thrower.throwDisc(zRotate3d(throwParams.velocity, sprinklerAngle),
         throwParams.angleOfAttack, throwParams.tiltAngle);
+      this.throwCount++;
     }
     // Players and physics update
     for (let team of this.teams) {
