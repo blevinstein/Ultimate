@@ -5,7 +5,6 @@ const {
   drawPath
 } = require('../draw_utils.js');
 const {
-  getClosestPlayer,
   chooseBestRandomDestination
 } =
 require('../game_utils.js');
@@ -66,13 +65,8 @@ module.exports.ManualOffenseStrategy =
             continue;
           }
 
-          let [closestReceiver, closestReceiverDistance] = getClosestPlayer(
-            this.team.players.filter(p => p != player), this.throwTarget);
-          let runTime = REACTION_TIME + Player.simulateRunTime(
-            sub2d(this.throwTarget, closestReceiver.position),
-            closestReceiver.velocity);
           let throwParams = player.rangeFinder.getThrowParams(
-            sub2d(this.throwTarget, player.position), runTime);
+            sub2d(this.throwTarget, player.position), /*minRunTime=*/ 0);
           let catchable = !!throwParams;
           if (!throwParams) {
             throwParams = player.rangeFinder.getThrowParams(
