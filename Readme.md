@@ -6,7 +6,8 @@ Simulation of ultimate frisbee.
 ML TODO
 -------
 
-- Enrich with throwing examples
+- Experiment with PyTorch
+- Use embeddings to describe player state?
 
 Known Bugs
 ----------
