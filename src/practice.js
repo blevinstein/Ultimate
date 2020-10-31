@@ -31,7 +31,7 @@ const {
 } = require('./toast_service.js');
 
 const MAX_DISCS = 1000;
-const THROW_EVERY_N_STEPS = 2;
+const THROW_EVERY_N_STEPS = 4;
 
 const GREEN_COLORS = [
   [BG],

@@ -9,10 +9,11 @@ const {
   zRotate3d
 } = require('./math_utils.js');
 const {
-  ARM_HEIGHT
+  ARM_HEIGHT,
+  MAX_THROW_SPEED
 } = require('./player_params.js');
 
-const MAX_LAUNCH_ANGLE = 1.5;
+const MAX_LAUNCH_ANGLE = 1.2;
 const MIN_LAUNCH_ANGLE = -1.0;
 
 const MIN_ANGLE_OF_ATTACK = -1.0;
@@ -24,9 +25,7 @@ const MAX_TILT = 0.0;
 const MIN_SPEED = 0.3;
 
 // Minimum distance a throw must travel
-const MIN_RANGE = 3;
-
-const RANGE_TOLERANCE = 1;
+const MIN_RANGE = 2.5;
 
 class RangeFinder {
   constructor(maxSpeed, speedStepSize, angleStepSize) {
@@ -105,11 +104,17 @@ class RangeFinder {
         }
       }
     }
-    this.samples.sort((a, b) =>
-      a.uncatchable.position[0] - b.uncatchable.position[0]);
+    // Find minimum (catchable) distance and maximum (uncatchable) distance
+    // across all samples.
+    this.minDistance = this.samples.reduce(
+        (minDist, sample) => Math.min(minDist, sample.catchable.position[0]),
+        this.samples[0].uncatchable.position[0]);
+    this.maxDistance = this.samples.reduce(
+        (maxDist, sample) => Math.max(maxDist, sample.uncatchable.position[0]));
+
     console.log(
       `Range finder ready. samples = ${this.samples.length}, omitted = ${
-            this.samplesOmitted}, maxDistance = ${this.getMaxDistance()}`);
+            this.samplesOmitted}, maxDistance = ${this.maxDistance}`);
   }
 
   // Return the index of the closest sample with uncatchable distance at least
@@ -128,28 +133,18 @@ class RangeFinder {
     return max;
   }
 
-  getBestSample(distanceRange, minRunTime) {
-    check2d(distanceRange);
-    if (distanceRange[1] < distanceRange[0]) {
-      throw new Error(
-        `distanceRange is in the wrong order: ${distanceRange}`);
-    }
+  getBestSample(distance, minRunTime) {
     // Ensure our desired distance is in the range covered by our samples.
-    if (this.samples[0].uncatchable.position[0] > distanceRange[1]
-      || this.samples[this.samples.length - 1].uncatchable.position[0]
-      < distanceRange[0]) {
+    if (distance < this.minDistance || distance > this.maxDistance) {
       return null;
     }
-    // Use binary search to find the min and max samples in the given range.
-    const minSample = this.binarySearch(this.samples, distanceRange[0]);
-    const maxSample = this.binarySearch(this.samples, distanceRange[1]) - 1;
-    // Filter to samples which give the runner sufficient time to reach the
-    // disc.
-    const filteredSamples = this.samples.slice(minSample, maxSample)
-      .filter(s => s.uncatchable.time > minRunTime);
-    if (filteredSamples.length === 0) {
-      return null;
-    }
+    const filteredSamples = this.samples.filter(sample =>
+        sample.catchable.position[0] <= distance &&
+        sample.uncatchable.position[0] >= distance &&
+        sample.uncatchable.time >= minRunTime);
+    console.log(
+      `Found ${filteredSamples.length} candidate samples for distance=${distance}, minRunTime=${minRunTime}`);
+
     // Choose the throw that will float the longest.
     let bestFloat = null;
     let bestFloatTime;
@@ -164,13 +159,8 @@ class RangeFinder {
     return filteredSamples[bestFloat];
   }
 
-  getMaxDistance() {
-    return this.samples[this.samples.length - 1].uncatchable.position[0];
-  }
-
   getThrowParams(vector2d, minRunTime) {
-    const sample = this.getBestSample(
-      [mag2d(vector2d) - RANGE_TOLERANCE, mag2d(vector2d)], minRunTime);
+    const sample = this.getBestSample(mag2d(vector2d), minRunTime);
     if (!sample) {
       return null;
     }
@@ -195,7 +185,10 @@ class RangeFinder {
       angleOfAttack,
       tiltAngle
     } =
-    this.samples[this.samples.length - 1].input;
+    this.samples.reduce((bestSample, sample) =>
+        sample.uncatchable.position[0] > bestSample.uncatchable.position[0]
+            ? sample : bestSample,
+        this.samples[0]).input;
     const vectorAngle = angle2d(vector2d);
     const rotatedVelocity = zRotate3d(velocity, vectorAngle);
     return {
@@ -207,7 +200,7 @@ class RangeFinder {
 }
 
 class RangeFinderFactory {
-  static create(maxSpeed, speedStepSize = 0.6, angleStepSize = 0.05) {
+  static create(maxSpeed = MAX_THROW_SPEED, speedStepSize = 0.3, angleStepSize = 0.05) {
     RangeFinderFactory.registry = RangeFinderFactory.registry || new Map;
     let key = `maxSpeed=${maxSpeed},speedStepSize=${speedStepSize},angleStepSize=${angleStepSize}`;
     let existing = RangeFinderFactory.registry.get(key);

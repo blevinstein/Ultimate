@@ -75,7 +75,7 @@ module.exports.Player = class Player {
     this.moving = false;
     this.frame = Math.random() * ANIMATION_FRAMES;
     this.hasDisc = false;
-    this.rangeFinder = RangeFinderFactory.create(MAX_THROW_SPEED);
+    this.rangeFinder = RangeFinderFactory.create();
   }
 
   toString() {
