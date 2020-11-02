@@ -43,6 +43,8 @@ const GREEN_COLORS = [
   [HAIR],
 ];
 
+const MAX_THROW_PATHS = 1000;
+
 /**
  * Simple Game with competitive elements (e.g. scoring) stripped out. Useful as
  * a practice venue.
@@ -68,6 +70,7 @@ class Practice extends Game {
     this.toastService = new ToastService();
     this.throwCount = 0;
     this.step = 0;
+    this.throwPaths = [];
   }
 
   createDisc() {
@@ -99,20 +102,40 @@ class Practice extends Game {
         team.strategy.draw(context);
       }
     }
+
+    // PRACTICE: Draw all throw paths.
+    for (let i = 0; i < this.throwPaths.length; i++) {
+      drawPath(frameBuffer, this.throwPaths[i],
+        Math.pow(0.9, this.throwPaths.length - i));
+    }
+
     frameBuffer.drawScene(context);
   }
 
   update() {
+    // PRACTICE: Throw every throw in RangeFinder samples.
     if (++this.step % THROW_EVERY_N_STEPS === 0
       && this.throwCount < this.rangeFinder.samples.length) {
       const sprinklerAngle = 0.5 * Math.sin(this.throwCount * 2 * 3.1 / 30);
       this.rangeFinder.samples.sort((a, b) => b.uncatchable.position[0] - a.uncatchable.position[0]);
-      const throwParams =
-        this.rangeFinder.samples[this.throwCount].input;
-      this.thrower.throwDisc(zRotate3d(throwParams.velocity, sprinklerAngle),
+      const throwParams = this.rangeFinder.samples[this.throwCount].input;
+      const throwVelocity = zRotate3d(throwParams.velocity, sprinklerAngle);
+      this.throwPaths.push(Disc.simulateUntilGrounded(
+          this.disc.position,
+          throwVelocity,
+          Disc.createUpVector({
+            velocity: throwVelocity,
+            angleOfAttack: throwParams.angleOfAttack,
+            tiltAngle: throwParams.tiltAngle
+          }), true).path);
+      if (this.throwPaths.length > MAX_THROW_PATHS) {
+        this.throwPaths = this.throwPaths.slice(1);
+      }
+      this.thrower.throwDisc(throwVelocity,
         throwParams.angleOfAttack, throwParams.tiltAngle);
       this.throwCount++;
     }
+
     // Players and physics update
     for (let team of this.teams) {
       for (let player of team.players) {
