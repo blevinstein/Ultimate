@@ -28,14 +28,14 @@ const {
 } = require('./player_params.js');
 
 const GROUND_FRICTION = 0.2;
-const GRAVITY = 0.05;
+const GRAVITY = 0.025;
 
 const OPTIMAL_DRAG_ANGLE = -0.2;
-const DRAG_CONST = 0.000;
-const DRAG_QUADRATIC = 0.2;
+const DRAG_CONST = 0.0;
+const DRAG_QUADRATIC = 0.8;
 
-const LIFT_CONST = 0.015;
-const LIFT_LINEAR = 0.08;
+const LIFT_CONST = 0.06;
+const LIFT_LINEAR = 0.24;
 
 const MAX_PICKUP_DIST = 1;
 
@@ -172,16 +172,6 @@ class Disc {
     });
   }
 
-  applyFriction(amount) {
-    if (typeof amount === 'number') {
-      this.velocity = mul3d(this.velocity, 1 - amount);
-    } else if (amount instanceof Array) {
-      this.velocity = mul3d(this.velocity, amount.map(a => 1 - a));
-    } else {
-      throw new Error('Unexpected argument: ' + amount);
-    }
-  }
-
   updatePosition() {
     this.position = add3d(this.position, this.velocity);
   }
@@ -196,6 +186,7 @@ class Disc {
     if (this.position[2] <= 0) {
       // Ground contact
       this.position = mul3d(this.position, [1, 1, 0]);
+      // TODO: Ground friction should be constant, not proportional to velocity
       this.velocity =
         mul3d(this.velocity, [1 - GROUND_FRICTION, 1 - GROUND_FRICTION, 0]);
       this.upVector = [0, 0, 1];
