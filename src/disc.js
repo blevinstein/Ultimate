@@ -30,11 +30,16 @@ const {
 const GROUND_FRICTION = 0.2;
 const GRAVITY = 0.025;
 
-const OPTIMAL_DRAG_ANGLE = -0.2;
+// Component of drag that is proportional to angle of attack and v^2
 const DRAG_CONST = 0.0;
+// Component of drag that is quadratic w.r.t. (angle of attack -
+// OPTIMAL_DRAG_ANGLE) and proportional to v^2
 const DRAG_QUADRATIC = 0.8;
+const OPTIMAL_DRAG_ANGLE = -0.2;
 
+// Component of lift that is proportional to v^2 only
 const LIFT_CONST = 0.06;
+// Component of lift that is proportional to angle of attack and v^2
 const LIFT_LINEAR = 0.24;
 
 const MAX_PICKUP_DIST = 1;
