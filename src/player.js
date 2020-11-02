@@ -232,8 +232,8 @@ module.exports.Player = class Player {
   // TODO: Add noise for high velocity throws
   // TODO: Throw farther when !moving or moving in direction of throw?
   throwDisc(velocity, angleOfAttack, tiltAngle) {
-    // DEBUG: console.log('Throw: velocity=' + velocity + ' angleOfAttack=' +
-    // angleOfAttack + ' tiltAngle=' + tiltAngle);
+    // DEBUG: console.log(`Throw: velocity=${mag3d(velocity)} angleOfAttack=${angleOfAttack} tiltAngle=${tiltAngle}`);
+    // DEBUG: console.log(`Up vector: ${Disc.createUpVector({velocity, angleOfAttack, tiltAngle})}`);
     check3d(velocity);
     if (mag3d(velocity) > MAX_THROW_SPEED) {
       // DEBUG: console.log(

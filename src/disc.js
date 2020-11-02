@@ -41,6 +41,8 @@ const OPTIMAL_DRAG_ANGLE = -0.05;
 const LIFT_CONST = 0.0002;
 // Component of lift that is proportional to angle of attack and v^2
 const LIFT_LINEAR = 0.08;
+// If angleOfAttack is larger than this value, no lift is achieved
+const LIFT_MAX_ANGLE_OF_ATTACK = 1.0;
 
 const MAX_PICKUP_DIST = 1;
 
@@ -219,9 +221,10 @@ class Disc {
         }
 
         angleOfAttack = this.angleOfAttack();
-        lift = mul3d(liftDirection,
-          Math.pow(mag3d(this.velocity), 2)
-          * (LIFT_CONST + angleOfAttack * LIFT_LINEAR));
+        lift = Math.abs(angleOfAttack) <= LIFT_MAX_ANGLE_OF_ATTACK
+            ? mul3d(liftDirection,
+                Math.pow(mag3d(this.velocity), 2) * (LIFT_CONST + angleOfAttack * LIFT_LINEAR))
+            : [0, 0, 0];
       } else {
         // If upVector is parallel to velocityDirection, we get no lift and drag
         // is maximized
@@ -255,9 +258,6 @@ class Disc {
 
     // Calculate angle of attack using dot product identity
     let angleOfAttack = acos(dot3d(forwardDirection, velocityDirection));
-    if (angleOfAttack > Math.PI / 2) {
-      angleOfAttack = angleOfAttack - Math.PI;
-    }
 
     // Convention: if forwardDirection is more +z than velocityDirection,
     // angleOfAttack is positive

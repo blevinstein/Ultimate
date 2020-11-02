@@ -13,8 +13,8 @@ const {
   MAX_THROW_SPEED
 } = require('./player_params.js');
 
-const MAX_LAUNCH_ANGLE = 1.2;
-const MIN_LAUNCH_ANGLE = -1.0;
+const MAX_LAUNCH_ANGLE = 1.0;
+const MIN_LAUNCH_ANGLE = -0.5;
 
 const MIN_ANGLE_OF_ATTACK = -1.0;
 const MAX_ANGLE_OF_ATTACK = 1.0;
