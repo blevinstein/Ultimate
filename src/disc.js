@@ -31,16 +31,16 @@ const GROUND_FRICTION = 0.2;
 const GRAVITY = 0.025;
 
 // Component of drag that is proportional to angle of attack and v^2
-const DRAG_CONST = 0.0;
+const DRAG_CONST = 0.0005;
 // Component of drag that is quadratic w.r.t. (angle of attack -
 // OPTIMAL_DRAG_ANGLE) and proportional to v^2
 const DRAG_QUADRATIC = 0.8;
-const OPTIMAL_DRAG_ANGLE = -0.2;
+const OPTIMAL_DRAG_ANGLE = -0.1;
 
 // Component of lift that is proportional to v^2 only
-const LIFT_CONST = 0.06;
+const LIFT_CONST = 0.04;
 // Component of lift that is proportional to angle of attack and v^2
-const LIFT_LINEAR = 0.24;
+const LIFT_LINEAR = 0.3;
 
 const MAX_PICKUP_DIST = 1;
 
@@ -408,23 +408,17 @@ class Disc {
     };
   }
 
-  static simulateUntilGrounded(initialPosition, initialVelocity, upVector,
-    returnPath = false) {
-    return Disc.simulateUntil(initialPosition, initialVelocity, upVector,
-      disc => disc.grounded, returnPath);
-  }
-
-  static simulateUntilUncatchable(initialPosition, initialVelocity, upVector,
-    returnPath = false) {
-    return Disc.simulateUntil(initialPosition, initialVelocity, upVector,
-      disc => disc.position[2] > ARM_HEIGHT + ARM_LENGTH, returnPath);
-  }
-
   static simulateUntilCatchable(initialPosition, initialVelocity, upVector,
     returnPath = false) {
     return Disc.simulateUntil(initialPosition, initialVelocity, upVector,
       disc => disc.position[2] <= ARM_HEIGHT + ARM_LENGTH && disc.velocity[2] <= 0,
       returnPath);
+  }
+
+  static simulateUntilGrounded(initialPosition, initialVelocity, upVector,
+    returnPath = false) {
+    return Disc.simulateUntil(initialPosition, initialVelocity, upVector,
+      disc => disc.grounded, returnPath);
   }
 
   toString() {
