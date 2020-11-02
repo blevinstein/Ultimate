@@ -46,6 +46,8 @@ const MAX_PICKUP_DIST = 1;
 
 const DISC_SIZE = 3;
 
+const MAX_SIMULATION_STEPS = 10e3;
+
 class Disc {
   constructor(game) {
     Disc.maxId = Disc.maxId || 0;
@@ -387,6 +389,9 @@ class Disc {
     let time = 0;
     while (!untilCondition(disc)) {
       time++;
+      if (time > MAX_SIMULATION_STEPS) {
+        throw new Error('Max simulation steps reached');
+      }
       disc.updatePhysics();
       if (returnPath) {
         path.push({
