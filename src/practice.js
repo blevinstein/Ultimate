@@ -31,6 +31,7 @@ const {
 } = require('./toast_service.js');
 
 const MAX_DISCS = 1000;
+const MAX_THROW_PATHS = 100;
 const THROW_EVERY_N_STEPS = 4;
 
 const GREEN_COLORS = [
@@ -42,8 +43,6 @@ const GREEN_COLORS = [
   [SOCKS],
   [HAIR],
 ];
-
-const MAX_THROW_PATHS = 1000;
 
 /**
  * Simple Game with competitive elements (e.g. scoring) stripped out. Useful as
