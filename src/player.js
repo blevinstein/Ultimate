@@ -38,14 +38,14 @@ const ANIMATION_FRAMES = 4;
 const ANIMATION_STEP = [0, 1, 2, 1];
 const ANIMATION_SPEED = 0.5;
 // Minimum movement speed which should use the 'moving' sprites
-const MIN_MOVEMENT = 0.2;
+const MIN_MOVEMENT = 0.1;
 
 // Maximum speed a player can move the disc
 const MAX_HANDLE_SPEED = 0.4;
 // Maximum speed a player can accelerate themselves from a stationary start
-const MAX_PLAYER_ACCEL = 0.03;
+const MAX_PLAYER_ACCEL = 0.015;
 // Maximum speed a player can sprint
-const MAX_PLAYER_SPEED = 0.4;
+const MAX_PLAYER_SPEED = 0.2;
 // Player cannot throw if held disc is farther than this from
 // desiredHandlePosition()
 const MAX_HANDLE_OFFSET = 0.1;
