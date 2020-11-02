@@ -32,7 +32,7 @@ const {
 
 const MAX_DISCS = 1000;
 const MAX_THROW_PATHS = 100;
-const THROW_EVERY_N_STEPS = 4;
+const THROW_EVERY_N_STEPS = 8;
 
 const GREEN_COLORS = [
   [BG],
@@ -115,7 +115,7 @@ class Practice extends Game {
     // PRACTICE: Throw every throw in RangeFinder samples.
     if (++this.step % THROW_EVERY_N_STEPS === 0
       && this.throwCount < this.rangeFinder.samples.length) {
-      const sprinklerAngle = 0.5 * Math.sin(this.throwCount * 2 * 3.1 / 30);
+      const sprinklerAngle = 0.3 * Math.sin(this.throwCount * 2 * 3.1 / 30);
       this.rangeFinder.samples.sort((a, b) => b.uncatchable.position[0] - a.uncatchable.position[0]);
       const throwParams = this.rangeFinder.samples[this.throwCount].input;
       const throwVelocity = zRotate3d(throwParams.velocity, sprinklerAngle);
