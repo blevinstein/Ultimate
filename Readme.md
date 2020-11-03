@@ -19,6 +19,7 @@ Known Bugs
 Backlog
 -------
 
+- For debugging physics, add vector rendering (drag, lift) to flying discs
 - Different throws, e.g. forehand vs backhand, huck vs toss, hammer?
 - Add precession to allow S-shaped paths
 - Better manual throwing control (e.g. mouse wheel for angleOfAttack, mouse position for velocity)
