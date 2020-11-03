@@ -80,7 +80,7 @@ module.exports.RandomOffenseStrategy =
             let runTime = REACTION_TIME + Player.simulateRunTime(
               sub2d(destination, closestReceiver.position),
               closestReceiver.velocity);
-            let params = player.rangeFinder.getThrowParams(
+            let params = player.rangeFinder.getRandomThrow(
               sub2d(destination, player.position), runTime);
             if (!params) {
               continue;

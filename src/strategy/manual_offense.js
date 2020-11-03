@@ -65,7 +65,7 @@ module.exports.ManualOffenseStrategy =
             continue;
           }
 
-          let throwParams = player.rangeFinder.getThrowParams(
+          let throwParams = player.rangeFinder.getFloatiestThrow(
             sub2d(this.throwTarget, player.position), /*minRunTime=*/ 0);
           if (!throwParams) {
             throwParams = player.rangeFinder.getThrowParams(

@@ -137,23 +137,47 @@ class RangeFinder {
     return max;
   }
 
-  getRandomSample(distance, minRunTime) {
+  getSamples(distance, minRunTime) {
     // Ensure our desired distance is in the range covered by our samples.
     if (distance < this.minDistance || distance > this.maxDistance) {
-      return null;
+      return [];
     }
-    const filteredSamples = this.samples.filter(sample =>
+    return this.samples.filter(sample =>
         sample.catchable.position[0] <= distance &&
         sample.uncatchable.position[0] >= distance &&
         sample.uncatchable.time >= minRunTime);
+  }
+
+  getRandomSample(distance, minRunTime) {
+    const filteredSamples = this.getSamples(distance, minRunTime);
     console.log(
       `Found ${filteredSamples.length} candidate samples for distance=${distance}, minRunTime=${minRunTime}`);
-    if (!filteredSamples) {
+    if (!filteredSamples.length) {
       return null;
     }
 
     const chosenIndex = Math.floor(Math.random() * filteredSamples.length);
     return filteredSamples[chosenIndex];
+  }
+
+  getFloatiestSample(distance, minRunTime) {
+    const filteredSamples = this.getSamples(distance, minRunTime);
+    console.log(
+      `Found ${filteredSamples.length} candidate samples for distance=${distance}, minRunTime=${minRunTime}`);
+    if (!filteredSamples.length) {
+      return null;
+    }
+
+    let highestSample = null;
+    let highestHeight = 0;
+    for (let sample of filteredSamples) {
+            const maxHeight = sample.path.reduce((maxHeight, point) => Math.max(maxHeight, point.position[2]), 0);
+            if (highestSample === null || maxHeight > highestHeight) {
+                      highestSample = sample;
+                      highestHeight = maxHeight;
+                    }
+          }
+    return highestSample;
   }
 
   rotatedThrowParams(vector2d, sample) {
@@ -171,8 +195,16 @@ class RangeFinder {
     };
   }
 
-  getThrowParams(vector2d, minRunTime) {
+  getRandomThrow(vector2d, minRunTime) {
     const sample = this.getRandomSample(mag2d(vector2d), minRunTime);
+    if (!sample) {
+      return null;
+    }
+    return this.rotatedThrowParams(vector2d, sample);
+  }
+
+  getFloatiestThrow(vector2d, minRunTime) {
+    const sample = this.getFloatiestSample(mag2d(vector2d), minRunTime);
     if (!sample) {
       return null;
     }
