@@ -16,8 +16,8 @@ const {
 const MAX_LAUNCH_ANGLE = 1.0;
 const MIN_LAUNCH_ANGLE = -0.5;
 
-const MIN_ANGLE_OF_ATTACK = -1.0;
-const MAX_ANGLE_OF_ATTACK = 1.0;
+const MIN_ANGLE_OF_ATTACK = -0.7;
+const MAX_ANGLE_OF_ATTACK = 0.7;
 
 const MIN_TILT = 0.0;
 const MAX_TILT = 0.0;
