@@ -71,7 +71,7 @@ class RangeFinder {
               true);
 
             // Rotate everything by uncatchableAngle such that
-            // rotatedUncatchablePosition[1] ~ 0
+            // rotatedUncatchablePosition[1] ~= 0
             const uncatchableAngle = angle2d(uncatchablePosition);
             const rotatedCatchablePosition =
               zRotate3d(catchablePosition, -uncatchableAngle);
@@ -137,7 +137,7 @@ class RangeFinder {
     return max;
   }
 
-  getBestSample(distance, minRunTime) {
+  getRandomSample(distance, minRunTime) {
     // Ensure our desired distance is in the range covered by our samples.
     if (distance < this.minDistance || distance > this.maxDistance) {
       return null;
@@ -152,23 +152,11 @@ class RangeFinder {
       return null;
     }
 
-    let highestSample = null;
-    let highestHeight = 0;
-    for (let sample of filteredSamples) {
-      const maxHeight = sample.path.reduce((maxHeight, point) => Math.max(maxHeight, point.position[2]), 0);
-      if (highestSample === null || maxHeight > highestHeight) {
-        highestSample = sample;
-        highestHeight = maxHeight;
-      }
-    }
-    return highestSample;
+    const chosenIndex = Math.floor(Math.random() * filteredSamples.length);
+    return filteredSamples[chosenIndex];
   }
 
-  getThrowParams(vector2d, minRunTime) {
-    const sample = this.getBestSample(mag2d(vector2d), minRunTime);
-    if (!sample) {
-      return null;
-    }
+  rotatedThrowParams(vector2d, sample) {
     const {
       velocity,
       angleOfAttack,
@@ -183,24 +171,21 @@ class RangeFinder {
     };
   }
 
+  getThrowParams(vector2d, minRunTime) {
+    const sample = this.getRandomSample(mag2d(vector2d), minRunTime);
+    if (!sample) {
+      return null;
+    }
+    return this.rotatedThrowParams(vector2d, sample);
+  }
+
   // returns [velocity, angleOfAttack, tiltAngle]
   getLongestThrowParams(vector2d) {
-    const {
-      velocity,
-      angleOfAttack,
-      tiltAngle
-    } =
-    this.samples.reduce((bestSample, sample) =>
+    const sample = this.samples.reduce((bestSample, sample) =>
         sample.uncatchable.position[0] > bestSample.uncatchable.position[0]
             ? sample : bestSample,
-        this.samples[0]).input;
-    const vectorAngle = angle2d(vector2d);
-    const rotatedVelocity = zRotate3d(velocity, vectorAngle);
-    return {
-      velocity: rotatedVelocity,
-      angleOfAttack,
-      tiltAngle
-    };
+        this.samples[0]);
+    return this.rotatedThrowParams(vector2d, sample);
   }
 }
 
